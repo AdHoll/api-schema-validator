@@ -1,0 +1,25 @@
+{
+  "targets": [
+    {
+      "id": "api-1790937479603",
+      "label": "Giverny",
+      "collection": "Fr_Clients/FR27-LA MAISON ET LES JARDINS DE CLAUDE MONET-GIVERNY",
+      "bwItemName": "API - VIVAWEB - RECETTE",
+      "scope": "b2c",
+      "tags": [
+        "Préprod"
+      ]
+    },
+    {
+      "id": "api-1790943548306",
+      "label": "Vision B2C",
+      "owner": "Vivaticket",
+      "collection": "VivaWeb",
+      "bwItemName": "VVW_API_DEV_Vision_b2c",
+      "scope": "b2c",
+      "tags": [
+        "Dev"
+      ]
+    }
+  ]
+}

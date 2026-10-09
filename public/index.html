@@ -1,0 +1,3776 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VivAPI Unified Validator</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Scrollbar personnalisée */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <!-- Main Container Full Width -->
+  <div class="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow flex flex-col gap-6">
+    
+    <!-- Header -->
+    <header class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+      <div class="flex items-center gap-4">
+        <img src="/logo.svg" alt="VivAPI Unified Validator" class="h-12 sm:h-14 w-auto flex-shrink-0">
+        <p class="text-slate-400 text-xs sm:text-sm hidden md:block max-w-xs">
+          Vérification automatique de conformité OpenAPI/YAML sécurisée par OAuth2 (b2b / b2c)
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Onglets de page : Validateur / Statut des APIs -->
+        <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
+          <a href="/index.html" class="px-4 py-1.5 rounded-md transition bg-indigo-600 text-white">
+            <i class="fa-solid fa-list-check mr-1.5"></i> Validateur
+          </a>
+          <a href="/status.html" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-heart-pulse mr-1.5"></i> Statut des APIs
+          </a>
+        </div>
+        <!-- Switch de mode compact -->
+        <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
+          <button type="button" id="modeManualBtn"
+            class="mode-btn px-3 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-sliders mr-1"></i> Manuel
+          </button>
+          <button type="button" id="modeScenarioBtn"
+            class="mode-btn px-3 py-1.5 rounded-md transition bg-indigo-600 text-white">
+            <i class="fa-solid fa-diagram-project mr-1"></i> Scénarios
+          </button>
+        </div>
+        <div class="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-folder-open text-indigo-400"></i> Logs dans <code class="text-indigo-300">/logs</code>
+        </div>
+        <button type="submit" form="validatorForm" id="submitBtn" disabled
+          class="py-2.5 px-5 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border disabled:border-slate-700 border-indigo-500 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm whitespace-nowrap"
+          title="">
+          <i class="fa-solid fa-play"></i> Lancer la validation
+        </button>
+      </div>
+    </header>
+
+    <form id="validatorForm" class="flex flex-col gap-6">
+
+      <!-- SECTION CONFIGURATION -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Bloc 1: Fichier YAML & Historique Fichiers -->
+        <div class="lg:col-span-4 bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-file-code"></i> 1. Spécification YAML
+            </h2>
+
+            <!-- Sélecteur de version embarquée -->
+            <div>
+              <label class="block text-xs font-medium text-slate-400 mb-1.5">
+                <i class="fa-solid fa-layer-group text-indigo-400 mr-1"></i> Version de la spec (bibliothèque)
+              </label>
+              <select id="specVersionSelect"
+                class="w-full text-xs bg-slate-900/80 border border-slate-700 text-slate-300 px-2.5 py-2 rounded-lg font-mono focus:outline-none focus:border-indigo-500">
+                <option value="">-- Chargement des versions… --</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-wide">
+              <span class="flex-1 h-px bg-slate-700/60"></span> ou <span class="flex-1 h-px bg-slate-700/60"></span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-400 mb-1.5">Fichier OpenAPI (.yaml / .yml)</label>
+              <input type="file" id="specFile" name="spec" accept=".yaml,.yml"
+                class="block w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer bg-slate-900/80 rounded-lg border border-slate-700/80">
+            </div>
+
+            <!-- Historique des Fichiers YAML -->
+            <div id="yamlHistorySection" class="hidden pt-2 border-t border-slate-700/60">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-[11px] font-medium text-slate-400 flex items-center gap-1">
+                  <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Sessions récentes sauvegardées :
+                </span>
+                <button type="button" id="clearYamlHistoryBtn" class="text-[10px] text-slate-500 hover:text-rose-400 transition">Effacer</button>
+              </div>
+              <div id="yamlHistoryList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+            </div>
+          </div>
+
+
+        </div>
+
+        <!-- Bloc 2: Authentification OAuth2 & Historique URLs -->
+        <div class="lg:col-span-8 bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-key"></i> 2. Authentification OAuth2
+            </h2>
+
+            <!-- Selecteur d'historique des cibles -->
+            <div id="targetHistoryDropdown" class="hidden w-full sm:w-auto">
+              <select id="targetHistorySelect" class="w-full text-xs bg-slate-900 border border-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg font-mono focus:outline-none focus:border-indigo-500">
+                <option value="">-- Choisir une cible dans l'historique --</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div class="md:col-span-6">
+              <label class="block text-xs font-medium text-slate-300 mb-1">URL de l'API Cible</label>
+              <input type="url" id="targetUrl" name="targetUrl" placeholder="https://web3-vision-dev-fr.vivaticket.com" required
+                class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+            </div>
+
+            <div class="md:col-span-3">
+              <label class="block text-xs font-medium text-slate-300 mb-1">Client ID</label>
+              <input type="text" id="clientId" name="clientId" placeholder="ApiUserW3" required
+                class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+            </div>
+
+            <div class="md:col-span-3">
+              <label class="block text-xs font-medium text-slate-300 mb-1">Client Secret</label>
+              <input type="password" id="clientSecret" name="clientSecret" required
+                class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div class="md:col-span-4">
+              <label class="block text-xs font-medium text-slate-300 mb-1">Scope</label>
+              <select id="scope" name="scope" required class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-semibold">
+                <option value="b2c">b2c</option>
+                <option value="b2b">b2b</option>
+              </select>
+            </div>
+            <div class="md:col-span-8 text-xs text-slate-400 italic pt-3 sm:pt-0">
+              * Les identifiants seront transmis via Query Parameters sur <code class="text-indigo-300">/api/v1/security/token</code>.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= MODE SCÉNARIOS ================= -->
+      <div id="scenarioSection" class="hidden bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
+          <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
+            <i class="fa-solid fa-diagram-project"></i> Scénarios de test
+          </h2>
+          <span class="text-xs text-slate-400 italic">Enchaînement automatique d'appels avec dépendances de données.</span>
+        </div>
+
+        <!-- Sélecteur de scénario + mode d'exécution -->
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-end">
+          <div class="flex-1">
+            <label class="block text-xs font-medium text-slate-400 mb-1.5">Choisir un scénario</label>
+            <select id="scenarioSelect"
+              class="w-full text-xs bg-slate-900/80 border border-slate-700 text-slate-300 px-2.5 py-2 rounded-lg focus:outline-none focus:border-indigo-500">
+              <option value="">-- Sélectionner un scénario --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1.5">Mode d'exécution</label>
+            <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
+              <button type="button" id="execAutoBtn"
+                class="exec-mode-btn px-3 py-1.5 rounded-md transition bg-indigo-600 text-white">
+                <i class="fa-solid fa-bolt mr-1"></i> Auto
+              </button>
+              <button type="button" id="execManualBtn"
+                class="exec-mode-btn px-3 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+                <i class="fa-solid fa-hand-pointer mr-1"></i> Manuel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description + champs de départ (rendus dynamiquement) -->
+        <p id="scenarioDescription" class="hidden text-xs text-slate-400 bg-slate-900/60 border border-slate-700/60 rounded-lg px-3 py-2"></p>
+        <div id="scenarioStartFields" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+
+        <!-- Bouton exécuter -->
+        <div class="flex gap-2">
+          <button type="button" id="runScenarioBtn" disabled
+            class="flex-1 py-2.5 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border disabled:border-slate-700 border-indigo-500 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition flex justify-center items-center gap-2">
+            <i class="fa-solid fa-play"></i> Exécuter le scénario
+          </button>
+          <button type="button" id="replayScenarioBtn"
+            class="hidden py-2.5 px-4 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 text-sm font-bold rounded-lg transition flex justify-center items-center gap-2 whitespace-nowrap"
+            title="Rejouer le dernier test avec les mêmes choix">
+            <i class="fa-solid fa-rotate-right"></i> Rejouer le dernier test
+          </button>
+        </div>
+
+        <!-- Zone de statut des étapes -->
+        <div id="scenarioSteps" class="hidden space-y-1.5"></div>
+
+        <!-- Étape intermédiaire (mode manuel) : choix des paramètres de l'appel suivant -->
+        <div id="scenarioStepConfig" class="hidden bg-slate-900/70 border border-indigo-800/60 rounded-lg p-4 space-y-3">
+          <h3 class="text-xs font-semibold text-indigo-300 flex items-center gap-2">
+            <i class="fa-solid fa-sliders"></i> <span id="scenarioStepConfigTitle">Paramètres de l'appel suivant</span>
+          </h3>
+          <div id="scenarioStepConfigFields" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+          <p id="scenarioStepConfigError" class="hidden text-[11px] text-rose-400"></p>
+          <div class="flex gap-2">
+            <button type="button" id="scenarioPrevStepBtn"
+              class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border border-slate-600 disabled:border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition flex justify-center items-center gap-2">
+              <i class="fa-solid fa-backward-step"></i> Étape précédente
+            </button>
+            <button type="button" id="scenarioNextStepBtn"
+              class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border border-indigo-500 disabled:border-slate-700 text-white text-xs font-bold rounded-lg transition flex justify-center items-center gap-2">
+              <i class="fa-solid fa-forward-step"></i> Étape suivante
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= MODE MANUEL (sections 3/4/5) ================= -->
+      <div id="manualModeWrap" class="flex flex-col gap-6">
+
+      <!-- SECTION SÉLECTION DES ROUTES -->
+      <div class="bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
+          <div class="flex items-center gap-3">
+            <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-route"></i> 3. Sélection des routes à tester
+            </h2>
+            <span id="activeSourceBadge" class="hidden text-[11px] bg-indigo-950/80 border border-indigo-700 text-indigo-300 font-mono px-2 py-0.5 rounded-md"></span>
+          </div>
+          <div class="text-xs text-slate-400 flex items-center gap-3">
+            <button type="button" id="selectAllBtn" class="hover:text-indigo-400 font-medium transition"><i class="fa-solid fa-check-double"></i> Tout cocher</button>
+            <span class="text-slate-600">|</span>
+            <button type="button" id="deselectAllBtn" class="hover:text-indigo-400 font-medium transition"><i class="fa-solid fa-xmark"></i> Tout décocher</button>
+          </div>
+        </div>
+
+        <div id="routesContainer" class="bg-slate-900/90 rounded-lg border border-slate-700/80 p-3 max-h-64 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+          <div class="col-span-full text-slate-500 italic text-center py-6">
+            Sélectionnez un fichier YAML ou chargez une session récente depuis l'historique ci-dessus.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION PARAMÈTRES -->
+      <div id="paramsSection" class="hidden bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
+          <div class="flex items-center gap-3">
+            <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-sliders"></i> 4. Paramètres des routes
+            </h2>
+            <span class="text-xs text-slate-400 italic hidden sm:inline">Mutualisés entre toutes les routes qui les utilisent.</span>
+          </div>
+          <button type="button" id="prefillBtn"
+            class="flex items-center gap-2 px-3 py-1.5 bg-violet-700 hover:bg-violet-600 disabled:bg-slate-700 disabled:text-slate-500 disabled:border-slate-600 text-white text-xs font-semibold rounded-lg border border-violet-600 transition shadow-sm flex-shrink-0">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Pré-remplissage automatique
+          </button>
+        </div>
+        <!-- Barre de progression du pré-remplissage -->
+        <div id="prefillProgress" class="hidden rounded-lg bg-slate-900/80 border border-slate-700 p-3 space-y-1.5 text-xs font-mono">
+          <div class="flex items-center justify-between text-slate-400">
+            <span id="prefillProgressLabel"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Initialisation...</span>
+            <span id="prefillProgressCount" class="text-indigo-300"></span>
+          </div>
+          <div class="w-full bg-slate-700 rounded-full h-1.5">
+            <div id="prefillProgressBar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style="width:0%"></div>
+          </div>
+          <div id="prefillProgressLog" class="max-h-24 overflow-y-auto space-y-0.5 text-[10px] text-slate-400"></div>
+        </div>
+        <!-- Champ global locale (appliqué à toutes les routes qui l'exigent) -->
+        <div class="flex items-center gap-2 bg-indigo-950/40 border border-indigo-800/60 rounded-lg px-3 py-2">
+          <i class="fa-solid fa-globe text-indigo-400 text-xs"></i>
+          <label for="globalLocale" class="text-xs font-semibold text-indigo-300 whitespace-nowrap">Locale (global)</label>
+          <input type="text" id="globalLocale" value="fr-FR"
+            class="w-32 bg-slate-900/80 border border-slate-700 rounded-md px-2.5 py-1 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+          <span class="text-[10px] text-slate-500 italic">Injecté automatiquement dans toutes les routes utilisant le paramètre <code class="text-indigo-300">locale</code>.</span>
+        </div>
+        <!-- Barre de recherche des champs -->
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[10px] pointer-events-none"></i>
+          <input type="text" id="paramSearch" placeholder="Rechercher un paramètre…"
+            class="w-full bg-slate-900/80 border border-slate-700 rounded-lg pl-7 pr-3 py-1.5 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+        </div>
+        <div id="paramsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+      </div>
+
+      <!-- SECTION CORPS DES REQUÊTES JSON -->
+      <div id="bodiesSection" class="hidden bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
+          <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
+            <i class="fa-solid fa-code"></i> 5. Corps des requêtes (JSON)
+          </h2>
+          <span class="text-xs text-slate-400 italic">
+            Utilisez <code class="text-indigo-300">{{variable}}</code> pour injecter une valeur des paramètres au moment de l'appel.
+          </span>
+        </div>
+        <div id="bodiesContainer" class="space-y-3"></div>
+      </div>
+
+      </div><!-- fin #manualModeWrap -->
+
+    </form>
+
+    <!-- SECTION RÉSULTATS FULL WIDTH -->
+    <section id="resultsContainer" class="hidden bg-slate-800/90 rounded-xl p-5 border border-slate-700 shadow-xl space-y-4">
+      
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-slate-700/80 pb-4 gap-4">
+        <div>
+          <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-square-poll-vertical text-indigo-400"></i> Résultats de la validation
+          </h3>
+          <span id="resultsCount" class="text-xs font-mono text-slate-400 mt-1 block"></span>
+        </div>
+
+        <!-- Filtres par catégorie d'erreur -->
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <span class="text-slate-400 font-medium mr-1"><i class="fa-solid fa-filter"></i> Filtrer :</span>
+          <button type="button" data-filter="ALL" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-indigo-600 text-white border-indigo-500 shadow-sm transition">
+            Tous (<span id="countAll">0</span>)
+          </button>
+          <button type="button" data-filter="SUCCESS" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-emerald-400 border-slate-700 hover:bg-slate-800 transition">
+            Conformes (<span id="countSuccess">0</span>)
+          </button>
+          <button type="button" data-filter="DECLARED_ERROR" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-amber-400 border-slate-700 hover:bg-slate-800 transition">
+            Erreurs Prévues YAML (<span id="countDeclared">0</span>)
+          </button>
+          <button type="button" data-filter="UNDECLARED_ERROR" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-purple-400 border-slate-700 hover:bg-slate-800 transition">
+            Code HTTP Non Déclaré (<span id="countUndeclared">0</span>)
+          </button>
+          <button type="button" data-filter="SCHEMA_ERROR" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-rose-400 border-slate-700 hover:bg-slate-800 transition">
+            Non Conformes Schéma (<span id="countSchema">0</span>)
+          </button>
+          <button type="button" data-filter="UNHANDLED_ERROR" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-cyan-400 border-slate-700 hover:bg-slate-800 transition">
+            Code HTTP Non Géré (<span id="countUnhandled">0</span>)
+          </button>
+        </div>
+      </div>
+      
+      <!-- Table Responsive -->
+      <div class="overflow-x-auto w-full">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-700 text-slate-400 uppercase font-semibold bg-slate-900/60">
+              <th class="py-3 px-4 w-20">Méthode</th>
+              <th class="py-3 px-4 w-1/4">Route / Endpoint</th>
+              <th class="py-3 px-4 w-24">Code HTTP</th>
+              <th class="py-3 px-4 w-52">Conformité</th>
+              <th class="py-3 px-4">Synthèse Erreurs</th>
+              <th class="py-3 px-4 w-28 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="resultsTableBody" class="divide-y divide-slate-700/60"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- CONSOLE DE LOG API -->
+  <div id="apiConsole" class="fixed bottom-0 left-0 right-0 z-40 flex flex-col bg-slate-950 border-t border-slate-700 shadow-2xl transition-all duration-300" style="height:220px">
+    <!-- Poignée de redimensionnement -->
+    <div id="consoleResizeHandle"
+      class="absolute -top-1 left-0 right-0 h-2 cursor-ns-resize group z-50"
+      title="Glisser pour redimensionner">
+      <div class="h-0.5 w-full bg-transparent group-hover:bg-indigo-500 transition"></div>
+    </div>
+    <!-- Header de la console -->
+    <div class="flex items-center gap-3 px-4 py-2 bg-slate-900 border-b border-slate-700 flex-shrink-0 cursor-pointer select-none"
+         onclick="toggleConsole()">
+      <span class="flex items-center gap-2 text-xs font-semibold text-slate-300">
+        <i class="fa-solid fa-terminal text-indigo-400"></i> Console API
+        <span id="consoleBadge" class="hidden text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-600 text-white"></span>
+      </span>
+      <div class="flex items-center gap-2 ml-auto" onclick="event.stopPropagation()">
+        <button type="button" onclick="clearConsole()"
+          class="text-[10px] text-slate-500 hover:text-rose-400 transition px-2 py-0.5 rounded border border-slate-700 hover:border-rose-700">
+          <i class="fa-solid fa-trash-can mr-1"></i>Vider
+        </button>
+        <select id="consoleFilter" onchange="filterConsole(this.value)"
+          class="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-2 py-0.5 rounded focus:outline-none focus:border-indigo-500">
+          <option value="ALL">Tous</option>
+          <option value="PREFILL">Pré-remplissage</option>
+          <option value="BATCH">Validation</option>
+          <option value="ERROR">Erreurs API</option>
+          <option value="JS_ERROR">Erreurs JS</option>
+        </select>
+        <button type="button" onclick="toggleConsole()" class="text-slate-500 hover:text-slate-200 transition px-1">
+          <i id="consoleChevron" class="fa-solid fa-chevron-down text-xs"></i>
+        </button>
+      </div>
+    </div>
+    <!-- Corps de la console -->
+    <div id="consoleBody" class="flex-1 overflow-y-auto font-mono text-[11px] divide-y divide-slate-800/60"></div>
+  </div>
+  <!-- Espaceur pour éviter que le contenu passe sous la console -->
+  <div style="height:220px"></div>
+
+  <!-- MODAL DÉTAILS & COMPARAISON -->
+  <div id="detailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
+      
+      <div class="bg-slate-800/90 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <span id="modalMethodBadge" class="font-mono text-xs font-bold px-2 py-1 rounded border"></span>
+          <h3 id="modalPathTitle" class="text-sm font-mono font-bold text-slate-100 truncate"></h3>
+          <span id="modalStatusBadge" class="px-2 py-0.5 rounded text-[10px] font-bold border"></span>
+        </div>
+        <button type="button" id="closeModalBtn" class="text-slate-400 hover:text-slate-100 transition p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 text-xs font-sans">
+        
+        <div id="modalErrorsBlock" class="space-y-2">
+          <h4 class="font-semibold text-rose-400 flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-circle-exclamation"></i> Écarts détectés par rapport au schéma :
+          </h4>
+          <div id="modalErrorsList" class="bg-rose-950/30 border border-rose-900/50 rounded-lg p-3 space-y-1 text-rose-300 font-mono text-[11px]"></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <div class="space-y-2 flex flex-col">
+            <div class="flex justify-between items-center">
+              <h4 class="font-semibold text-sky-400 flex items-center gap-2 text-xs">
+                <i class="fa-solid fa-arrow-down-short-wide"></i> Réponse reçue de l'API (HTTP <span id="modalCodeHttp"></span>)
+              </h4>
+              <button type="button" id="copyResponseBtn" class="text-[10px] text-slate-400 hover:text-slate-200 transition bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">
+                <i class="fa-regular fa-copy"></i> Copier JSON
+              </button>
+            </div>
+            <pre id="modalReceivedJson" class="bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-[11px] text-sky-300 overflow-x-auto flex-grow max-h-96"></pre>
+          </div>
+
+          <div class="space-y-2 flex flex-col">
+            <div class="flex justify-between items-center">
+              <h4 class="font-semibold text-indigo-400 flex items-center gap-2 text-xs">
+                <i class="fa-solid fa-file-contract"></i> Schéma attendu selon YAML
+              </h4>
+              <span id="modalExpectedStatus" class="text-[10px] text-slate-400 italic"></span>
+            </div>
+            <pre id="modalExpectedSchema" class="bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-[11px] text-indigo-300 overflow-x-auto flex-grow max-h-96"></pre>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="bg-slate-800/50 px-6 py-3 border-t border-slate-700/80 text-right">
+        <button type="button" id="closeModalBottomBtn" class="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition">
+          Fermer
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('validatorForm');
+    const specFile = document.getElementById('specFile');
+    const specVersionSelect = document.getElementById('specVersionSelect');
+    const routesContainer = document.getElementById('routesContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const resultsTableBody = document.getElementById('resultsTableBody');
+    const resultsCount = document.getElementById('resultsCount');
+    const activeSourceBadge = document.getElementById('activeSourceBadge');
+    const paramsSection = document.getElementById('paramsSection');
+    const paramsContainer = document.getElementById('paramsContainer');
+    const bodiesSection = document.getElementById('bodiesSection');
+    const bodiesContainer = document.getElementById('bodiesContainer');
+
+    // Counters
+    const countAll = document.getElementById('countAll');
+    const countSuccess = document.getElementById('countSuccess');
+    const countDeclared = document.getElementById('countDeclared');
+    const countUndeclared = document.getElementById('countUndeclared');
+    const countSchema = document.getElementById('countSchema');
+    const countUnhandled = document.getElementById('countUnhandled');
+
+    // Inputs form
+    const targetUrlInput = document.getElementById('targetUrl');
+    const clientIdInput = document.getElementById('clientId');
+    const clientSecretInput = document.getElementById('clientSecret');
+    const scopeInput = document.getElementById('scope');
+
+    /**
+     * Active le bouton "Lancer la validation" uniquement si :
+     *  - au moins une route est détectée (YAML chargé)
+     *  - l'URL cible est renseignée
+     * Sinon le bouton est grisé avec une infobulle expliquant ce qui manque.
+     */
+    function updateSubmitState() {
+      const hasYaml = Array.isArray(detectedRoutes) && detectedRoutes.length > 0;
+      const hasTarget = targetUrlInput.value.trim() !== '';
+
+      const missing = [];
+      if (!hasYaml) missing.push('un fichier YAML');
+      if (!hasTarget) missing.push("l'URL de l'API cible");
+
+      submitBtn.disabled = missing.length > 0;
+      submitBtn.title = missing.length > 0
+        ? 'Il manque : ' + missing.join(' et ')
+        : 'Lancer la validation des routes sélectionnées';
+    }
+
+    // Réévaluer l'état du bouton dès que l'URL cible change
+    targetUrlInput.addEventListener('input', updateSubmitState);
+
+    // Éléments Historique
+    const yamlHistorySection = document.getElementById('yamlHistorySection');
+    const yamlHistoryList = document.getElementById('yamlHistoryList');
+    const clearYamlHistoryBtn = document.getElementById('clearYamlHistoryBtn');
+    const targetHistoryDropdown = document.getElementById('targetHistoryDropdown');
+    const targetHistorySelect = document.getElementById('targetHistorySelect');
+
+    // Modal
+    const detailModal = document.getElementById('detailModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const closeModalBottomBtn = document.getElementById('closeModalBottomBtn');
+    const modalMethodBadge = document.getElementById('modalMethodBadge');
+    const modalPathTitle = document.getElementById('modalPathTitle');
+    const modalStatusBadge = document.getElementById('modalStatusBadge');
+    const modalErrorsBlock = document.getElementById('modalErrorsBlock');
+    const modalErrorsList = document.getElementById('modalErrorsList');
+    const modalCodeHttp = document.getElementById('modalCodeHttp');
+    const modalReceivedJson = document.getElementById('modalReceivedJson');
+    const modalExpectedSchema = document.getElementById('modalExpectedSchema');
+    const modalExpectedStatus = document.getElementById('modalExpectedStatus');
+    const copyResponseBtn = document.getElementById('copyResponseBtn');
+
+    let detectedRoutes = [];
+    let detectedTagOrder = []; // ordre des tags tel que défini dans le YAML
+    let currentBatchResults = [];
+    let currentFilter = 'ALL';
+    let cachedYamlContent = null; // Contenu YAML actif (fichier ou historique)
+    let paramMap = new Map(); // Map paramName → { param, routes[] }
+
+    // Codes HTTP gérés / explicites standard
+    const HANDLED_HTTP_CODES = [200, 201, 202, 204, 400, 401, 403, 404, 405, 409, 422, 500, 502, 503, 504];
+
+    // Keys LocalStorage
+    const STORAGE_KEY_URLS = 'validator_urls_history';
+    const STORAGE_KEY_YAMLS = 'validator_yamls_history';
+    const STORAGE_KEY_PARAMS = 'validator_params_by_url';
+    const STORAGE_KEY_SCENARIO_FIELDS = 'validator_scenario_startfields_by_url';
+    const STORAGE_KEY_SCENARIO_RUNS = 'validator_scenario_last_run_by_url';
+
+    // ----------------------------------------------------
+    // INDEXEDDB — Stockage du contenu YAML (pas de limite de taille)
+    // ----------------------------------------------------
+    const IDB_NAME = 'validator_db';
+    const IDB_STORE = 'yaml_contents';
+    const IDB_VERSION = 1;
+
+    function openIDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) {
+            db.createObjectStore(IDB_STORE, { keyPath: 'filename' });
+          }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function saveYamlContentToIDB(filename, yamlContent) {
+      try {
+        const db = await openIDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).put({ filename, content: yamlContent });
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      } catch (e) {
+        console.warn('IndexedDB indisponible, contenu YAML non mis en cache :', e);
+      }
+    }
+
+    async function getYamlContentFromIDB(filename) {
+      try {
+        const db = await openIDB();
+        return new Promise((resolve) => {
+          const tx = db.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).get(filename);
+          req.onsuccess = () => resolve(req.result?.content || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function deleteYamlContentFromIDB(filename) {
+      try {
+        const db = await openIDB();
+        return new Promise((resolve) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).delete(filename);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        });
+      } catch (e) { /* silencieux */ }
+    }
+
+    async function clearAllYamlContentsFromIDB() {
+      try {
+        const db = await openIDB();
+        return new Promise((resolve) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).clear();
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        });
+      } catch (e) { /* silencieux */ }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTargetHistory();
+      loadYamlHistory();
+      initFilterButtons();
+
+      // Filtre de recherche des paramètres
+      document.getElementById('paramSearch').addEventListener('input', (e) => {
+        const q = e.target.value.trim().toLowerCase();
+        paramsContainer.querySelectorAll('.param-card').forEach(card => {
+          const name = (card.dataset.paramCard || '').toLowerCase();
+          card.style.display = (!q || name.includes(q)) ? '' : 'none';
+        });
+      });
+
+      // Sauvegarder la locale globale à chaque modification (persistée par URL)
+      document.getElementById('globalLocale').addEventListener('input', debouncedSaveParams);
+    });
+
+    // ----------------------------------------------------
+    // CATEGORISATION DES RESULTATS & FILTRES
+    // ----------------------------------------------------
+    function getResultCategory(r) {
+      const statusCode = r.statusCode || 0;
+      const isErrorHttp = statusCode >= 400;
+      const isDeclaredInYaml = r.statusDeclaredInYaml !== false;
+      const isValidSchema = r.valid;
+      const isUnhandledCode = r.isUnhandled || (statusCode > 0 && !HANDLED_HTTP_CODES.includes(statusCode));
+
+      if (isUnhandledCode) return 'UNHANDLED_ERROR';
+      if (!isValidSchema) return 'SCHEMA_ERROR';
+      if (isErrorHttp && !isDeclaredInYaml) return 'UNDECLARED_ERROR';
+      if (isErrorHttp && isDeclaredInYaml) return 'DECLARED_ERROR';
+      return 'SUCCESS';
+    }
+
+    function initFilterButtons() {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentFilter = btn.dataset.filter;
+          
+          document.querySelectorAll('.filter-btn').forEach(b => {
+            b.className = 'filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-slate-400 border-slate-700 hover:bg-slate-800 transition';
+          });
+          btn.className = 'filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-indigo-600 text-white border-indigo-500 shadow-sm transition';
+
+          renderResults(currentBatchResults);
+        });
+      });
+    }
+
+    function updateCounters(results) {
+      const counts = {
+        ALL: results.length,
+        SUCCESS: 0,
+        DECLARED_ERROR: 0,
+        UNDECLARED_ERROR: 0,
+        SCHEMA_ERROR: 0,
+        UNHANDLED_ERROR: 0
+      };
+
+      results.forEach(r => {
+        const cat = getResultCategory(r);
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
+
+      countAll.innerText = counts.ALL;
+      countSuccess.innerText = counts.SUCCESS;
+      countDeclared.innerText = counts.DECLARED_ERROR;
+      countUndeclared.innerText = counts.UNDECLARED_ERROR;
+      countSchema.innerText = counts.SCHEMA_ERROR;
+      countUnhandled.innerText = counts.UNHANDLED_ERROR;
+    }
+
+    // ----------------------------------------------------
+    // GESTION HISTORIQUE URLS / CONFIGS
+    // ----------------------------------------------------
+    function getSavedTargets() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_URLS)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveTargetConfig(targetUrl, clientId, scope) {
+      if (!targetUrl) return;
+      let history = getSavedTargets();
+      history = history.filter(item => item.targetUrl !== targetUrl);
+      history.unshift({ targetUrl, clientId, scope, timestamp: new Date().toISOString() });
+      if (history.length > 10) history = history.slice(0, 10);
+      localStorage.setItem(STORAGE_KEY_URLS, JSON.stringify(history));
+      loadTargetHistory();
+    }
+
+    function loadTargetHistory() {
+      const history = getSavedTargets();
+      if (history.length === 0) {
+        targetHistoryDropdown.classList.add('hidden');
+        return;
+      }
+      targetHistoryDropdown.classList.remove('hidden');
+      targetHistorySelect.innerHTML = '<option value="">-- Choisir une cible dans l\'historique --</option>' + 
+        history.map((item, index) => 
+          `<option value="${index}">[${item.scope.toUpperCase()}] ${item.targetUrl} (${item.clientId})</option>`
+        ).join('');
+    }
+
+    targetHistorySelect.addEventListener('change', (e) => {
+      const idx = e.target.value;
+      if (idx === "") return;
+      const history = getSavedTargets();
+      const selected = history[idx];
+      if (selected) {
+        targetUrlInput.value = selected.targetUrl;
+        clientIdInput.value = selected.clientId;
+        scopeInput.value = selected.scope;
+        // Restaurer les params + bodies sauvegardés pour cette URL
+        loadParamValues();
+        loadBodyValues();
+        updateSubmitState();
+      }
+    });
+
+    // Restaurer les params + bodies si l'URL est saisie manuellement (après que l'utilisateur quitte le champ)
+    targetUrlInput.addEventListener('change', () => {
+      loadParamValues();
+      loadBodyValues();
+    });
+
+    /**
+     * Recharge les corps JSON sauvegardés pour l'URL cible courante dans les éditeurs existants.
+     */
+    function loadBodyValues() {
+      const saved = getSavedBodies();
+      bodiesContainer.querySelectorAll('.body-editor').forEach(ta => {
+        const key = ta.dataset.bodyKey;
+        if (key && saved[key] !== undefined) {
+          ta.value = saved[key];
+          validateBodyEditor(ta);
+        }
+      });
+    }
+
+    // ----------------------------------------------------
+    // GESTION HISTORIQUE FICHIERS YAML
+    // ----------------------------------------------------
+    function getSavedYamls() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_YAMLS)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveYamlToHistory(filename, routes, yamlContent, tagOrder) {
+      if (!filename || !routes) return;
+      let history = getSavedYamls();
+      history = history.filter(item => item.filename !== filename);
+      history.unshift({
+        filename,
+        routes,
+        tagOrder: tagOrder || [],
+        // yamlContent n'est plus stocké dans localStorage — il va dans IndexedDB
+        routesCount: routes.length,
+        date: new Date().toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      });
+      if (history.length > 5) {
+        // Nettoyer le contenu IDB des entrées expirées
+        const expiredFilenames = history.slice(5).map(i => i.filename);
+        expiredFilenames.forEach(f => deleteYamlContentFromIDB(f));
+        history = history.slice(0, 5);
+      }
+      localStorage.setItem(STORAGE_KEY_YAMLS, JSON.stringify(history));
+      // Stocker le contenu YAML dans IndexedDB
+      if (yamlContent) saveYamlContentToIDB(filename, yamlContent);
+      loadYamlHistory();
+    }
+
+    function loadYamlHistory() {
+      const history = getSavedYamls();
+      if (history.length === 0) {
+        yamlHistorySection.classList.add('hidden');
+        return;
+      }
+      yamlHistorySection.classList.remove('hidden');
+      yamlHistoryList.innerHTML = history.map((item, idx) => `
+        <div class="flex items-center justify-between text-[11px] bg-slate-900/90 border border-slate-700/70 rounded-lg px-2.5 py-1.5 text-slate-300 font-mono">
+          <div class="truncate max-w-[150px] sm:max-w-[190px]">
+            <span class="font-semibold text-indigo-300 block truncate" title="${item.filename}">
+              <i class="fa-regular fa-file-code mr-1"></i>${item.filename}
+            </span>
+            <span class="text-[9px] text-slate-500">${item.routesCount} routes (${item.date})</span>
+          </div>
+          <button type="button" onclick="loadRoutesFromHistory(${idx})" 
+            class="px-2 py-1 bg-indigo-600/80 hover:bg-indigo-500 text-white rounded text-[10px] font-bold transition flex items-center gap-1 shadow-sm">
+            <i class="fa-solid fa-download"></i> Charger
+          </button>
+        </div>
+      `).join('');
+    }
+
+    window.loadRoutesFromHistory = async function(index) {
+      const history = getSavedYamls();
+      const item = history[index];
+      if (!item || !item.routes) return;
+
+      detectedRoutes = item.routes;
+      detectedTagOrder = item.tagOrder || [];
+      renderRoutesList(item.routes, item.tagOrder || []);
+      submitBtn.disabled = true; // désactivé le temps de récupérer le contenu YAML depuis IDB
+
+      activeSourceBadge.classList.remove('hidden');
+      activeSourceBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Chargement depuis l'historique...`;
+      specFile.value = "";
+
+      const yamlContent = await getYamlContentFromIDB(item.filename);
+      cachedYamlContent = yamlContent;
+
+      detectedRoutes = item.routes;
+      detectedTagOrder = item.tagOrder || [];
+      cachedYamlContent = yamlContent;
+
+      if (!yamlContent) {
+        activeSourceBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Historique chargé : ${item.filename} <span class="text-amber-400">(re-sélectionnez le fichier YAML pour valider)</span>`;
+        submitBtn.disabled = true;
+        paramsSection.classList.add('hidden');
+      } else {
+        activeSourceBadge.innerHTML = `<i class="fa-solid fa-box-archive mr-1"></i> Chargé depuis l'historique : ${item.filename}`;
+        renderRoutesList(item.routes, item.tagOrder || []);
+        renderParamsSection(item.routes);
+        updateSubmitState();
+      }
+    };
+
+    clearYamlHistoryBtn.addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY_YAMLS);
+      clearAllYamlContentsFromIDB();
+      cachedYamlContent = null;
+      loadYamlHistory();
+    });
+
+    // ----------------------------------------------------
+    // PERSISTANCE DES PARAMÈTRES PAR URL CIBLE
+    // ----------------------------------------------------
+
+    /**
+     * Sauvegarde les valeurs des champs paramètres dans localStorage,
+     * indexées par URL cible. Conserve les entrées des autres URLs.
+     */
+    function saveParamValues() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_PARAMS) || '{}');
+        all[url] = collectUserParams();
+        localStorage.setItem(STORAGE_KEY_PARAMS, JSON.stringify(all));
+      } catch (e) { /* silencieux */ }
+    }
+
+    /**
+     * Restaure les valeurs des champs paramètres pour l'URL cible courante.
+     * N'écrase que les champs dont une valeur a été sauvegardée.
+     */
+    function loadParamValues() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_PARAMS) || '{}');
+        const saved = all[url];
+        if (!saved) return;
+        // Restaurer la locale globale séparément (pas un champ de la grille)
+        if (saved.locale) {
+          const localeInput = document.getElementById('globalLocale');
+          if (localeInput) localeInput.value = saved.locale;
+        }
+        Object.entries(saved).forEach(([name, value]) => {
+          if (name === 'locale') return; // déjà traité ci-dessus
+          const input = document.querySelector(`[data-param-name="${name}"]`);
+          if (input && value) {
+            input.value = String(value);
+            // Marquer visuellement comme valeur restaurée (bordure indigo subtile)
+            input.classList.remove('border-slate-600', 'border-emerald-500', 'bg-emerald-950/20');
+            input.classList.add('border-indigo-500/60');
+            const label = input.closest('.flex.flex-col')?.querySelector('label');
+            if (label && !label.querySelector('.auto-badge') && !label.querySelector('.saved-badge')) {
+              const badge = document.createElement('span');
+              badge.className = 'saved-badge text-[9px] font-bold px-1 py-0.5 rounded bg-indigo-950 border border-indigo-700 text-indigo-400 ml-1';
+              badge.title = `Valeur sauvegardée pour ${url}`;
+              badge.textContent = 'saved';
+              label.appendChild(badge);
+            }
+          }
+        });
+      } catch (e) { /* silencieux */ }
+    }
+
+    // Debounce pour éviter de sauvegarder à chaque frappe
+    let _saveParamTimer = null;
+    function debouncedSaveParams() {
+      clearTimeout(_saveParamTimer);
+      _saveParamTimer = setTimeout(saveParamValues, 500);
+    }
+
+    // ----------------------------------------------------
+    // VERROUILLAGE DES CHAMPS (lock) — par URL cible
+    // ----------------------------------------------------
+    const STORAGE_KEY_LOCKS = 'validator_param_locks_by_url';
+
+    function getLockedParams() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return new Set();
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_LOCKS) || '{}');
+        return new Set(all[url] || []);
+      } catch { return new Set(); }
+    }
+
+    function isParamLocked(paramName) {
+      return getLockedParams().has(paramName);
+    }
+
+    function setParamLock(paramName, locked) {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_LOCKS) || '{}');
+        const set = new Set(all[url] || []);
+        if (locked) set.add(paramName); else set.delete(paramName);
+        all[url] = Array.from(set);
+        localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+
+    /**
+     * Applique le style visuel du cadenas (ouvert/fermé) sur un bouton et sa carte.
+     */
+    function applyLockStyle(btn, paramName, locked) {
+      const card = paramsContainer.querySelector(`[data-param-card="${paramName}"]`);
+      const input = paramsContainer.querySelector(`[data-param-name="${paramName}"]`);
+      const icon = btn.querySelector('i');
+      if (locked) {
+        btn.classList.remove('bg-slate-700', 'border-slate-600', 'text-slate-400');
+        btn.classList.add('bg-amber-600', 'border-amber-500', 'text-white');
+        btn.title = 'Champ verrouillé — cliquer pour déverrouiller';
+        icon?.classList.remove('fa-lock-open');
+        icon?.classList.add('fa-lock');
+        card?.classList.add('border-amber-600/50');
+      } else {
+        btn.classList.add('bg-slate-700', 'border-slate-600', 'text-slate-400');
+        btn.classList.remove('bg-amber-600', 'border-amber-500', 'text-white');
+        btn.title = 'Verrouiller ce champ (le pré-remplissage ne l\'écrasera plus)';
+        icon?.classList.remove('fa-lock');
+        icon?.classList.add('fa-lock-open');
+        card?.classList.remove('border-amber-600/50');
+      }
+    }
+
+    // ----------------------------------------------------
+    // SECTION PARAMÈTRES
+    // ----------------------------------------------------
+
+    /**
+     * Construit la map des paramètres uniques à partir des routes.
+     * Clé = nom du paramètre, valeur = { param (définition), routes (liste des routes qui l'utilisent) }
+     */
+    function buildParamMap(routes) {
+      const map = new Map();
+      routes.forEach(route => {
+        (route.parameters || []).forEach(p => {
+          // locale est géré par le champ global — on ne l'affiche pas comme champ individuel
+          if (p.name === 'locale') return;
+          if (!map.has(p.name)) {
+            map.set(p.name, { param: p, routes: [] });
+          }
+          map.get(p.name).routes.push(route);
+        });
+      });
+      return map;
+    }
+
+    /**
+     * Affiche la section paramètres avec un champ par paramètre unique.
+     * Chaque champ a un bouton info avec tooltip listant les routes qui l'utilisent.
+     */
+    function renderParamsSection(routes) {
+      paramMap = buildParamMap(routes);
+
+      if (paramMap.size === 0) {
+        paramsSection.classList.add('hidden');
+        return;
+      }
+
+      const methodColors = {
+        GET: 'text-emerald-400 bg-emerald-950/60 border-emerald-800',
+        POST: 'text-sky-400 bg-sky-950/60 border-sky-800',
+        PUT: 'text-amber-400 bg-amber-950/60 border-amber-800',
+        DELETE: 'text-rose-400 bg-rose-950/60 border-rose-800',
+        PATCH: 'text-purple-400 bg-purple-950/60 border-purple-800',
+      };
+
+      paramsContainer.innerHTML = Array.from(paramMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, entry]) => {
+        const { param, routes: usedBy } = entry;
+        const isPath = param.in === 'path';
+        const isRequired = param.required;
+
+        // Valeur par défaut : example ou default du YAML
+        const defaultVal = param.example ?? param.schema?.example ?? param.schema?.default ?? '';
+
+        // Badge type
+        const typeBadge = isPath
+          ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-violet-950/80 border border-violet-700 text-violet-300">path</span>'
+          : '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-950/80 border border-sky-700 text-sky-300">query</span>';
+
+        // Contenu du tooltip : liste des routes qui utilisent ce paramètre
+        const tooltipRoutes = usedBy.map(r => {
+          const color = methodColors[r.method] || 'text-slate-300 bg-slate-800 border-slate-600';
+          return `<span class="flex items-center gap-1.5 font-mono text-[10px]">
+            <span class="font-bold px-1 py-0.5 rounded border text-[9px] ${color}">${r.method}</span>
+            <span class="text-slate-300 truncate">${r.path}</span>
+          </span>`;
+        }).join('');
+
+        return `
+          <div class="flex flex-col gap-1.5 bg-slate-900/70 rounded-lg p-3 border border-slate-700/60 param-card" data-param-card="${name}">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 min-w-0">
+                ${typeBadge}
+                <label class="text-xs font-mono font-semibold text-slate-200 truncate" for="param-${name}">
+                  ${name}${isRequired ? ' <span class="text-rose-400">*</span>' : ''}
+                </label>
+              </div>
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <!-- Bouton cadenas -->
+                <button type="button"
+                  data-lock-for="${name}"
+                  class="lock-btn w-5 h-5 rounded-full bg-slate-700 hover:bg-amber-600 border border-slate-600 hover:border-amber-500 text-slate-400 hover:text-white transition flex items-center justify-center text-[10px]"
+                  title="Verrouiller ce champ (le pré-remplissage ne l'écrasera plus)">
+                  <i class="fa-solid fa-lock-open"></i>
+                </button>
+                <!-- Bouton info + tooltip -->
+                <div class="relative group">
+                  <button type="button"
+                    class="w-5 h-5 rounded-full bg-slate-700 hover:bg-indigo-600 border border-slate-600 hover:border-indigo-500 text-slate-400 hover:text-white transition flex items-center justify-center text-[10px]"
+                    aria-label="Voir les routes utilisant ${name}">
+                    <i class="fa-solid fa-circle-info"></i>
+                  </button>
+                  <div class="absolute right-0 top-6 z-20 hidden group-hover:flex flex-col gap-1.5 bg-slate-800 border border-slate-600 rounded-lg shadow-xl p-2.5 min-w-[260px] max-w-xs">
+                    <span class="text-[10px] text-slate-400 font-semibold mb-0.5">Utilisé par ${usedBy.length} route(s) :</span>
+                    ${tooltipRoutes}
+                    ${param.description ? `<span class="text-[10px] text-slate-500 italic mt-1 border-t border-slate-700 pt-1">${param.description}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <input
+              type="text"
+              id="param-${name}"
+              data-param-name="${name}"
+              class="param-input w-full bg-slate-800 border border-slate-600 rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+              placeholder="${defaultVal !== '' ? String(defaultVal) : name}"
+              value="${defaultVal !== '' ? String(defaultVal) : ''}">
+          </div>
+        `;
+      }).join('');
+
+      paramsSection.classList.remove('hidden');
+
+      // Restaurer les valeurs sauvegardées pour l'URL cible courante
+      loadParamValues();
+
+      // Sauvegarder automatiquement à chaque modification (debounce 500ms)
+      paramsContainer.querySelectorAll('.param-input').forEach(input => {
+        input.addEventListener('input', debouncedSaveParams);
+      });
+
+      // Brancher les boutons cadenas + restaurer l'état verrouillé sauvegardé
+      paramsContainer.querySelectorAll('.lock-btn').forEach(btn => {
+        const paramName = btn.dataset.lockFor;
+        if (isParamLocked(paramName)) applyLockStyle(btn, paramName, true);
+        btn.addEventListener('click', () => {
+          const nowLocked = !isParamLocked(paramName);
+          setParamLock(paramName, nowLocked);
+          applyLockStyle(btn, paramName, nowLocked);
+        });
+      });
+
+      // Réinitialiser la barre de progression du pré-remplissage
+      const prefillProgress = document.getElementById('prefillProgress');
+      const prefillProgressBar = document.getElementById('prefillProgressBar');
+      if (prefillProgress) {
+        prefillProgress.classList.add('hidden');
+        prefillProgressBar.style.width = '0%';
+        prefillProgressBar.className = 'bg-indigo-500 h-1.5 rounded-full transition-all duration-300';
+      }
+
+      // Afficher la section des corps de requêtes JSON
+      renderBodiesSection(routes);
+    }
+
+    /**
+     * Clé unique d'une route pour la map des bodies : "METHOD path"
+     */
+    function routeBodyKey(route) {
+      return `${route.method.toUpperCase()} ${route.path}`;
+    }
+
+    /**
+     * Affiche un éditeur JSON par route ayant un requestBody (POST/PUT/PATCH/DELETE).
+     * Pré-remplit chaque éditeur avec le squelette généré depuis le YAML (bodyTemplate).
+     */
+    function renderBodiesSection(routes) {
+      const bodyRoutes = (routes || []).filter(r => r.hasBody && r.bodyTemplate);
+
+      if (bodyRoutes.length === 0) {
+        bodiesSection.classList.add('hidden');
+        bodiesContainer.innerHTML = '';
+        return;
+      }
+
+      const methodColors = {
+        GET: 'text-emerald-400 bg-emerald-950/60 border-emerald-800',
+        POST: 'text-sky-400 bg-sky-950/60 border-sky-800',
+        PUT: 'text-amber-400 bg-amber-950/60 border-amber-800',
+        DELETE: 'text-rose-400 bg-rose-950/60 border-rose-800',
+        PATCH: 'text-purple-400 bg-purple-950/60 border-purple-800',
+      };
+
+      // Valeurs sauvegardées pour cette URL (bodies édités précédemment)
+      const savedBodies = getSavedBodies();
+
+      bodiesContainer.innerHTML = bodyRoutes.map((r, i) => {
+        const key = routeBodyKey(r);
+        const badge = methodColors[r.method] || 'text-slate-300 bg-slate-800 border-slate-700';
+        const editorId = `body-editor-${i}`;
+        // Valeur : body sauvegardé pour cette URL sinon squelette du YAML
+        const value = (savedBodies[key] !== undefined) ? savedBodies[key] : r.bodyTemplate;
+
+        return `
+          <div class="body-card rounded-lg border border-slate-700/60 bg-slate-900/70 overflow-hidden" data-body-key="${key}">
+            <div class="flex items-center gap-2 px-3 py-2 bg-slate-800/80 border-b border-slate-700/60 cursor-pointer select-none"
+                 onclick="toggleBodyEditor('${editorId}')">
+              <i id="${editorId}-chevron" class="fa-solid fa-chevron-down text-slate-500 text-[9px] transition-transform"></i>
+              <span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border ${badge}">${r.method}</span>
+              <span class="font-mono text-slate-200 text-xs truncate">${r.path}</span>
+              ${r.bodySchemaName ? `<span class="text-[10px] text-slate-500 ml-1">(${r.bodySchemaName})</span>` : ''}
+              <button type="button" onclick="event.stopPropagation(); resetBodyEditor('${editorId}', ${i})"
+                class="ml-auto text-[10px] text-slate-500 hover:text-indigo-400 transition px-2 py-0.5 rounded border border-slate-700 hover:border-indigo-700"
+                title="Réinitialiser au squelette du YAML">
+                <i class="fa-solid fa-rotate-left mr-1"></i>Réinitialiser
+              </button>
+            </div>
+            <div id="${editorId}-wrap">
+              <textarea id="${editorId}" data-body-key="${key}"
+                class="body-editor w-full bg-slate-950 text-sky-300 font-mono text-[11px] p-3 focus:outline-none resize-y leading-relaxed"
+                rows="8" spellcheck="false">${value.replace(/</g, '&lt;')}</textarea>
+              <div id="${editorId}-error" class="hidden px-3 py-1.5 text-[10px] text-rose-400 bg-rose-950/40 border-t border-rose-900/50"></div>
+            </div>
+          </div>`;
+      }).join('');
+
+      bodiesSection.classList.remove('hidden');
+
+      // Stocker les templates originaux pour le bouton "Réinitialiser"
+      bodiesContainer._templates = bodyRoutes.map(r => r.bodyTemplate);
+
+      // Validation JSON en direct + sauvegarde à chaque modification
+      bodiesContainer.querySelectorAll('.body-editor').forEach(ta => {
+        ta.addEventListener('input', () => {
+          validateBodyEditor(ta);
+          debouncedSaveBodies();
+        });
+        validateBodyEditor(ta);
+      });
+    }
+
+    // Valide le JSON d'un éditeur et affiche une erreur inline si invalide
+    function validateBodyEditor(textarea) {
+      const errBox = document.getElementById(textarea.id + '-error');
+      const val = textarea.value.trim();
+      if (val === '') {
+        errBox?.classList.add('hidden');
+        textarea.classList.remove('ring-1', 'ring-rose-500');
+        return true;
+      }
+      // On retire d'abord les placeholders {{...}} pour valider la structure JSON
+      const testStr = val.replace(/\{\{\s*[\w.-]+\s*\}\}/g, '"__placeholder__"');
+      try {
+        JSON.parse(testStr);
+        errBox?.classList.add('hidden');
+        textarea.classList.remove('ring-1', 'ring-rose-500');
+        return true;
+      } catch (e) {
+        if (errBox) {
+          errBox.textContent = 'JSON invalide : ' + e.message;
+          errBox.classList.remove('hidden');
+        }
+        textarea.classList.add('ring-1', 'ring-rose-500');
+        return false;
+      }
+    }
+
+    window.toggleBodyEditor = function(editorId) {
+      const wrap = document.getElementById(editorId + '-wrap');
+      const chevron = document.getElementById(editorId + '-chevron');
+      if (!wrap) return;
+      const collapsed = wrap.classList.toggle('hidden');
+      chevron?.classList.toggle('rotate-[-90deg]', collapsed);
+    };
+
+    window.resetBodyEditor = function(editorId, index) {
+      const ta = document.getElementById(editorId);
+      const tpl = bodiesContainer._templates?.[index];
+      if (ta && tpl !== undefined) {
+        ta.value = tpl;
+        validateBodyEditor(ta);
+        debouncedSaveBodies();
+      }
+    };
+
+    /**
+     * Collecte les corps JSON édités, indexés par "METHOD path".
+     * Retourne un objet { "POST /api/...": "<json string>" }.
+     */
+    function collectRequestBodies() {
+      const result = {};
+      bodiesContainer.querySelectorAll('.body-editor').forEach(ta => {
+        const key = ta.dataset.bodyKey;
+        const val = ta.value.trim();
+        if (key && val !== '') result[key] = val;
+      });
+      return result;
+    }
+
+    // ── Persistance des bodies par URL ────────────────────────────────────
+    const STORAGE_KEY_BODIES = 'validator_bodies_by_url';
+
+    function getSavedBodies() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return {};
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_BODIES) || '{}');
+        return all[url] || {};
+      } catch { return {}; }
+    }
+
+    function saveBodies() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_BODIES) || '{}');
+        all[url] = collectRequestBodies();
+        localStorage.setItem(STORAGE_KEY_BODIES, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+
+    let _saveBodiesTimer = null;
+    function debouncedSaveBodies() {
+      clearTimeout(_saveBodiesTimer);
+      _saveBodiesTimer = setTimeout(saveBodies, 500);
+    }
+
+    /**
+     * Collecte les valeurs saisies dans les champs paramètres.
+     * Retourne un objet { paramName: valeur } pour tous les champs remplis.
+     */
+    function collectUserParams() {
+      const result = {};
+      document.querySelectorAll('.param-input').forEach(input => {
+        const name = input.dataset.paramName;
+        const value = input.value.trim();
+        if (name && value !== '') result[name] = value;
+      });
+      // Injecter la locale globale (utilisée par toutes les routes qui l'exigent)
+      const localeVal = document.getElementById('globalLocale')?.value.trim();
+      if (localeVal) result.locale = localeVal;
+      return result;
+    }
+
+    // ----------------------------------------------------
+    // PRÉ-REMPLISSAGE AUTOMATIQUE
+    // ----------------------------------------------------
+
+    /**
+     * Graphe de dépendances basé sur le schéma de flux API VVW + changelog unified-backoffice-api.
+     *
+     * Chaque étape :
+     *  - sourceRoute   : route à appeler
+     *  - requiredParams: params que l'utilisateur ou une étape précédente doit avoir fourni
+     *  - injectBefore  : valeurs à injecter dans les champs AVANT l'appel (defaults documentés)
+     *  - extract       : tableau de mappings { pick(body)→valeur, targetParam, silent? }
+     *      silent=true  → ne pas écraser si le champ est déjà renseigné manuellement
+     *
+     * Ordre = ordre d'exécution. Les dépendances sont toujours en amont.
+     */
+    const PREFILL_GRAPH = [
+
+      // ── CATALOGUE : Famille ──────────────────────────────────────────────
+      // findParentFamilies : GET ?code[] (optionnel, "default" par convention)
+      // → retourne ParentFamily[] avec parentFamilyCode
+      {
+        label: 'Familles parentes → parentFamilyCode',
+        sourceRoute: { path: '/api/v1/family/findParentFamilies', method: 'GET' },
+        requiredParams: [],
+        injectBefore: { code: 'default' }, // paramètre optionnel, valeur par convention
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data ?? b?.parentFamilies ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              // L'entité ParentFamily expose parentFamilyCode
+              return first?.parentFamilyCode ?? first?.code;
+            },
+            targetParam: 'parentFamilyCode',
+          },
+        ],
+      },
+
+      // readParentFamily : GET ?parentFamilyCode[] (obligatoire)
+      // → retourne ParentFamily avec ses Family[] imbriquées, chacune ayant familyCode
+      {
+        label: 'Famille parente → familyCode',
+        sourceRoute: { path: '/api/v1/family/readParentFamily', method: 'GET' },
+        requiredParams: ['parentFamilyCode'],
+        extract: [
+          {
+            pick: b => {
+              const item = Array.isArray(b?.data) ? b.data[0] : (b?.data ?? b);
+              // ParentFamily contient families[] (entité Family), chacune avec familyCode
+              const families = item?.families ?? item?.children ?? [];
+              const first = Array.isArray(families) ? families[0] : null;
+              return first?.familyCode ?? first?.code;
+            },
+            targetParam: 'familyCode',
+          },
+        ],
+      },
+
+      // readFamily : GET ?familyCode[] (obligatoire)
+      // → retourne Family[] — confirme familyCode, extrait themeCode si présent
+      {
+        label: 'Lecture famille → themeCode',
+        sourceRoute: { path: '/api/v1/family/readFamily', method: 'GET' },
+        requiredParams: ['familyCode'],
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data ?? b?.families ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              // Family expose themeCodes[] depuis v1.7.0
+              const themes = first?.themeCodes ?? first?.themes ?? [];
+              return Array.isArray(themes) ? themes[0] : themes;
+            },
+            targetParam: 'themeCode',
+            silent: true,
+          },
+        ],
+      },
+
+      // ── CATALOGUE : Offres ───────────────────────────────────────────────
+      // findOfferCodesByFamily : GET ?familyCode[] (obligatoire)
+      // Params optionnels (v1.11.1) : availabilityQuantityMin, availabilityDay
+      // → retourne FamilyOfferRef[] avec offerCode
+      {
+        label: 'Codes offres par famille → offerCode',
+        sourceRoute: { path: '/api/v1/offer/findOfferCodesByFamily', method: 'GET' },
+        requiredParams: ['familyCode'],
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data ?? b?.offerCodes ?? b?.offers ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              // FamilyOfferRef expose offerCode
+              return first?.offerCode ?? first?.code ?? (typeof first === 'string' ? first : undefined);
+            },
+            targetParam: 'offerCode',
+          },
+        ],
+      },
+
+      // readOffer : GET ?offerCode[] (obligatoire)
+      // → retourne Offer[] avec offerCode, locale, deliveryLanguages, themeCodes
+      {
+        label: 'Détails offre → offerCode confirmé',
+        sourceRoute: { path: '/api/v1/offer/readOffer', method: 'GET' },
+        requiredParams: ['offerCode'],
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data ?? b?.offers ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              return first?.offerCode ?? first?.code;
+            },
+            targetParam: 'offerCode',
+            silent: true, // ne pas écraser, juste confirmer que la route répond
+          },
+        ],
+      },
+
+      // findFirstAvailableDate : GET ?offerCode (obligatoire) | productCode (optionnel)
+      // → retourne { date } — première date disponible
+      {
+        label: 'Première date disponible → dateFrom / dateTo',
+        sourceRoute: { path: '/api/v1/offer/findFirstAvailableDate', method: 'GET' },
+        requiredParams: ['offerCode'],
+        extract: [
+          {
+            pick: b => {
+              const d = b?.data?.date ?? b?.date ?? b?.firstAvailableDate;
+              return d ? String(d).substring(0, 10) : undefined;
+            },
+            targetParam: 'dateFrom',
+          },
+          {
+            pick: b => {
+              const d = b?.data?.date ?? b?.date ?? b?.firstAvailableDate;
+              return d ? String(d).substring(0, 10) : undefined;
+            },
+            targetParam: 'dateTo',
+            silent: true, // dateFrom et dateTo identiques au départ, l'utilisateur ajuste dateTo
+          },
+        ],
+      },
+
+      // ── CATALOGUE : Produits ─────────────────────────────────────────────
+      // findProductCodes : GET ?offerCode (obligatoire) | performanceCode, familyCode (optionnels)
+      // → retourne FindProductCodesRes avec productCodes[]
+      {
+        label: 'Codes produits → productCode',
+        sourceRoute: { path: '/api/v1/product/findProductCodes', method: 'GET' },
+        requiredParams: ['offerCode'],
+        extract: [
+          {
+            pick: b => {
+              // FindProductCodesRes expose productCodes (array de strings ou d'objets)
+              const list = b?.data?.productCodes ?? b?.productCodes ?? b?.data ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              return first?.productCode ?? first?.code ?? (typeof first === 'string' ? first : undefined);
+            },
+            targetParam: 'productCode',
+          },
+        ],
+      },
+
+      // readProduct : GET ?productCode[] (obligatoire)
+      // → retourne Product[] avec productCode, quotaCode (v1.11.13), groupCode (v1.11.12)
+      {
+        label: 'Détails produit → quotaCode',
+        sourceRoute: { path: '/api/v1/product/readProduct', method: 'GET' },
+        requiredParams: ['productCode'],
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data ?? b?.products ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              // quotaCode ajouté en v1.11.13
+              return first?.quotaCode;
+            },
+            targetParam: 'quotaCode',
+            silent: true,
+          },
+        ],
+      },
+
+      // ── PLANNING : Performances ──────────────────────────────────────────
+      // findCalendarDays : GET ?dateFrom + dateTo (obligatoires), offerCode | familyCode (optionnels)
+      // themeCode optionnel (v1.8.12), deliveryLanguageCode optionnel
+      {
+        label: 'Jours disponibles → jours calendrier',
+        sourceRoute: { path: '/api/v1/performance/findCalendarDays', method: 'GET' },
+        requiredParams: ['dateFrom', 'dateTo'],
+        extract: [
+          {
+            pick: b => {
+              // Day[] → on prend la date du premier jour disponible
+              const list = b?.data?.days ?? b?.days ?? b?.data ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              return first?.date ? String(first.date).substring(0, 10) : undefined;
+            },
+            targetParam: 'date',
+          },
+        ],
+      },
+
+      // findPerformanceByDay : GET ?date (obligatoire), offerCode | familyCode (optionnels)
+      // → retourne Performance[] avec performanceCode
+      {
+        label: 'Performances du jour → performanceCode',
+        sourceRoute: { path: '/api/v1/performance/findPerformanceByDay', method: 'GET' },
+        requiredParams: ['date', 'offerCode'],
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data ?? b?.performances ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              // Performance expose performanceCode
+              return first?.performanceCode ?? first?.code;
+            },
+            targetParam: 'performanceCode',
+          },
+        ],
+      },
+
+      // findQuotaByPerformance : GET ?offerCode | performanceCode (obligatoires)
+      // Ajouté en v1.11.13 → retourne Quota[]
+      {
+        label: 'Quotas par performance → sectionCode',
+        sourceRoute: { path: '/api/v1/performance/findQuotaByPerformance', method: 'GET' },
+        requiredParams: ['performanceCode'],
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data ?? b?.quotas ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              // Quota → sectionCode utilisé par /seat/bestSeat
+              return first?.sectionCode ?? first?.quotaCode;
+            },
+            targetParam: 'sectionCode',
+            silent: true,
+          },
+        ],
+      },
+
+      // ── AUTH / ACCOUNT ───────────────────────────────────────────────────
+      // signin : POST login + password → SigninRes avec accountCode, organizationAccountCode (v1.8.13)
+      {
+        label: 'Signin → accountCode',
+        sourceRoute: { path: '/api/v1/auth/signin', method: 'POST' },
+        requiredParams: [],
+        extract: [
+          {
+            pick: b => b?.data?.accountCode ?? b?.accountCode,
+            targetParam: 'accountCode',
+          },
+          {
+            // organizationAccountCode ajouté en v1.8.13
+            pick: b => b?.data?.organizationAccountCode ?? b?.organizationAccountCode,
+            targetParam: 'organizationAccountCode',
+            silent: true,
+          },
+        ],
+      },
+
+      // searchAccount : POST (paginated) → Account[] avec accountCode
+      // Utilise Pagination : pageSize est obligatoire depuis v1.10.3
+      {
+        label: 'Recherche compte → accountCode',
+        sourceRoute: { path: '/api/v1/account/searchAccount', method: 'POST' },
+        requiredParams: [],
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data?.results ?? b?.results ?? b?.data ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              return first?.accountCode ?? first?.code;
+            },
+            targetParam: 'accountCode',
+            silent: true,
+          },
+        ],
+      },
+
+      // ── COMMANDES / TICKETS ──────────────────────────────────────────────
+      // searchOrder : POST (paginated) → SearchOrderRes avec orderCode
+      {
+        label: 'Recherche commandes → orderCode',
+        sourceRoute: { path: '/api/v1/order/searchOrder', method: 'POST' },
+        requiredParams: [],
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data?.results ?? b?.results ?? b?.data ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              return first?.orderCode ?? first?.saleCode ?? first?.externalOrderCode;
+            },
+            targetParam: 'orderCode',
+            silent: true,
+          },
+        ],
+      },
+
+      // searchOrderTickets : POST (paginated) → tickets avec mediaCode, ticketCode, orderCode
+      {
+        label: 'Recherche tickets → mediaCode / ticketCode',
+        sourceRoute: { path: '/api/v1/order/searchOrderTickets', method: 'POST' },
+        requiredParams: [],
+        extract: [
+          {
+            pick: b => {
+              const list = b?.data?.results ?? b?.results ?? b?.data ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              return first?.mediaCode;
+            },
+            targetParam: 'mediaCode',
+          },
+          {
+            pick: b => {
+              const list = b?.data?.results ?? b?.results ?? b?.data ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              return first?.ticketCode ?? first?.mediaCode;
+            },
+            targetParam: 'ticketCode',
+            silent: true,
+          },
+          {
+            pick: b => {
+              const list = b?.data?.results ?? b?.results ?? b?.data ?? b;
+              const first = Array.isArray(list) ? list[0] : list;
+              return first?.orderCode ?? first?.saleCode;
+            },
+            targetParam: 'orderCode',
+            silent: true,
+          },
+        ],
+      },
+
+    ];
+
+    /**
+     * Helper : construit et envoie un mini-batch pour une seule route.
+     * Renvoie le responseBody du premier résultat, ou null en cas d'échec.
+     */
+    async function callRouteForPrefill(route, userParams) {
+      if (!cachedYamlContent) return null;
+
+      const fd = new FormData();
+      fd.set('spec', new Blob([cachedYamlContent], { type: 'application/x-yaml' }), 'spec.yaml');
+      fd.set('targetUrl', targetUrlInput.value);
+      fd.set('clientId', clientIdInput.value);
+      fd.set('clientSecret', clientSecretInput.value);
+      fd.set('scope', scopeInput.value);
+      fd.set('selectedRoutes', JSON.stringify([route]));
+      fd.set('userParams', JSON.stringify(userParams));
+      // Inclure le corps JSON de la route source si elle en a un (POST de recherche, etc.)
+      fd.set('requestBodies', JSON.stringify(collectRequestBodies()));
+
+      const t0 = Date.now();
+      try {
+        const res = await fetch('/api/validate-batch', { method: 'POST', body: fd });
+        const duration = Date.now() - t0;
+        if (!res.ok) {
+          window._consoleLog?.({ type: 'ERROR', route, status: res.status, error: `HTTP ${res.status}`, duration });
+          return null;
+        }
+        const data = await res.json();
+        const result = data?.results?.[0];
+        window._consoleLog?.({ type: 'PREFILL', route, status: result?.statusCode, responseBody: result?.responseBody, requestUrl: result?.requestUrl, duration });
+        return result?.responseBody ?? null;
+      } catch (e) {
+        window._consoleLog?.({ type: 'ERROR', route, error: e.message, duration: Date.now() - t0 });
+        return null;
+      }
+    }
+
+    /**
+     * Met à jour un champ paramètre et marque visuellement qu'il a été auto-rempli.
+     */
+    function setParamValue(paramName, value) {
+      const input = document.querySelector(`[data-param-name="${paramName}"]`);
+      if (!input) return false;
+      // Respecter le verrou : un champ verrouillé n'est jamais écrasé par le pré-remplissage
+      if (isParamLocked(paramName)) return false;
+      input.value = String(value);
+      // Highlight visuel : bordure verte + badge
+      input.classList.remove('border-slate-600');
+      input.classList.add('border-emerald-500', 'bg-emerald-950/20');
+      // Badge "auto" à côté du label
+      const label = input.closest('.flex.flex-col')?.querySelector('label');
+      if (label && !label.querySelector('.auto-badge')) {
+        const badge = document.createElement('span');
+        badge.className = 'auto-badge text-[9px] font-bold px-1 py-0.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-400 ml-1';
+        badge.textContent = 'auto';
+        label.appendChild(badge);
+      }
+      return true;
+    }
+
+    /**
+     * Lance le pré-remplissage automatique dans l'ordre du graphe.
+     * Ignore les étapes dont les requiredParams ne sont pas encore renseignés.
+     * Met à jour la barre de progression en temps réel.
+     */
+    async function autoPrefill() {
+      if (!cachedYamlContent) {
+        alert('Veuillez d\'abord charger un fichier YAML.');
+        return;
+      }
+      if (!targetUrlInput.value || !clientIdInput.value || !clientSecretInput.value) {
+        alert('Veuillez renseigner l\'URL cible et les identifiants OAuth2 avant le pré-remplissage.');
+        return;
+      }
+
+      const btn = document.getElementById('prefillBtn');
+      const progress = document.getElementById('prefillProgress');
+      const bar = document.getElementById('prefillProgressBar');
+      const label = document.getElementById('prefillProgressLabel');
+      const count = document.getElementById('prefillProgressCount');
+      const log = document.getElementById('prefillProgressLog');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> En cours...';
+      progress.classList.remove('hidden');
+      log.innerHTML = '';
+
+      // Filtrer les étapes dont la route est présente dans le YAML chargé
+      const availablePaths = new Set(detectedRoutes.map(r => r.method + ':' + r.path));
+      const steps = PREFILL_GRAPH.filter(step =>
+        availablePaths.has(step.sourceRoute.method + ':' + step.sourceRoute.path)
+      );
+
+      let filled = 0;
+      let skipped = 0;
+
+      for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
+        const pct = Math.round((i / steps.length) * 100);
+        bar.style.width = pct + '%';
+        label.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> ${step.label}`;
+        count.textContent = `${i + 1} / ${steps.length}`;
+
+        // Collecter les params courants (peut avoir été enrichi par les étapes précédentes)
+        const currentParams = collectUserParams();
+
+        // Injecter les valeurs par défaut définies dans le graphe (sans écraser ce qui est déjà renseigné)
+        if (step.injectBefore) {
+          for (const [paramName, defaultVal] of Object.entries(step.injectBefore)) {
+            if (!currentParams[paramName]) {
+              setParamValue(paramName, defaultVal);
+              currentParams[paramName] = String(defaultVal);
+            }
+          }
+        }
+
+        // Vérifier que les params requis sont disponibles
+        const missingRequired = step.requiredParams.filter(p => !currentParams[p]);
+        if (missingRequired.length > 0) {
+          log.innerHTML += `<div class="text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Ignoré : <span class="text-slate-300">${step.label}</span> (manque : ${missingRequired.join(', ')})</div>`;
+          skipped++;
+          continue;
+        }
+
+        const body = await callRouteForPrefill(step.sourceRoute, currentParams);
+
+        if (!body) {
+          log.innerHTML += `<div class="text-rose-400"><i class="fa-solid fa-xmark mr-1"></i> Échec : <span class="text-slate-300">${step.label}</span></div>`;
+          skipped++;
+          continue;
+        }
+
+        let stepFilled = 0;
+        for (const mapping of step.extract) {
+          const value = mapping.pick(body);
+          if (value === undefined || value === null || value === '') continue;
+
+          // Si silent=true, ne pas écraser un champ déjà renseigné manuellement
+          const existing = document.querySelector(`[data-param-name="${mapping.targetParam}"]`);
+          if (mapping.silent && existing?.value?.trim()) continue;
+
+          if (setParamValue(mapping.targetParam, value)) {
+            stepFilled++;
+            filled++;
+          }
+        }
+
+        const icon = stepFilled > 0 ? 'fa-check text-emerald-400' : 'fa-minus text-slate-500';
+        const msg = stepFilled > 0 ? `${stepFilled} champ(s) rempli(s)` : 'aucune valeur extraite';
+        log.innerHTML += `<div><i class="fa-solid ${icon} mr-1"></i> <span class="text-slate-300">${step.label}</span> — ${msg}</div>`;
+        log.scrollTop = log.scrollHeight;
+      }
+
+      // Finalisation
+      bar.style.width = '100%';
+      bar.classList.replace('bg-indigo-500', filled > 0 ? 'bg-emerald-500' : 'bg-amber-500');
+      label.innerHTML = filled > 0
+        ? `<i class="fa-solid fa-check text-emerald-400 mr-1"></i> Terminé — ${filled} champ(s) pré-rempli(s), ${skipped} étape(s) ignorée(s)`
+        : `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Terminé — aucune valeur obtenue`;
+      count.textContent = '';
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Pré-remplissage automatique';
+
+      // Sauvegarder les valeurs obtenues par le pré-remplissage
+      saveParamValues();
+    }
+
+    document.getElementById('prefillBtn').addEventListener('click', autoPrefill);
+
+    // ----------------------------------------------------
+    // PARSER YAML
+    // ----------------------------------------------------
+    /**
+     * Analyse automatiquement la spec sélectionnée (version embarquée ou fichier uploadé).
+     * Appelée directement au changement de version/fichier — plus de bouton dédié.
+     */
+    async function analyzeSpec() {
+      const selectedVersion = specVersionSelect.value;
+      const uploadedFile = specFile.files[0];
+      if (!selectedVersion && !uploadedFile) return;
+
+      try {
+        let yamlContent;
+        let sourceName;
+
+        if (uploadedFile) {
+          yamlContent = await uploadedFile.text();
+          sourceName = uploadedFile.name;
+        } else {
+          const specRes = await fetch(`/api/spec/${encodeURIComponent(selectedVersion)}`);
+          if (!specRes.ok) throw new Error('Impossible de charger la version sélectionnée.');
+          yamlContent = await specRes.text();
+          sourceName = selectedVersion;
+        }
+
+        activeSourceBadge.classList.remove('hidden');
+        activeSourceBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analyse de ${sourceName}...`;
+
+        await parseAndRenderYaml(yamlContent, sourceName);
+      } catch (err) {
+        alert('Erreur d\'analyse : ' + err.message);
+      }
+    }
+
+    /**
+     * Envoie le contenu YAML au serveur pour extraction des routes, puis met à jour l'UI.
+     * Factorisé pour être réutilisé par l'upload de fichier ET la sélection de version.
+     */
+    async function parseAndRenderYaml(yamlContent, sourceName) {
+      const formData = new FormData();
+      formData.append('spec', new Blob([yamlContent], { type: 'application/x-yaml' }), 'spec.yaml');
+
+      const res = await fetch('/api/parse-routes', { method: 'POST', body: formData });
+      const responseText = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        throw new Error(`Le serveur a renvoyé un statut invalide (${res.status}).`);
+      }
+
+      if (!res.ok) throw new Error(data.error || 'Erreur lors du traitement.');
+
+      detectedRoutes = data.routes;
+      detectedTagOrder = data.tagOrder || [];
+      cachedYamlContent = yamlContent;
+      renderRoutesList(data.routes, data.tagOrder || []);
+      renderParamsSection(data.routes);
+      updateSubmitState();
+
+      activeSourceBadge.classList.remove('hidden');
+      activeSourceBadge.innerHTML = `<i class="fa-solid fa-file-code mr-1"></i> Spec active : ${sourceName}`;
+
+      saveYamlToHistory(sourceName, data.routes, yamlContent, data.tagOrder || []);
+
+      // Rafraîchir les badges de statut des scénarios (le YAML a changé → statuts invalidés)
+      if (typeof loadScenarioBadges === 'function') loadScenarioBadges();
+    }
+
+    /**
+     * Charge la liste des versions embarquées et remplit le sélecteur.
+     */
+    async function loadSpecVersions() {
+      try {
+        const res = await fetch('/api/spec-versions');
+        const data = await res.json();
+        const versions = data.versions || [];
+        if (versions.length === 0) {
+          specVersionSelect.innerHTML = '<option value="">Aucune version dans la bibliothèque</option>';
+          return;
+        }
+        specVersionSelect.innerHTML = '<option value="">-- Choisir une version --</option>' +
+          versions.map(v => `<option value="${v.filename}">${v.label}</option>`).join('');
+      } catch (e) {
+        specVersionSelect.innerHTML = '<option value="">Erreur de chargement des versions</option>';
+      }
+    }
+
+    // Sélection d'une version → vide l'upload et analyse automatiquement
+    specVersionSelect.addEventListener('change', () => {
+      if (specVersionSelect.value) {
+        specFile.value = '';
+        analyzeSpec();
+      }
+    });
+
+    // Sélection d'un fichier → désélectionne la version et analyse automatiquement
+    specFile.addEventListener('change', () => {
+      if (specFile.files[0]) {
+        specVersionSelect.value = '';
+        analyzeSpec();
+      }
+    });
+
+    // Charger les versions au démarrage
+    loadSpecVersions();
+
+    // ==================================================================
+    // MODE SCÉNARIOS DE TEST
+    // ==================================================================
+
+    /**
+     * Définition des scénarios en dur.
+     *  - startFields : champs de départ (name, label, type, default, autocomplete)
+     *  - steps : étapes chaînées { label, route, body?, extract[] }
+     *      extract : { pick(body) → valeur, targetParam }
+     */
+    /**
+     * Aplatit les codes offres depuis la réponse de findOfferCodesByFamily.
+     * Structure réelle : { families: [{ familyCode, offerRefs: [{ code }] }] }
+     * Gère aussi les variantes (offerRefs racine, data.families, tableau de strings).
+     */
+    function flattenOfferCodes(b) {
+      const families = b?.families ?? b?.data?.families ?? (Array.isArray(b) ? b : null);
+      const out = [];
+      if (Array.isArray(families)) {
+        families.forEach(fam => {
+          const refs = fam?.offerRefs ?? fam?.offers ?? [];
+          (Array.isArray(refs) ? refs : [refs]).forEach(r => {
+            const code = (typeof r === 'string') ? r : (r?.code ?? r?.offerCode);
+            if (code) out.push(String(code));
+          });
+        });
+      }
+      // Fallback : offerRefs directement à la racine
+      if (out.length === 0) {
+        const refs = b?.offerRefs ?? b?.data?.offerRefs ?? [];
+        (Array.isArray(refs) ? refs : [refs]).forEach(r => {
+          const code = (typeof r === 'string') ? r : (r?.code ?? r?.offerCode);
+          if (code) out.push(String(code));
+        });
+      }
+      return [...new Set(out)];
+    }
+
+    /**
+     * Aplatit les codes de performance depuis la réponse de findPerformanceByDay.
+     * Gère : chaîne directe, objet { performanceCode }, objet { code },
+     * ou performanceCode lui-même sous forme d'objet { code }.
+     */
+    function flattenPerformanceCodes(b) {
+      const src = b?.performances ?? b?.data?.performances ?? b?.data ?? b;
+      const arr = Array.isArray(src) ? src : [src];
+      const out = arr.map(f => {
+        if (typeof f === 'string') return f;
+        // performanceCode peut être une chaîne ou un objet { code }
+        const pc = f?.performanceCode;
+        if (typeof pc === 'string') return pc;
+        if (pc && typeof pc === 'object') return pc.code ?? pc.value;
+        // sinon on tente f.code (chaîne ou objet)
+        const c = f?.code;
+        if (typeof c === 'string') return c;
+        if (c && typeof c === 'object') return c.code ?? c.value;
+        return undefined;
+      }).filter(Boolean).map(String);
+      return [...new Set(out)];
+    }
+
+    /**
+     * Aplatit les codes produits depuis la réponse de findProductCodes.
+     * Structure réelle : { products: [{ productCode, price }] }
+     * Gère les variantes (productCodes racine, tableau de strings).
+     */
+    function flattenProductCodes(b) {
+      const src = b?.products ?? b?.data?.products ?? b?.productCodes ?? b?.data?.productCodes ?? b?.data ?? b;
+      const arr = Array.isArray(src) ? src : [src];
+      const out = arr
+        .map(f => (typeof f === 'string') ? f : (f?.productCode ?? f?.code))
+        .filter(Boolean)
+        .map(String);
+      return [...new Set(out)];
+    }
+
+    const TEST_SCENARIOS = [
+      {
+        id: 'catalog-family-to-product',
+        label: 'Catalogue : Famille parente → Produit',
+        description: "Part d'une famille parente et remonte jusqu'à un produit disponible.",
+        startFields: [
+          { name: 'code', label: 'Code de regroupement', type: 'text', default: 'default' },
+        ],
+        // Branches facultatives : id, libellé, et libellés du sélecteur (mode manuel)
+        branches: [
+          { id: 'session', label: 'Avec séance', onLabel: 'Avec séance', offLabel: 'Sans séance', defaultOn: false },
+        ],
+        steps: [
+          {
+            label: 'Familles parentes → parentFamilyCode',
+            route: { method: 'GET', path: '/api/v1/family/findParentFamilies' },
+            extract: [{
+              targetParam: 'parentFamilyCode',
+              // Liste de tous les candidats (mode manuel)
+              list: b => {
+                const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b;
+                return (Array.isArray(l) ? l : [l]).map(f => (typeof f === 'string') ? f : (f?.parentFamilyCode ?? f?.code)).filter(Boolean);
+              },
+              // Premier candidat (mode auto)
+              pick: b => {
+                const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b;
+                const f = Array.isArray(l) ? l[0] : l;
+                return (typeof f === 'string') ? f : (f?.parentFamilyCode ?? f?.code);
+              },
+            }],
+          },
+          {
+            label: 'Famille parente → familyCode',
+            route: { method: 'GET', path: '/api/v1/family/readParentFamily' },
+            extract: [{
+              targetParam: 'familyCode',
+              list: b => {
+                const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b;
+                const pf = Array.isArray(l) ? l[0] : l;
+                const children = pf?.childFamilyCodes ?? pf?.families ?? pf?.children ?? [];
+                return (Array.isArray(children) ? children : [children]).map(c => (typeof c === 'string') ? c : (c?.familyCode ?? c?.code)).filter(Boolean);
+              },
+              pick: b => {
+                const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b;
+                const pf = Array.isArray(l) ? l[0] : l;
+                const children = pf?.childFamilyCodes ?? pf?.families ?? pf?.children ?? [];
+                const c = Array.isArray(children) ? children[0] : children;
+                return (typeof c === 'string') ? c : (c?.familyCode ?? c?.code);
+              },
+            }],
+          },
+          {
+            label: 'Offres par famille → offerCode',
+            route: { method: 'GET', path: '/api/v1/offer/findOfferCodesByFamily' },
+            extract: [{
+              targetParam: 'offerCode',
+              // Réponse : { families: [{ familyCode, offerRefs: [{ code }] }] }
+              // On aplatit tous les families[].offerRefs[].code
+              list: b => flattenOfferCodes(b),
+              pick: b => flattenOfferCodes(b)[0],
+            }],
+          },
+          {
+            label: 'Détails offre (validation)',
+            route: { method: 'GET', path: '/api/v1/offer/readOffer' },
+            extract: [{
+              targetParam: 'offerCode',
+              list: b => { const l = b?.offers ?? b?.data?.offers ?? b?.data ?? b; return (Array.isArray(l)?l:[l]).map(f => f?.offerCode ?? f?.code).filter(Boolean); },
+              pick: b => { const l = b?.offers ?? b?.data?.offers ?? b?.data ?? b; const f = Array.isArray(l)?l[0]:l; return f?.offerCode ?? f?.code; },
+              silent: true,
+            }],
+          },
+          // ── BRANCHE FACULTATIVE "avec séance" (findCalendarDays → findPerformanceByDay) ──
+          {
+            label: '[Séance] Jours disponibles → date',
+            route: { method: 'GET', path: '/api/v1/performance/findCalendarDays' },
+            optional: true,
+            branchId: 'session',
+            // Valeurs par défaut (auto ET manuel) : aujourd'hui → aujourd'hui + 15 jours
+            defaultParams: () => {
+              const today = new Date();
+              const to = new Date(); to.setDate(today.getDate() + 15);
+              return { dateFrom: today.toISOString().substring(0, 10), dateTo: to.toISOString().substring(0, 10) };
+            },
+            extract: [{
+              targetParam: 'date',
+              // Premier jour avec des disponibilités
+              list: b => {
+                const l = b?.days ?? b?.data?.days ?? b?.data ?? b;
+                return (Array.isArray(l) ? l : [l])
+                  .filter(d => d && (d.available !== false) && (d.quota == null || d.quota > 0))
+                  .map(d => d?.date ? String(d.date).substring(0, 10) : undefined)
+                  .filter(Boolean);
+              },
+              pick: b => {
+                const l = b?.days ?? b?.data?.days ?? b?.data ?? b;
+                const first = (Array.isArray(l) ? l : [l])
+                  .find(d => d && (d.available !== false) && (d.quota == null || d.quota > 0)) || (Array.isArray(l) ? l[0] : l);
+                return first?.date ? String(first.date).substring(0, 10) : undefined;
+              },
+            }],
+          },
+          {
+            label: '[Séance] Performances du jour → performanceCode',
+            route: { method: 'GET', path: '/api/v1/performance/findPerformanceByDay' },
+            optional: true,
+            branchId: 'session',
+            // Valeur par défaut : date de demain
+            defaultParams: () => {
+              const t = new Date(); t.setDate(t.getDate() + 1);
+              return { date: t.toISOString().substring(0, 10) };
+            },
+            extract: [{
+              targetParam: 'performanceCode',
+              list: b => flattenPerformanceCodes(b),
+              pick: b => flattenPerformanceCodes(b)[0],
+            }],
+          },
+          {
+            label: 'Codes produits → productCode',
+            route: { method: 'GET', path: '/api/v1/product/findProductCodes' },
+            extract: [{
+              targetParam: 'productCode',
+              // Réponse : { products: [{ productCode, price }] }
+              list: b => flattenProductCodes(b),
+              pick: b => flattenProductCodes(b)[0],
+            }],
+          },
+          {
+            label: 'Lecture produit (validation)',
+            route: { method: 'GET', path: '/api/v1/product/readProduct' },
+            extract: [],
+          },
+        ],
+      },
+      {
+        id: 'purchase-flow',
+        label: "Parcours d'achat catalogue",
+        description: "À partir d'une famille, trouve une offre, une date, une performance, un produit et son prix.",
+        startFields: [
+          { name: 'familyCode', label: 'Code famille', type: 'text', default: '' },
+        ],
+        steps: [
+          {
+            label: 'Offres par famille → offerCode',
+            route: { method: 'GET', path: '/api/v1/offer/findOfferCodesByFamily' },
+            extract: [{
+              targetParam: 'offerCode',
+              list: b => flattenOfferCodes(b),
+              pick: b => flattenOfferCodes(b)[0],
+            }],
+          },
+          {
+            label: 'Première date dispo → dateFrom / dateTo',
+            route: { method: 'GET', path: '/api/v1/offer/findFirstAvailableDate' },
+            extract: [
+              { targetParam: 'dateFrom', list: b => { const d = b?.data?.date ?? b?.date; return d ? [String(d).substring(0,10)] : []; }, pick: b => { const d = b?.data?.date ?? b?.date; return d ? String(d).substring(0,10) : undefined; } },
+              { targetParam: 'dateTo',   list: b => { const d = b?.data?.date ?? b?.date; return d ? [String(d).substring(0,10)] : []; }, pick: b => { const d = b?.data?.date ?? b?.date; return d ? String(d).substring(0,10) : undefined; } },
+            ],
+          },
+          {
+            label: 'Jours calendrier → date',
+            route: { method: 'GET', path: '/api/v1/performance/findCalendarDays' },
+            extract: [{
+              targetParam: 'date',
+              list: b => { const l = b?.data?.days ?? b?.days ?? b?.data ?? b; return (Array.isArray(l)?l:[l]).map(f => f?.date ? String(f.date).substring(0,10) : undefined).filter(Boolean); },
+              pick: b => { const l = b?.data?.days ?? b?.days ?? b?.data ?? b; const f = Array.isArray(l)?l[0]:l; return f?.date ? String(f.date).substring(0,10) : undefined; },
+            }],
+          },
+          {
+            label: 'Performances du jour → performanceCode',
+            route: { method: 'GET', path: '/api/v1/performance/findPerformanceByDay' },
+            extract: [{
+              targetParam: 'performanceCode',
+              list: b => flattenPerformanceCodes(b),
+              pick: b => flattenPerformanceCodes(b)[0],
+            }],
+          },
+          {
+            label: 'Codes produits → productCode / productCodes',
+            route: { method: 'GET', path: '/api/v1/product/findProductCodes' },
+            extract: [
+              { targetParam: 'productCode',  list: b => flattenProductCodes(b), pick: b => flattenProductCodes(b)[0] },
+              { targetParam: 'productCodes', list: b => flattenProductCodes(b), pick: b => flattenProductCodes(b)[0] },
+            ],
+          },
+          {
+            label: 'Prix (validation)',
+            route: { method: 'GET', path: '/api/v1/price/findPrices' },
+            extract: [],
+          },
+        ],
+      },
+      {
+        id: 'account-orders',
+        label: 'Compte & commandes (login)',
+        description: "Se connecte, lit le compte, cherche une commande et lit un ticket.",
+        startFields: [
+          { name: 'username', label: 'Identifiant', type: 'text', default: '', autocomplete: 'username' },
+          { name: 'password', label: 'Mot de passe', type: 'password', default: '', autocomplete: 'current-password' },
+        ],
+        steps: [
+          {
+            label: 'Signin → accountCode',
+            route: { method: 'POST', path: '/api/v1/auth/signin' },
+            body: '{ "username": "{{username}}", "password": "{{password}}" }',
+            extract: [{ targetParam: 'accountCode', pick: b => b?.data?.accountCode ?? b?.accountCode }],
+          },
+          {
+            label: 'Lecture compte (validation)',
+            route: { method: 'GET', path: '/api/v1/account/readAccount' },
+            extract: [],
+          },
+          {
+            label: 'Recherche commandes → orderCode',
+            route: { method: 'POST', path: '/api/v1/order/searchOrder' },
+            body: '{ "page": { "pageNumber": 1, "pageSize": 10 } }',
+            extract: [{
+              targetParam: 'orderCode',
+              list: b => { const l = b?.data?.results ?? b?.results ?? b?.data ?? b; return (Array.isArray(l)?l:[l]).map(f => f?.orderCode ?? f?.saleCode ?? f?.externalOrderCode).filter(Boolean); },
+              pick: b => { const l = b?.data?.results ?? b?.results ?? b?.data ?? b; const f = Array.isArray(l)?l[0]:l; return f?.orderCode ?? f?.saleCode ?? f?.externalOrderCode; },
+            }],
+          },
+          {
+            label: 'Détail commande (validation)',
+            route: { method: 'GET', path: '/api/v1/order/readOrderDetails' },
+            extract: [],
+          },
+          {
+            label: 'Recherche tickets → mediaCode',
+            route: { method: 'POST', path: '/api/v1/order/searchOrderTickets' },
+            body: '{ "page": { "pageNumber": 1, "pageSize": 10 } }',
+            extract: [{
+              targetParam: 'mediaCode',
+              list: b => { const l = b?.data?.results ?? b?.results ?? b?.data ?? b; return (Array.isArray(l)?l:[l]).map(f => f?.mediaCode ?? f?.ticketCode).filter(Boolean); },
+              pick: b => { const l = b?.data?.results ?? b?.results ?? b?.data ?? b; const f = Array.isArray(l)?l[0]:l; return f?.mediaCode ?? f?.ticketCode; },
+            }],
+          },
+          {
+            label: 'Lecture ticket (validation)',
+            route: { method: 'GET', path: '/api/v1/ticket/readTicket' },
+            extract: [],
+          },
+        ],
+      },
+    ];
+
+    // Références DOM du mode scénarios
+    const modeManualBtn = document.getElementById('modeManualBtn');
+    const modeScenarioBtn = document.getElementById('modeScenarioBtn');
+    const scenarioSection = document.getElementById('scenarioSection');
+    const manualModeWrap = document.getElementById('manualModeWrap');
+    const scenarioSelect = document.getElementById('scenarioSelect');
+    const scenarioDescription = document.getElementById('scenarioDescription');
+    const scenarioStartFields = document.getElementById('scenarioStartFields');
+    const runScenarioBtn = document.getElementById('runScenarioBtn');
+    const replayScenarioBtn = document.getElementById('replayScenarioBtn');
+    const scenarioSteps = document.getElementById('scenarioSteps');
+    const execAutoBtn = document.getElementById('execAutoBtn');
+    const execManualBtn = document.getElementById('execManualBtn');
+    const scenarioStepConfig = document.getElementById('scenarioStepConfig');
+    const scenarioStepConfigTitle = document.getElementById('scenarioStepConfigTitle');
+    const scenarioStepConfigFields = document.getElementById('scenarioStepConfigFields');
+    const scenarioStepConfigError = document.getElementById('scenarioStepConfigError');
+    const scenarioNextStepBtn = document.getElementById('scenarioNextStepBtn');
+    const scenarioPrevStepBtn = document.getElementById('scenarioPrevStepBtn');
+
+    // Mode d'exécution des scénarios : 'auto' | 'manual'
+    let scenarioExecMode = 'auto';
+    function setExecMode(mode) {
+      scenarioExecMode = mode;
+      const auto = mode === 'auto';
+      execAutoBtn.classList.toggle('bg-indigo-600', auto);
+      execAutoBtn.classList.toggle('text-white', auto);
+      execAutoBtn.classList.toggle('text-slate-400', !auto);
+      execManualBtn.classList.toggle('bg-indigo-600', !auto);
+      execManualBtn.classList.toggle('text-white', !auto);
+      execManualBtn.classList.toggle('text-slate-400', auto);
+    }
+    execAutoBtn.addEventListener('click', () => setExecMode('auto'));
+    execManualBtn.addEventListener('click', () => setExecMode('manual'));
+
+    // ── Switch de mode ────────────────────────────────────────────────
+    function setMode(mode) {
+      const scenario = mode === 'scenario';
+      scenarioSection.classList.toggle('hidden', !scenario);
+      manualModeWrap.classList.toggle('hidden', scenario);
+      modeManualBtn.classList.toggle('bg-indigo-600', !scenario);
+      modeManualBtn.classList.toggle('text-white', !scenario);
+      modeManualBtn.classList.toggle('text-slate-400', scenario);
+      modeScenarioBtn.classList.toggle('bg-indigo-600', scenario);
+      modeScenarioBtn.classList.toggle('text-white', scenario);
+      modeScenarioBtn.classList.toggle('text-slate-400', !scenario);
+    }
+    modeManualBtn.addEventListener('click', () => setMode('manual'));
+    modeScenarioBtn.addEventListener('click', () => setMode('scenario'));
+
+    // Mode Scénarios par défaut au démarrage
+    setMode('scenario');
+
+    // Remplir le sélecteur de scénarios
+    scenarioSelect.innerHTML = '<option value="">-- Sélectionner un scénario --</option>' +
+      TEST_SCENARIOS.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
+
+    function getScenario(id) {
+      return TEST_SCENARIOS.find(s => s.id === id);
+    }
+
+    // ── Rendu des champs de départ à la sélection ─────────────────────
+    scenarioSelect.addEventListener('change', () => {
+      const sc = getScenario(scenarioSelect.value);
+      scenarioSteps.classList.add('hidden');
+      scenarioSteps.innerHTML = '';
+      // Effacer le bloc de synthèse précédent
+      document.getElementById('scenarioSummary')?.remove();
+
+      if (!sc) {
+        scenarioDescription.classList.add('hidden');
+        scenarioStartFields.innerHTML = '';
+        runScenarioBtn.disabled = true;
+        return;
+      }
+
+      scenarioDescription.textContent = sc.description;
+      scenarioDescription.classList.remove('hidden');
+
+      // Valeurs de champs de départ sauvegardées pour cette URL + ce scénario
+      const savedStart = getScenarioStartFields(sc.id);
+
+      const startFieldsHtml = sc.startFields.map(f => {
+        // Priorité : valeur sauvegardée > valeur par défaut. Les mots de passe ne sont pas restaurés.
+        const val = (f.type !== 'password' && savedStart[f.name] !== undefined)
+          ? savedStart[f.name] : (f.default || '');
+        return `
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-mono font-semibold text-slate-300" for="sf-${f.name}">${f.label}</label>
+          <input type="${f.type}" id="sf-${f.name}" name="${f.name}"
+            ${f.autocomplete ? `autocomplete="${f.autocomplete}"` : ''}
+            value="${val}"
+            class="scenario-start-input bg-slate-900/80 border border-slate-700 rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+        </div>`;
+      }).join('');
+
+      // Contrôles de branches facultatives (case à cocher en auto, sélecteur on/off en manuel)
+      // Le choix des branches (ex: "avec séance") n'est plus dans les champs de départ :
+      // il est demandé au point de bifurcation, pendant l'exécution.
+      scenarioStartFields.innerHTML = startFieldsHtml;
+
+      // Sauvegarder les champs de départ à chaque modification (par URL + scénario)
+      scenarioStartFields.querySelectorAll('.scenario-start-input').forEach(inp => {
+        inp.addEventListener('input', () => saveScenarioStartFields(sc.id));
+      });
+
+      runScenarioBtn.disabled = false;
+
+      // Réafficher le statut sauvegardé (24h) s'il existe
+      renderScenarioStatus(sc.id, getScenarioStatus(sc.id));
+
+      // Afficher le bouton "Rejouer" si un test précédent existe pour ce scénario + URL
+      updateReplayButton();
+    });
+
+    // ── Persistance des champs de départ de scénario (par URL + scénario) ──
+    function getScenarioStartFields(scenarioId) {
+      const url = targetUrlInput.value.trim();
+      if (!url) return {};
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SCENARIO_FIELDS) || '{}');
+        return all[url]?.[scenarioId] || {};
+      } catch { return {}; }
+    }
+
+    function saveScenarioStartFields(scenarioId) {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SCENARIO_FIELDS) || '{}');
+        if (!all[url]) all[url] = {};
+        const values = {};
+        scenarioStartFields.querySelectorAll('.scenario-start-input').forEach(inp => {
+          // Ne pas persister les mots de passe
+          if (inp.type === 'password') return;
+          if (inp.value.trim() !== '') values[inp.name] = inp.value.trim();
+        });
+        all[url][scenarioId] = values;
+        localStorage.setItem(STORAGE_KEY_SCENARIO_FIELDS, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+
+    // ── Persistance du statut (par YAML + scénario, expiration 24h) ────
+    const STORAGE_KEY_SCENARIOS = 'validator_scenario_status';
+    const SCENARIO_TTL_MS = 24 * 60 * 60 * 1000;
+
+    function scenarioYamlKey() {
+      if (!cachedYamlContent) return 'none';
+      return `${cachedYamlContent.length}:${cachedYamlContent.slice(0, 40)}`;
+    }
+
+    function saveScenarioStatus(id, status, failedStep) {
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SCENARIOS) || '{}');
+        all[id] = { status, failedStep: failedStep ?? null, ts: Date.now(), yaml: scenarioYamlKey() };
+        localStorage.setItem(STORAGE_KEY_SCENARIOS, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+
+    function getScenarioStatus(id) {
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SCENARIOS) || '{}');
+        const entry = all[id];
+        if (!entry) return null;
+        if (Date.now() - entry.ts > SCENARIO_TTL_MS) return null; // expiré 24h
+        if (entry.yaml !== scenarioYamlKey()) return null;        // YAML changé
+        return entry;
+      } catch { return null; }
+    }
+
+    function clearAllScenarioStatus() {
+      localStorage.removeItem(STORAGE_KEY_SCENARIOS);
+      scenarioSteps.classList.add('hidden');
+      scenarioSteps.innerHTML = '';
+      loadScenarioBadges();
+    }
+
+    // Badge (✔ / ✖) à côté de chaque option du sélecteur
+    function loadScenarioBadges() {
+      scenarioSelect.querySelectorAll('option').forEach(opt => {
+        const sc = getScenario(opt.value);
+        if (!sc) return;
+        const st = getScenarioStatus(sc.id);
+        const mark = st ? (st.status === 'ok' ? ' ✔' : st.status === 'warn' ? ' ⚠' : ' ✖') : '';
+        opt.textContent = sc.label + mark;
+      });
+    }
+
+    /** Affiche l'état des étapes + badge global pour un scénario. */
+    function renderScenarioStatus(id, statusEntry) {
+      loadScenarioBadges();
+      if (!statusEntry) return;
+      const sc = getScenario(id);
+      if (!sc) return;
+
+      scenarioSteps.classList.remove('hidden');
+      const success = statusEntry.status === 'ok' || statusEntry.status === 'warn';
+      const rows = sc.steps.map((step, i) => {
+        let icon, color;
+        if (success || (statusEntry.failedStep != null && i < statusEntry.failedStep)) {
+          icon = 'fa-circle-check'; color = 'text-emerald-400';
+        } else if (statusEntry.failedStep === i) {
+          icon = 'fa-circle-xmark'; color = 'text-rose-400';
+        } else {
+          icon = 'fa-circle'; color = 'text-slate-600';
+        }
+        return `<div class="flex items-center gap-2 text-xs">
+          <i class="fa-solid ${icon} ${color}"></i>
+          <span class="text-slate-300">${i + 1}. ${step.label}</span>
+        </div>`;
+      }).join('');
+
+      let globalBadge;
+      if (statusEntry.status === 'ok') {
+        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i>Scénario validé</span>';
+      } else if (statusEntry.status === 'warn') {
+        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-950 border border-amber-700 text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Validé avec avertissements</span>';
+      } else if (statusEntry.status === 'nullable') {
+        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 border border-cyan-700 text-cyan-400"><i class="fa-solid fa-slash mr-1"></i>Validé avec champs null</span>';
+      } else if (statusEntry.status === 'undocumented') {
+        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-violet-950 border border-violet-700 text-violet-400"><i class="fa-solid fa-circle-plus mr-1"></i>Validé avec champs non documentés</span>';
+      } else if (statusEntry.status === 'notImplemented') {
+        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-slate-300"><i class="fa-solid fa-eye-slash mr-1"></i>Validé avec champs non implémentés</span>';
+      } else {
+        globalBadge = `<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-rose-950 border border-rose-700 text-rose-400"><i class="fa-solid fa-circle-xmark mr-1"></i>Échec à l'étape ${(statusEntry.failedStep ?? 0) + 1}</span>`;
+      }
+
+      scenarioSteps.innerHTML = `<div class="mb-2">${globalBadge}</div>` + rows;
+    }
+
+    // ── Exécution d'un scénario (machine à étapes : auto ou manuel) ───
+    // État courant du scénario en cours d'exécution
+    let scRun = null;
+
+    function renderScenarioProgress(currentIdx) {
+      if (!scRun) return;
+      scenarioSteps.innerHTML = scRun.scenario.steps.map((step, i) => {
+        let icon, color;
+        if (scRun.results[i] === 'ok') { icon = 'fa-circle-check'; color = 'text-emerald-400'; }
+        else if (scRun.results[i] === 'warn') { icon = 'fa-triangle-exclamation'; color = 'text-amber-400'; }
+        else if (scRun.results[i] === 'nullable') { icon = 'fa-slash'; color = 'text-cyan-400'; }
+        else if (scRun.results[i] === 'undocumented') { icon = 'fa-circle-plus'; color = 'text-violet-400'; }
+        else if (scRun.results[i] === 'notImplemented') { icon = 'fa-eye-slash'; color = 'text-slate-400'; }
+        else if (scRun.results[i] === 'fail') { icon = 'fa-circle-xmark'; color = 'text-rose-400'; }
+        else if (scRun.results[i] === 'skip') { icon = 'fa-circle-minus'; color = 'text-slate-500'; }
+        else if (i === currentIdx) { icon = 'fa-spinner fa-spin'; color = 'text-indigo-400'; }
+        else { icon = 'fa-circle'; color = 'text-slate-600'; }
+        const skipLabel = scRun.results[i] === 'skip' ? ' <span class="text-slate-500 italic">(ignorée)</span>' : '';
+        return `<div class="flex items-center gap-2 text-xs">
+          <i class="fa-solid ${icon} ${color}"></i>
+          <span class="text-slate-300">${i + 1}. ${step.label}${skipLabel}</span>
+        </div>`;
+      }).join('');
+    }
+
+    async function runScenario(replay) {
+      const sc = getScenario(scenarioSelect.value);
+      if (!sc) return;
+      if (!cachedYamlContent) { alert('Chargez d\'abord une spec YAML.'); return; }
+      if (!targetUrlInput.value.trim()) { alert('Renseignez l\'URL de l\'API cible.'); return; }
+
+      let startParams, enabledBranches;
+
+      if (replay) {
+        // Rejouer : réutiliser les choix mémorisés du dernier test
+        startParams = { ...replay.collected };
+        enabledBranches = new Set(replay.enabledBranches || []);
+      } else {
+        // Champs de départ saisis
+        startParams = {};
+        scenarioStartFields.querySelectorAll('.scenario-start-input').forEach(inp => {
+          if (inp.value.trim() !== '') startParams[inp.name] = inp.value.trim();
+        });
+        const localeVal = document.getElementById('globalLocale')?.value.trim();
+        if (localeVal) startParams.locale = localeVal;
+
+        // Le choix des branches se fait pendant l'exécution (au point de bifurcation),
+        // donc on démarre avec aucune branche décidée.
+        enabledBranches = new Set();
+      }
+
+      // Réinitialiser l'état de run
+      scRun = {
+        scenario: sc,
+        collected: { ...startParams },
+        results: new Array(sc.steps.length).fill(null),
+        summary: [],
+        failedStep: null,
+        index: 0,
+        enabledBranches,
+        // En replay, toutes les branches sont déjà décidées (via enabledBranches mémorisé)
+        decidedBranches: replay ? new Set((sc.branches || []).map(b => b.id)) : new Set(),
+        replayMode: !!replay,   // en replay, on n'interrompt pas pour les choix
+      };
+
+      document.getElementById('scenarioSummary')?.remove();
+      scenarioStepConfig.classList.add('hidden');
+      runScenarioBtn.disabled = true;
+      runScenarioBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exécution...';
+      scenarioSteps.classList.remove('hidden');
+
+      await executeScenarioStep();
+    }
+
+    /**
+     * Exécute l'étape courante (scRun.index). Puis :
+     *  - auto : extrait via pick() et enchaîne
+     *  - manuel : extrait les candidats via list() et affiche les contrôles de l'étape suivante
+     */
+    async function executeScenarioStep() {
+      const { scenario: sc, collected, results, summary } = scRun;
+      const i = scRun.index;
+      const step = sc.steps[i];
+      scRun.retryMode = false; // réinitialisé à chaque exécution d'étape
+
+      // ── Point de bifurcation : première étape d'une branche non encore décidée ──
+      // On demande à l'utilisateur "avec / sans" (sauf en replay où le choix est déjà mémorisé).
+      if (step.optional && step.branchId && !scRun.decidedBranches.has(step.branchId) && !scRun.replayMode) {
+        renderScenarioProgress(-1);
+        renderBranchChoice(step.branchId);
+        return;
+      }
+
+      // ── Étape optionnelle dont la branche est désactivée → on la saute ──
+      if (step.optional && step.branchId && !scRun.enabledBranches.has(step.branchId)) {
+        results[i] = 'skip';
+        summary[i] = { label: step.label, route: step.route, outcome: 'skip', statusCode: null, warnings: [], errors: [] };
+        const isLast = i >= sc.steps.length - 1;
+        if (isLast) return finalizeScenario();
+        scRun.index++;
+        return executeScenarioStep();
+      }
+
+      // ── Injecter les valeurs par défaut de l'étape (ex: plage de dates) ──
+      // S'applique en auto ET manuel, sans écraser une valeur déjà renseignée.
+      if (typeof step.defaultParams === 'function') {
+        const defs = step.defaultParams() || {};
+        Object.entries(defs).forEach(([k, v]) => {
+          if (collected[k] === undefined || collected[k] === '') collected[k] = String(v);
+        });
+      }
+
+      renderScenarioProgress(i);
+
+      const bodies = {};
+      if (step.body) bodies[`${step.route.method} ${step.route.path}`] = step.body;
+
+      const fd = new FormData();
+      fd.set('spec', new Blob([cachedYamlContent], { type: 'application/x-yaml' }), 'spec.yaml');
+      fd.set('targetUrl', targetUrlInput.value);
+      fd.set('clientId', clientIdInput.value);
+      fd.set('clientSecret', clientSecretInput.value);
+      fd.set('scope', scopeInput.value);
+      fd.set('selectedRoutes', JSON.stringify([step.route]));
+      fd.set('userParams', JSON.stringify(collected));
+      fd.set('requestBodies', JSON.stringify(bodies));
+
+      let body = null, statusCode, reqUrl;
+      let outcome = 'fail';
+      let warnings = [], errors = [], nullables = [], undocumented = [], notImplemented = [];
+
+      try {
+        const res = await fetch('/api/validate-batch', { method: 'POST', body: fd });
+        if (res.ok) {
+          const data = await res.json();
+          const r = data?.results?.[0];
+          body = r?.responseBody ?? null;
+          statusCode = r?.statusCode;
+          reqUrl = r?.requestUrl;
+          warnings = r?.warnings || [];
+          errors = r?.errors || [];
+          nullables = r?.nullables || [];
+          undocumented = r?.undocumented || [];
+          notImplemented = r?.notImplemented || [];
+          const httpOk = statusCode && statusCode < 400;
+          // Priorité d'affichage (tous non bloquants sauf fail) :
+          // warn > nullable > undocumented > notImplemented > ok
+          if (httpOk && r?.valid !== false) {
+            if (warnings.length > 0) outcome = 'warn';
+            else if (nullables.length > 0) outcome = 'nullable';
+            else if (undocumented.length > 0) outcome = 'undocumented';
+            else if (notImplemented.length > 0) outcome = 'notImplemented';
+            else outcome = 'ok';
+          } else {
+            outcome = 'fail';
+          }
+        }
+        window._consoleLog?.({
+          type: outcome === 'fail' ? 'ERROR' : (outcome === 'ok' ? 'BATCH' : 'JS_ERROR'),
+          route: step.route, status: statusCode, responseBody: body, requestUrl: reqUrl,
+          error: outcome === 'fail'
+            ? (errors[0] || `Étape "${step.label}" échouée`)
+            : (outcome === 'warn' ? `${warnings.length} avertissement(s) de schéma`
+            : (outcome === 'nullable' ? `${nullables.length} champ(s) null`
+            : (outcome === 'undocumented' ? `${undocumented.length} champ(s) non documenté(s)`
+            : (outcome === 'notImplemented' ? `${notImplemented.length} champ(s) non implémenté(s)` : null)))),
+        });
+      } catch (e) {
+        window._consoleLog?.({ type: 'ERROR', route: step.route, error: e.message });
+      }
+
+      // Remplace l'entrée de synthèse de cette étape (utile lors des retries)
+      summary[i] = { label: step.label, route: step.route, outcome, statusCode, warnings, errors, nullables, undocumented, notImplemented };
+      results[i] = outcome;
+      scRun.lastBody = body;
+
+      // ── ÉCHEC ──
+      if (outcome === 'fail') {
+        // En mode manuel : ne pas terminer, permettre de réessayer avec d'autres paramètres
+        if (scenarioExecMode === 'manual') {
+          renderScenarioProgress(-1);
+          scenarioStepConfigError.textContent = `L'étape a échoué. Ajustez les paramètres et réessayez.`;
+          renderStepConfig({ retry: true });
+          scenarioStepConfigError.classList.remove('hidden');
+          return;
+        }
+        // En mode auto : arrêt immédiat
+        scRun.failedStep = i;
+        return finalizeScenario();
+      }
+
+      // ── SUCCÈS/WARNING : mémoriser les candidats extraits pour l'étape suivante ──
+      const candForNext = {};
+      (step.extract || []).forEach(ex => {
+        const vals = ex.list ? (ex.list(body) || []) : [];
+        if (vals.length) candForNext[ex.targetParam] = [...new Set(vals.map(String))];
+      });
+      scRun.candidatesByStep = scRun.candidatesByStep || {};
+      scRun.candidatesByStep[i + 1] = candForNext;
+
+      const isLastStep = i >= sc.steps.length - 1;
+
+      // ── MODE AUTO ──
+      if (scenarioExecMode === 'auto') {
+        // Extraire le premier candidat de chaque champ → collected.
+        // En REPLAY : ne pas écraser une valeur déjà mémorisée (le choix du run précédent).
+        (step.extract || []).forEach(ex => {
+          if (scRun.replayMode && scRun.collected[ex.targetParam] !== undefined && scRun.collected[ex.targetParam] !== '') {
+            return; // conserver le choix mémorisé
+          }
+          const val = ex.pick ? ex.pick(body) : undefined;
+          if (val !== undefined && val !== null && val !== '') {
+            collected[ex.targetParam] = String(val);
+            setParamValue(ex.targetParam, String(val));
+          }
+        });
+
+        if (isLastStep) return finalizeScenario();
+
+        // 2-b : on ne s'arrête que si l'étape SUIVANTE a un champ avec PLUS D'UN choix
+        // déductible (un vrai choix à faire). En replay, on n'interrompt jamais.
+        const hasRealChoice = Object.values(candForNext).some(vals => (vals || []).length > 1);
+        if (hasRealChoice && !scRun.replayMode) {
+          renderScenarioProgress(-1);
+          renderStepConfig(i);
+          return;
+        }
+        scRun.index++;
+        return executeScenarioStep();
+      }
+
+      // ── MODE MANUEL : si dernière étape, on finalise ──
+      if (isLastStep) return finalizeScenario();
+
+      // En replay : on n'affiche pas les contrôles, on enchaîne avec les valeurs mémorisées
+      if (scRun.replayMode) {
+        scRun.index++;
+        return executeScenarioStep();
+      }
+
+      // Sinon, afficher les contrôles de paramètres pour l'étape suivante
+      renderScenarioProgress(-1);
+      renderStepConfig(i);
+    }
+
+    /**
+     * Affiche les contrôles de paramètres pour l'étape i+1 (mode manuel).
+     * - Un déroulant par paramètre dont la valeur peut être extraite de la réponse (list()).
+     * - Un champ libre / calendrier pour les autres paramètres de la route suivante.
+     */
+    function renderStepConfig(currentIdx) {
+      // targetIdx = index de l'étape dont on configure les paramètres d'entrée.
+      // - En flux normal (currentIdx passé), targetIdx = currentIdx + 1 (étape suivante).
+      // - En retry, on appelle renderStepConfig avec { retryIdx } pour reconfigurer l'étape ratée.
+      const { scenario: sc, collected } = scRun;
+      const isRetry = typeof arguments[0] === 'object' && arguments[0]?.retry;
+      const targetIdx = isRetry ? scRun.index : (currentIdx + 1);
+      const targetStep = sc.steps[targetIdx];
+
+      // Pré-remplir les valeurs par défaut de l'étape cible (ex: dateFrom/dateTo, date=demain)
+      // sans écraser une valeur déjà renseignée, pour qu'elles apparaissent dans les champs.
+      if (targetStep && typeof targetStep.defaultParams === 'function') {
+        const defs = targetStep.defaultParams() || {};
+        Object.entries(defs).forEach(([k, v]) => {
+          if (collected[k] === undefined || collected[k] === '') collected[k] = String(v);
+        });
+      }
+
+      // Candidats : issus de la réponse de l'étape PRÉCÉDENTE de la cible.
+      // On les mémorise à chaque étape réussie dans scRun.candidatesByStep[targetIdx].
+      const candidatesByParam = scRun.candidatesByStep?.[targetIdx] || {};
+
+      scenarioStepConfigTitle.textContent = isRetry
+        ? `Réessayer : paramètres pour ${targetStep.route.path}`
+        : `Paramètres pour la route ${targetStep.route.path}`;
+      scenarioStepConfigError.classList.add('hidden');
+      scenarioNextStepBtn.innerHTML = isRetry
+        ? '<i class="fa-solid fa-rotate-right"></i> Réessayer cette étape'
+        : '<i class="fa-solid fa-forward-step"></i> Étape suivante';
+
+      // Paramètres de la route cible (path + query) issus du YAML
+      const routeDef = detectedRoutes.find(r =>
+        r.method === targetStep.route.method && r.path === targetStep.route.path);
+      const params = (routeDef?.parameters || []).filter(p => p.name !== 'locale');
+
+      let paramNames = params.length
+        ? params.map(p => ({ name: p.name, required: p.required, type: p.schema?.type, description: p.description }))
+        : Object.keys(candidatesByParam).map(n => ({ name: n, required: true }));
+
+      // En mode AUTO : n'afficher que les champs dont les choix sont issus de l'appel
+      // précédent ET qui ont plus d'un candidat (un vrai choix à faire).
+      if (scenarioExecMode === 'auto') {
+        paramNames = paramNames.filter(p => (candidatesByParam[p.name] || []).length > 1);
+      }
+
+      scenarioStepConfigFields.innerHTML = paramNames.map(p => {
+        const candidates = candidatesByParam[p.name] || [];
+        const current = collected[p.name] || '';
+        const isDate = /date/i.test(p.name) || p.type === 'date';
+        const isBool = p.type === 'boolean' || p.type === 'bool';
+        const reqMark = p.required ? ' <span class="text-rose-400">*</span>' : '';
+        // Détecte une contrainte conditionnelle dans la description (ex: "mandatory if ... is null")
+        const isConditional = p.description && /(obligatoire|mandatory|required|requis)/i.test(p.description) && /(si|if|null|vide|empty|nul)/i.test(p.description);
+        const condMark = isConditional
+          ? ' <span class="text-amber-400" title="Obligatoire sous condition">⚠</span>'
+          : '';
+        const descHtml = p.description
+          ? `<span class="text-[10px] ${isConditional ? 'text-amber-300' : 'text-slate-500'} italic leading-tight">${p.description}</span>`
+          : '';
+
+        // Cas 1 : candidats issus de la réponse → menu déroulant
+        if (candidates.length) {
+          const opts = candidates.map(v =>
+            `<option value="${v}" ${v === current ? 'selected' : ''}>${v}</option>`).join('');
+          return `
+            <div class="flex flex-col gap-1">
+              <label class="text-[11px] font-mono font-semibold text-slate-300">${p.name}${reqMark}${condMark}</label>
+              ${descHtml}
+              <select data-sc-param="${p.name}"
+                class="sc-param-input bg-slate-800 border border-slate-600 rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
+                ${opts}
+              </select>
+            </div>`;
+        }
+
+        // Cas 2 : booléen → menu déroulant true / false
+        if (isBool) {
+          const optEmpty = p.required ? '' : `<option value="" ${current === '' ? 'selected' : ''}>—</option>`;
+          return `
+            <div class="flex flex-col gap-1">
+              <label class="text-[11px] font-mono font-semibold text-slate-300">${p.name}${reqMark}${condMark}</label>
+              ${descHtml}
+              <select data-sc-param="${p.name}"
+                class="sc-param-input bg-slate-800 border border-slate-600 rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
+                ${optEmpty}
+                <option value="true" ${current === 'true' ? 'selected' : ''}>true</option>
+                <option value="false" ${current === 'false' ? 'selected' : ''}>false</option>
+              </select>
+            </div>`;
+        }
+
+        // Cas 3 : date libre → calendrier
+        if (isDate) {
+          return `
+            <div class="flex flex-col gap-1">
+              <label class="text-[11px] font-mono font-semibold text-slate-300">${p.name}${reqMark}${condMark}</label>
+              ${descHtml}
+              <input type="date" data-sc-param="${p.name}" data-sc-date="1" value="${current}"
+                class="sc-param-input bg-slate-800 border border-slate-600 rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
+            </div>`;
+        }
+
+        // Cas 4 : champ libre texte
+        return `
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] font-mono font-semibold text-slate-300">${p.name}${reqMark}${condMark}</label>
+            ${descHtml}
+            <input type="text" data-sc-param="${p.name}" value="${current}"
+              placeholder="${p.required ? 'requis' : 'optionnel'}"
+              class="sc-param-input bg-slate-800 border border-slate-600 rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
+          </div>`;
+      }).join('');
+
+      // Validation dateFrom <= dateTo à chaque changement
+      const validateDates = () => {
+        const from = scenarioStepConfigFields.querySelector('[data-sc-param="dateFrom"]')?.value;
+        const to = scenarioStepConfigFields.querySelector('[data-sc-param="dateTo"]')?.value;
+        if (from && to && from > to) {
+          scenarioStepConfigError.textContent = 'La date de début doit être antérieure ou égale à la date de fin.';
+          scenarioStepConfigError.classList.remove('hidden');
+          scenarioNextStepBtn.disabled = true;
+          return false;
+        }
+        scenarioStepConfigError.classList.add('hidden');
+        scenarioNextStepBtn.disabled = false;
+        return true;
+      };
+      scenarioStepConfigFields.querySelectorAll('.sc-param-input').forEach(inp => {
+        inp.addEventListener('input', validateDates);
+      });
+      validateDates();
+
+      // Mémoriser si on est en mode retry (pour le handler du bouton)
+      scRun.retryMode = !!isRetry;
+
+      // Bouton « Étape précédente » : caché en retry, désactivé si étape cible = première
+      if (isRetry) {
+        scenarioPrevStepBtn.classList.add('hidden');
+      } else {
+        scenarioPrevStepBtn.classList.remove('hidden');
+        scenarioPrevStepBtn.disabled = (targetIdx <= 0);
+      }
+
+      scenarioStepConfig.classList.remove('hidden');
+
+      // Défile automatiquement vers le bloc de choix pour qu'il soit visible
+      scenarioStepConfig.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    /**
+     * Affiche la question de bifurcation d'une branche (ex: "avec / sans séance").
+     * Deux boutons : activer la branche, ou la sauter. Le choix reprend l'exécution.
+     */
+    function renderBranchChoice(branchId) {
+      const sc = scRun.scenario;
+      const br = (sc.branches || []).find(b => b.id === branchId);
+      if (!br) return;
+
+      // Thème AMBRE distinct pour bien identifier un point de choix de branche
+      scenarioStepConfig.classList.remove('border-indigo-800/60');
+      scenarioStepConfig.classList.add('border-amber-600/70', 'bg-amber-950/20');
+      scenarioStepConfigTitle.parentElement.classList.remove('text-indigo-300');
+      scenarioStepConfigTitle.parentElement.classList.add('text-amber-300');
+      // Icône embranchement + libellé explicite
+      const titleIcon = scenarioStepConfigTitle.previousElementSibling;
+      if (titleIcon) { titleIcon.className = 'fa-solid fa-code-branch'; }
+      scenarioStepConfigTitle.textContent = `Choix de parcours : ${br.label}`;
+      scenarioStepConfigError.classList.add('hidden');
+      scenarioStepConfigFields.innerHTML = `
+        <div class="col-span-full flex flex-col sm:flex-row gap-2">
+          <button type="button" id="branchYesBtn"
+            class="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 border border-amber-400 text-slate-900 text-xs font-bold rounded-lg transition flex justify-center items-center gap-2">
+            <i class="fa-solid fa-check"></i> ${br.onLabel}
+          </button>
+          <button type="button" id="branchNoBtn"
+            class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 border border-amber-700/50 text-amber-200 text-xs font-bold rounded-lg transition flex justify-center items-center gap-2">
+            <i class="fa-solid fa-xmark"></i> ${br.offLabel}
+          </button>
+        </div>`;
+
+      // Masquer les boutons de navigation habituels (précédent / suivant)
+      scenarioNextStepBtn.classList.add('hidden');
+      scenarioPrevStepBtn.classList.add('hidden');
+      scenarioStepConfig.classList.remove('hidden');
+      scenarioStepConfig.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      const decide = (enabled) => {
+        scRun.decidedBranches.add(branchId);
+        if (enabled) scRun.enabledBranches.add(branchId);
+        else scRun.enabledBranches.delete(branchId);
+        // Restaurer le thème indigo par défaut du bloc de config
+        scenarioStepConfig.classList.add('border-indigo-800/60');
+        scenarioStepConfig.classList.remove('border-amber-600/70', 'bg-amber-950/20');
+        scenarioStepConfigTitle.parentElement.classList.add('text-indigo-300');
+        scenarioStepConfigTitle.parentElement.classList.remove('text-amber-300');
+        if (titleIcon) { titleIcon.className = 'fa-solid fa-sliders'; }
+        // Restaurer les boutons de navigation pour la suite
+        scenarioNextStepBtn.classList.remove('hidden');
+        scenarioPrevStepBtn.classList.remove('hidden');
+        scenarioStepConfig.classList.add('hidden');
+        executeScenarioStep(); // ré-évalue l'étape courante (skip ou exécution)
+      };
+
+      document.getElementById('branchYesBtn').addEventListener('click', () => decide(true));
+      document.getElementById('branchNoBtn').addEventListener('click', () => decide(false));
+    }
+
+    // Clic « Étape suivante » (mode manuel) : applique les choix puis exécute l'étape suivante
+    scenarioNextStepBtn.addEventListener('click', async () => {
+      if (!scRun) return;
+      // Appliquer les valeurs choisies dans collected
+      scenarioStepConfigFields.querySelectorAll('.sc-param-input').forEach(inp => {
+        const name = inp.dataset.scParam;
+        const val = inp.value.trim();
+        if (name && val !== '') {
+          scRun.collected[name] = val;
+          setParamValue(name, val);
+        }
+      });
+      scenarioStepConfig.classList.add('hidden');
+      // En retry, on rejoue la MÊME étape (index inchangé) ; sinon on avance.
+      if (!scRun.retryMode) scRun.index++;
+      await executeScenarioStep();
+    });
+
+    // Clic « Étape précédente » : revenir configurer l'étape déjà exécutée juste avant.
+    // Au moment du clic, scRun.index = étape déjà faite, et le config affiché concerne index+1.
+    // Reculer = reconfigurer l'étape "index" elle-même (celle qu'on vient d'exécuter).
+    scenarioPrevStepBtn.addEventListener('click', () => {
+      if (!scRun) return;
+      const stepToReconfigure = scRun.index; // étape déjà exécutée
+      if (stepToReconfigure <= 0) return;     // rien avant la première
+
+      // Invalider les résultats à partir de l'étape qu'on reconfigure
+      for (let k = stepToReconfigure; k < scRun.results.length; k++) {
+        scRun.results[k] = null;
+        scRun.summary[k] = undefined;
+      }
+
+      // Positionner l'index juste avant, pour que « Étape suivante » ré-exécute stepToReconfigure
+      scRun.index = stepToReconfigure - 1;
+      renderScenarioProgress(-1);
+      // renderStepConfig(currentIdx) configure currentIdx+1 → on veut configurer stepToReconfigure
+      renderStepConfig(stepToReconfigure - 1);
+    });
+
+    // Finalisation commune (auto + manuel)
+    function finalizeScenario() {
+      const { scenario: sc, results, summary, failedStep } = scRun;
+      renderScenarioProgress(-1);
+      scenarioStepConfig.classList.add('hidden');
+
+      let finalStatus;
+      if (failedStep !== null) finalStatus = 'fail';
+      else if (summary.some(s => s?.outcome === 'warn')) finalStatus = 'warn';
+      else if (summary.some(s => s?.outcome === 'nullable')) finalStatus = 'nullable';
+      else if (summary.some(s => s?.outcome === 'undocumented')) finalStatus = 'undocumented';
+      else if (summary.some(s => s?.outcome === 'notImplemented')) finalStatus = 'notImplemented';
+      else finalStatus = 'ok';
+
+      saveScenarioStatus(sc.id, finalStatus, failedStep);
+      renderScenarioStatus(sc.id, { status: finalStatus, failedStep });
+      renderScenarioSummary(sc, summary);
+
+      // Mémoriser les choix de ce run (valeurs + branches) pour "Rejouer le dernier test"
+      saveScenarioLastRun(sc.id, {
+        collected: scRun.collected,
+        enabledBranches: Array.from(scRun.enabledBranches),
+      });
+      updateReplayButton();
+
+      runScenarioBtn.disabled = false;
+      runScenarioBtn.innerHTML = '<i class="fa-solid fa-play"></i> Exécuter le scénario';
+      scRun = null;
+    }
+
+    // ── Persistance du dernier run (par URL + scénario) pour le rejeu ──
+    function saveScenarioLastRun(scenarioId, runData) {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SCENARIO_RUNS) || '{}');
+        if (!all[url]) all[url] = {};
+        all[url][scenarioId] = runData;
+        localStorage.setItem(STORAGE_KEY_SCENARIO_RUNS, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+
+    function getScenarioLastRun(scenarioId) {
+      const url = targetUrlInput.value.trim();
+      if (!url) return null;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SCENARIO_RUNS) || '{}');
+        return all[url]?.[scenarioId] || null;
+      } catch { return null; }
+    }
+
+    // Affiche/masque le bouton "Rejouer" selon l'existence d'un run mémorisé
+    function updateReplayButton() {
+      const sc = getScenario(scenarioSelect.value);
+      const hasRun = sc && getScenarioLastRun(sc.id);
+      replayScenarioBtn.classList.toggle('hidden', !hasRun);
+    }
+
+    /**
+     * Affiche un bloc de synthèse en fin de scénario : une ligne par route testée,
+     * avec le résultat (conforme / avertissements / échec) et le détail des warnings/erreurs.
+     */
+    function renderScenarioSummary(sc, summary) {
+      let block = document.getElementById('scenarioSummary');
+      if (!block) {
+        block = document.createElement('div');
+        block.id = 'scenarioSummary';
+        block.className = 'mt-3 space-y-2';
+        scenarioSteps.after(block);
+      }
+
+      const rows = summary.filter(Boolean).map((s, idx) => {
+        const conf = {
+          ok:       { icon: 'fa-circle-check', color: 'text-emerald-400', label: 'Conforme' },
+          warn:     { icon: 'fa-triangle-exclamation', color: 'text-amber-400', label: 'Avertissements' },
+          nullable:       { icon: 'fa-slash', color: 'text-cyan-400', label: 'Champs null' },
+          undocumented:   { icon: 'fa-circle-plus', color: 'text-violet-400', label: 'Champs non documentés' },
+          notImplemented: { icon: 'fa-eye-slash', color: 'text-slate-400', label: 'Champs non implémentés' },
+          fail:     { icon: 'fa-circle-xmark', color: 'text-rose-400', label: 'Échec' },
+          skip:     { icon: 'fa-circle-minus', color: 'text-slate-500', label: 'Ignorée' },
+        }[s.outcome] || { icon: 'fa-circle', color: 'text-slate-500', label: s.outcome };
+
+        const nbErr = (s.errors || []).length;
+        const nbWarn = (s.warnings || []).length;
+        const nbNull = (s.nullables || []).length;
+        const nbUndoc = (s.undocumented || []).length;
+        const nbNotImpl = (s.notImplemented || []).length;
+        const hasDetails = nbErr > 0 || nbWarn > 0 || nbNull > 0 || nbUndoc > 0 || nbNotImpl > 0;
+        const rowId = `summary-detail-${idx}`;
+
+        // Regroupe les messages SIMILAIRES : on normalise les indices de tableau
+        // (/perf/0/x, /perf/1/x → /perf[]/x) puis on compte les occurrences.
+        const groupMsgs = (arr) => {
+          const counts = new Map();
+          (arr || []).forEach(m => {
+            // Remplace "/<nombre>/" et "/<nombre>" en fin par "[]"
+            const norm = String(m)
+              .replace(/\/(\d+)(?=\/)/g, '[]')   // /0/ → []/  (index au milieu du chemin)
+              .replace(/\/(\d+)\b/g, '[]');      // /0   → []   (index en fin de chemin)
+            counts.set(norm, (counts.get(norm) || 0) + 1);
+          });
+          return Array.from(counts.entries()); // [ [messageNormalisé, n], ... ]
+        };
+
+        const details = [
+          ...groupMsgs(s.errors).map(([e, n]) =>
+            `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
+               <span class="text-rose-300 flex-1">✖ ${e}</span>
+               ${n > 1 ? `<span class="text-rose-400 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+             </div>`),
+          ...groupMsgs(s.warnings).map(([w, n]) =>
+            `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
+               <span class="text-amber-300 flex-1">⚠ ${w}</span>
+               ${n > 1 ? `<span class="text-amber-400 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+             </div>`),
+          ...groupMsgs(s.nullables).map(([nu, n]) =>
+            `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
+               <span class="text-cyan-300 flex-1"><i class="fa-solid fa-slash mr-1"></i>${nu}</span>
+               ${n > 1 ? `<span class="text-cyan-400 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+             </div>`),
+          ...groupMsgs(s.undocumented).map(([u, n]) =>
+            `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
+               <span class="text-violet-300 flex-1"><i class="fa-solid fa-circle-plus mr-1"></i>${u}</span>
+               ${n > 1 ? `<span class="text-violet-400 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+             </div>`),
+          ...groupMsgs(s.notImplemented).map(([ni, n]) =>
+            `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
+               <span class="text-slate-400 flex-1"><i class="fa-solid fa-eye-slash mr-1"></i>${ni}</span>
+               ${n > 1 ? `<span class="text-slate-300 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+             </div>`),
+        ].join('');
+
+        // Compteurs erreurs / warnings / null affichés sur la ligne
+        const counters = [
+          nbErr > 0 ? `<span class="text-rose-400 text-[10px] font-bold" title="${nbErr} erreur(s)"><i class="fa-solid fa-circle-xmark mr-0.5"></i>${nbErr}</span>` : '',
+          nbWarn > 0 ? `<span class="text-amber-400 text-[10px] font-bold" title="${nbWarn} avertissement(s)"><i class="fa-solid fa-triangle-exclamation mr-0.5"></i>${nbWarn}</span>` : '',
+          nbNull > 0 ? `<span class="text-cyan-400 text-[10px] font-bold" title="${nbNull} champ(s) null"><i class="fa-solid fa-slash mr-0.5"></i>${nbNull}</span>` : '',
+          nbUndoc > 0 ? `<span class="text-violet-400 text-[10px] font-bold" title="${nbUndoc} champ(s) non documenté(s)"><i class="fa-solid fa-circle-plus mr-0.5"></i>${nbUndoc}</span>` : '',
+          nbNotImpl > 0 ? `<span class="text-slate-400 text-[10px] font-bold" title="${nbNotImpl} champ(s) non implémenté(s)"><i class="fa-solid fa-eye-slash mr-0.5"></i>${nbNotImpl}</span>` : '',
+        ].filter(Boolean).join(' ');
+
+        return `
+          <div class="bg-slate-900/70 border border-slate-700/60 rounded-lg">
+            <div class="flex items-center gap-2 text-xs p-2.5 ${hasDetails ? 'cursor-pointer hover:bg-slate-800/50 rounded-lg transition' : ''}"
+                 ${hasDetails ? `onclick="toggleSummaryDetail('${rowId}')"` : ''}>
+              ${hasDetails ? `<i id="${rowId}-chevron" class="fa-solid fa-chevron-right text-[8px] text-slate-500 transition-transform"></i>` : '<span class="w-2"></span>'}
+              <i class="fa-solid ${conf.icon} ${conf.color}"></i>
+              <span class="font-mono font-bold text-slate-300">${s.route.method}</span>
+              <span class="font-mono text-slate-400 truncate flex-1">${s.route.path}</span>
+              ${counters}
+              <span class="${conf.color} text-[10px] font-semibold">${conf.label}${s.statusCode ? ' · HTTP ' + s.statusCode : ''}</span>
+            </div>
+            ${details ? `<div id="${rowId}" class="hidden px-2.5 pb-2.5 space-y-0.5">${details}</div>` : ''}
+          </div>`;
+      }).join('');
+
+      const okCount = summary.filter(s => s?.outcome === 'ok').length;
+      const warnCount = summary.filter(s => s?.outcome === 'warn').length;
+      const nullCount = summary.filter(s => s?.outcome === 'nullable').length;
+      const undocCount = summary.filter(s => s?.outcome === 'undocumented').length;
+      const notImplCount = summary.filter(s => s?.outcome === 'notImplemented').length;
+      const failCount = summary.filter(s => s?.outcome === 'fail').length;
+      const skipCount = summary.filter(s => s?.outcome === 'skip').length;
+
+      block.innerHTML = `
+        <div class="border-t border-slate-700/80 pt-3">
+          <div class="flex items-center justify-between mb-2 gap-2">
+            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <i class="fa-solid fa-clipboard-list text-indigo-400"></i> Synthèse du scénario
+              <span class="text-[10px] font-normal text-slate-400">
+                (${okCount} conforme(s), ${warnCount} avertissement(s)${nullCount ? `, ${nullCount} champ(s) null` : ''}${undocCount ? `, ${undocCount} non documenté(s)` : ''}${notImplCount ? `, ${notImplCount} non implémenté(s)` : ''}, ${failCount} échec(s)${skipCount ? `, ${skipCount} ignorée(s)` : ''})
+              </span>
+            </h3>
+            <button type="button" id="exportSummaryBtn"
+              class="text-[10px] font-semibold px-2.5 py-1 rounded-md border border-slate-600 bg-slate-800 hover:bg-indigo-600 hover:border-indigo-500 text-slate-300 hover:text-white transition flex items-center gap-1.5 flex-shrink-0">
+              <i class="fa-solid fa-download"></i> Exporter JSON
+            </button>
+          </div>
+          ${rows}
+        </div>`;
+
+      // Mémoriser la synthèse courante pour l'export, et brancher le bouton
+      lastScenarioSummary = { scenarioId: sc.id, scenarioLabel: sc.label, summary };
+      const exportBtn = document.getElementById('exportSummaryBtn');
+      if (exportBtn) exportBtn.addEventListener('click', () => exportScenarioSummary(sc, summary));
+    }
+
+    // Variable mémorisant la dernière synthèse (pour l'export)
+    let lastScenarioSummary = null;
+
+    /**
+     * Génère et télécharge un JSON de la synthèse du scénario.
+     */
+    function exportScenarioSummary(sc, summary) {
+      const payload = {
+        scenario: { id: sc.id, label: sc.label },
+        targetUrl: targetUrlInput.value.trim(),
+        executedAt: new Date().toISOString(),
+        mode: scenarioExecMode,
+        steps: summary.filter(Boolean).map(s => ({
+          label: s.label,
+          method: s.route.method,
+          path: s.route.path,
+          statusCode: s.statusCode ?? null,
+          outcome: s.outcome,
+          errors: s.errors || [],
+          warnings: s.warnings || [],
+          nullables: s.nullables || [],
+          undocumented: s.undocumented || [],
+          notImplemented: s.notImplemented || [],
+        })),
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+      a.href = url;
+      a.download = `synthese-${sc.id}-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Expand/collapse du détail d'une route dans la synthèse
+    window.toggleSummaryDetail = function(rowId) {
+      const el = document.getElementById(rowId);
+      const chevron = document.getElementById(rowId + '-chevron');
+      if (!el) return;
+      const hidden = el.classList.toggle('hidden');
+      chevron?.classList.toggle('rotate-90', !hidden);
+    };
+
+    runScenarioBtn.addEventListener('click', () => runScenario());
+
+    // Rejouer le dernier test : relance le scénario avec les choix mémorisés
+    replayScenarioBtn.addEventListener('click', () => {
+      const sc = getScenario(scenarioSelect.value);
+      if (!sc) return;
+      const last = getScenarioLastRun(sc.id);
+      if (!last) { alert('Aucun test précédent mémorisé pour ce scénario et cette URL.'); return; }
+      runScenario(last);
+    });
+
+    function renderRoutesList(routes, tagOrder = []) {
+      if (routes.length === 0) {
+        routesContainer.innerHTML = '<div class="col-span-full text-slate-500 italic text-center py-6">Aucune route valide trouvée dans ce YAML.</div>';
+        return;
+      }
+
+      const methodColors = {
+        GET:    'text-emerald-400 bg-emerald-950/60 border-emerald-800',
+        POST:   'text-sky-400 bg-sky-950/60 border-sky-800',
+        PUT:    'text-amber-400 bg-amber-950/60 border-amber-800',
+        DELETE: 'text-rose-400 bg-rose-950/60 border-rose-800',
+        PATCH:  'text-purple-400 bg-purple-950/60 border-purple-800'
+      };
+
+      // ── Grouper les routes par tag ───────────────────────────────────────
+      // On construit une Map ordonnée : tag → routes[]
+      // L'ordre suit tagOrder (issu de apiSpec.tags[]), les sans-tag vont à la fin.
+      const grouped = new Map();
+
+      // Pré-remplir dans l'ordre du YAML pour préserver l'ordre des sections
+      for (const tag of tagOrder) grouped.set(tag, []);
+
+      routes.forEach((r, i) => {
+        const tag = r.tag || '—';
+        if (!grouped.has(tag)) grouped.set(tag, []);
+        grouped.get(tag).push({ route: r, index: i });
+      });
+
+      // Supprimer les sections vides (tags déclarés dans le YAML mais sans route)
+      for (const [tag, list] of grouped) {
+        if (list.length === 0) grouped.delete(tag);
+      }
+
+      // ── Rendu HTML ───────────────────────────────────────────────────────
+      routesContainer.className = 'bg-slate-900/90 rounded-lg border border-slate-700/80 max-h-80 overflow-y-auto text-xs';
+
+      routesContainer.innerHTML = Array.from(grouped.entries()).map(([tag, items]) => {
+        const rows = items.map(({ route: r, index: i }) => {
+          const badgeStyle = methodColors[r.method] || 'text-slate-300 bg-slate-800 border-slate-700';
+          const summary = r.summary ? `<span class="text-slate-500 truncate ml-1" title="${r.summary}">— ${r.summary}</span>` : '';
+          return `
+            <label class="flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-800/60 cursor-pointer border-b border-slate-800/60 last:border-0 transition">
+              <input type="checkbox" class="route-checkbox accent-indigo-500 h-3.5 w-3.5 rounded flex-shrink-0" value="${i}" checked>
+              <span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${badgeStyle}">${r.method}</span>
+              <span class="font-mono text-slate-200 truncate">${r.path}</span>
+              ${summary}
+            </label>`;
+        }).join('');
+
+        // Header de section avec checkbox "tout cocher/décocher" pour ce tag
+        const tagId = `tag-group-${tag.replace(/\W/g, '_')}`;
+        return `
+          <div class="route-group" data-tag="${tag}">
+            <div class="flex items-center gap-2 px-3 py-2 bg-slate-800/90 border-b border-slate-700/80 sticky top-0 z-10 cursor-pointer select-none group"
+                 onclick="toggleRouteGroup('${tagId}')">
+              <i id="${tagId}-chevron" class="fa-solid fa-chevron-down text-slate-500 text-[9px] transition-transform"></i>
+              <input type="checkbox" class="tag-checkbox accent-indigo-500 h-3.5 w-3.5 rounded flex-shrink-0"
+                     data-tag-id="${tagId}"
+                     onclick="event.stopPropagation(); toggleTagCheckboxes('${tagId}', this.checked)"
+                     checked title="Tout cocher / décocher cette section">
+              <span class="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide">${tag}</span>
+              <span class="text-[10px] text-slate-500 ml-auto">${items.length} route${items.length > 1 ? 's' : ''}</span>
+            </div>
+            <div id="${tagId}" class="divide-y divide-slate-800/40">
+              ${rows}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // Collapse/expand d'un groupe
+    window.toggleRouteGroup = function(tagId) {
+      const body = document.getElementById(tagId);
+      const chevron = document.getElementById(tagId + '-chevron');
+      if (!body) return;
+      const collapsed = body.classList.toggle('hidden');
+      chevron?.classList.toggle('rotate-[-90deg]', collapsed);
+    };
+
+    // Cocher/décocher toutes les routes d'un groupe
+    window.toggleTagCheckboxes = function(tagId, checked) {
+      const body = document.getElementById(tagId);
+      if (!body) return;
+      body.querySelectorAll('.route-checkbox').forEach(cb => cb.checked = checked);
+    };
+
+    document.getElementById('selectAllBtn').onclick = () => {
+      document.querySelectorAll('.route-checkbox').forEach(cb => cb.checked = true);
+      document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = true);
+    };
+    document.getElementById('deselectAllBtn').onclick = () => {
+      document.querySelectorAll('.route-checkbox').forEach(cb => cb.checked = false);
+      document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
+    };
+
+    // ----------------------------------------------------
+    // EXECUTION BATCH
+    // ----------------------------------------------------
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const selectedIndices = Array.from(document.querySelectorAll('.route-checkbox:checked'))
+        .map(cb => parseInt(cb.value));
+
+      if (selectedIndices.length === 0) {
+        alert('Veuillez cocher au moins une route à tester.');
+        return;
+      }
+
+      saveTargetConfig(targetUrlInput.value, clientIdInput.value, scopeInput.value);
+
+      const selectedRoutes = selectedIndices.map(i => detectedRoutes[i]);
+      const formData = new FormData(form);
+      formData.append('selectedRoutes', JSON.stringify(selectedRoutes));
+      formData.append('userParams', JSON.stringify(collectUserParams()));
+      formData.append('requestBodies', JSON.stringify(collectRequestBodies()));
+
+      // Si pas de fichier sélectionné, utiliser le contenu YAML mis en cache (historique)
+      if (!specFile.files[0]) {
+        if (!cachedYamlContent) {
+          alert('Aucun fichier YAML disponible. Veuillez re-sélectionner le fichier YAML.');
+          return;
+        }
+        const yamlBlob = new Blob([cachedYamlContent], { type: 'application/x-yaml' });
+        formData.set('spec', yamlBlob, 'spec.yaml');
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exécution des requêtes & Validation...';
+      resultsContainer.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/validate-batch', { method: 'POST', body: formData });
+        const responseText = await res.text();
+
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          throw new Error(`Erreur serveur (${res.status}). Voir les logs dans /logs.`);
+        }
+
+        if (!res.ok) throw new Error(data.error || data.details || 'Erreur serveur');
+
+        currentBatchResults = data.results;
+
+        // Logger chaque résultat dans la console
+        (data.results || []).forEach(r => {
+          window._consoleLog?.({
+            type: r.valid ? 'BATCH' : 'ERROR',
+            route: { method: r.method, path: r.path },
+            status: r.statusCode,
+            responseBody: r.responseBody,
+            requestUrl: r.requestUrl,
+            error: r.valid ? null : (r.errors?.[0] || null),
+          });
+        });
+
+        updateCounters(data.results);
+        renderResults(data.results);
+        resultsCount.innerText = `${data.results.length} route(s) testée(s)`;
+        resultsContainer.classList.remove('hidden');
+
+        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (err) {
+        alert('Erreur : ' + err.message);
+      } finally {
+        submitBtn.innerHTML = '<i class="fa-solid fa-play"></i> Lancer la validation';
+        updateSubmitState();
+      }
+    });
+
+    function renderResults(results) {
+      const filteredResults = results.filter(r => {
+        if (currentFilter === 'ALL') return true;
+        return getResultCategory(r) === currentFilter;
+      });
+
+      if (filteredResults.length === 0) {
+        resultsTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-8 text-center text-slate-500 italic">
+              Aucun résultat ne correspond au filtre sélectionné (${currentFilter}).
+            </td>
+          </tr>`;
+        return;
+      }
+
+      resultsTableBody.innerHTML = filteredResults.map((r, index) => {
+        const realIndex = results.indexOf(r);
+        const statusCode = r.statusCode || 0;
+        const category = getResultCategory(r);
+
+        let statusClass = '';
+        let badgeIcon = '';
+        let statusText = '';
+        let httpBadgeClass = '';
+
+        switch (category) {
+          case 'UNHANDLED_ERROR':
+            statusClass = 'bg-cyan-950/80 text-cyan-300 border-cyan-700';
+            badgeIcon = 'fa-ban';
+            statusText = 'CODE HTTP NON GÉRÉ';
+            httpBadgeClass = 'bg-cyan-950 text-cyan-300 border-cyan-800';
+            break;
+          case 'SCHEMA_ERROR':
+            statusClass = 'bg-rose-950/80 text-rose-300 border-rose-700';
+            badgeIcon = 'fa-circle-xmark';
+            statusText = 'NON CONFORME AU SCHÉMA';
+            httpBadgeClass = 'bg-rose-950 text-rose-300 border-rose-800';
+            break;
+          case 'UNDECLARED_ERROR':
+            statusClass = 'bg-purple-950/80 text-purple-300 border-purple-700';
+            badgeIcon = 'fa-triangle-exclamation';
+            statusText = 'CODE ERREUR NON DÉCLARÉ';
+            httpBadgeClass = 'bg-purple-950 text-purple-300 border-purple-800';
+            break;
+          case 'DECLARED_ERROR':
+            statusClass = 'bg-amber-950/80 text-amber-300 border-amber-700';
+            badgeIcon = 'fa-triangle-exclamation';
+            statusText = 'ERREUR PRÉVUE DANS YAML';
+            httpBadgeClass = 'bg-amber-950 text-amber-300 border-amber-800';
+            break;
+          default:
+            statusClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-700';
+            badgeIcon = 'fa-circle-check';
+            statusText = 'CONFORME';
+            httpBadgeClass = 'bg-emerald-950 text-emerald-400 border-emerald-800';
+            break;
+        }
+
+        let errorSummary = '';
+        if (category === 'UNHANDLED_ERROR') {
+          errorSummary = `<span class="text-cyan-300 italic"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Code HTTP ${statusCode} inconnu/non géré par le validateur</span>`;
+        } else if (r.errors && r.errors.length > 0) {
+          errorSummary = `<span class="text-rose-400 font-semibold">${r.errors.length} erreur(s) de schéma détectée(s)</span>`;
+        } else if (category === 'UNDECLARED_ERROR') {
+          errorSummary = `<span class="text-purple-300 italic">Code HTTP ${statusCode} non spécifié dans le YAML</span>`;
+        } else {
+          errorSummary = '<span class="text-emerald-400 italic"><i class="fa-solid fa-check mr-1"></i> Réponse conforme</span>';
+        }
+
+        return `
+          <tr class="hover:bg-slate-800/50 transition">
+            <td class="py-3 px-4 font-mono font-bold text-indigo-400 uppercase">${r.method}</td>
+            <td class="py-3 px-4 font-mono text-slate-200">${r.path}</td>
+            <td class="py-3 px-4 font-mono">
+              <span class="px-2 py-1 rounded text-xs border ${httpBadgeClass}">
+                ${statusCode || 'N/A'}
+              </span>
+            </td>
+            <td class="py-3 px-4">
+              <span class="px-2.5 py-1 rounded text-[10px] font-bold border flex items-center gap-1.5 w-fit ${statusClass}">
+                <i class="fa-solid ${badgeIcon}"></i>
+                ${statusText}
+              </span>
+            </td>
+            <td class="py-3 px-4 bg-slate-900/40 rounded-lg text-xs">${errorSummary}</td>
+            <td class="py-3 px-4 text-right">
+              <button type="button" onclick="openDetailModal(${realIndex})" 
+                class="px-2.5 py-1 bg-slate-700 hover:bg-indigo-600 text-slate-200 hover:text-white rounded text-xs font-semibold transition border border-slate-600 flex items-center gap-1.5 ml-auto">
+                <i class="fa-solid fa-magnifying-glass-plus"></i> Inspecter
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ----------------------------------------------------
+    // INSPECTEUR ET MODAL DE COMPARAISON
+    // ----------------------------------------------------
+    window.openDetailModal = function(index) {
+      const item = currentBatchResults[index];
+      if (!item) return;
+
+      modalMethodBadge.innerText = item.method;
+      modalMethodBadge.className = `font-mono text-xs font-bold px-2 py-1 rounded border ${
+        item.method === 'GET' ? 'text-emerald-400 bg-emerald-950 border-emerald-800' :
+        item.method === 'POST' ? 'text-sky-400 bg-sky-950 border-sky-800' : 'text-slate-300 bg-slate-800'
+      }`;
+
+      modalPathTitle.innerText = item.path;
+      modalCodeHttp.innerText = item.statusCode || 'N/A';
+
+      if (item.errors && item.errors.length > 0) {
+        modalErrorsBlock.classList.remove('hidden');
+        modalErrorsList.innerHTML = `<ul class="list-disc list-inside space-y-1">
+          ${item.errors.map(e => `<li>${e}</li>`).join('')}
+        </ul>`;
+      } else {
+        modalErrorsBlock.classList.add('hidden');
+      }
+
+      const receivedData = item.responseBody !== undefined ? item.responseBody : item.data;
+      modalReceivedJson.innerText = receivedData ? JSON.stringify(receivedData, null, 2) : "// Aucune donnée reçue ou body vide";
+
+      if (item.expectedSchema) {
+        modalExpectedSchema.innerText = JSON.stringify(item.expectedSchema, null, 2);
+        modalExpectedStatus.innerText = `(Pour statut HTTP ${item.statusCode})`;
+      } else {
+        modalExpectedSchema.innerText = "// Aucun schéma défini dans le YAML pour ce code HTTP";
+        modalExpectedStatus.innerText = "(Code non défini)";
+      }
+
+      const category = getResultCategory(item);
+      if (category === 'UNHANDLED_ERROR') {
+        modalStatusBadge.innerText = 'CODE NON GÉRÉ';
+        modalStatusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold border bg-cyan-950 text-cyan-300 border-cyan-700';
+      } else if (!item.valid) {
+        modalStatusBadge.innerText = 'NON CONFORME';
+        modalStatusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold border bg-rose-950 text-rose-300 border-rose-700';
+      } else {
+        modalStatusBadge.innerText = 'CONFORME';
+        modalStatusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold border bg-emerald-950 text-emerald-300 border-emerald-700';
+      }
+
+      detailModal.classList.remove('hidden');
+    };
+
+    function closeModal() {
+      detailModal.classList.add('hidden');
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    closeModalBottomBtn.addEventListener('click', closeModal);
+    detailModal.addEventListener('click', (e) => {
+      if (e.target === detailModal) closeModal();
+    });
+
+    copyResponseBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(modalReceivedJson.innerText);
+      copyResponseBtn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> Copié !';
+      setTimeout(() => {
+        copyResponseBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copier JSON';
+      }, 2000);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !detailModal.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    // ----------------------------------------------------
+    // CONSOLE API
+    // ----------------------------------------------------
+    let consoleEntries = [];
+    let consoleCollapsed = false;
+    let currentConsoleFilter = 'ALL';
+
+    function toggleConsole() {
+      const body = document.getElementById('consoleBody');
+      const chevron = document.getElementById('consoleChevron');
+      const panel = document.getElementById('apiConsole');
+      const spacer = panel.nextElementSibling;
+      consoleCollapsed = !consoleCollapsed;
+      if (consoleCollapsed) {
+        panel.style.height = '36px';
+        spacer.style.height = '36px';
+        chevron.classList.replace('fa-chevron-down', 'fa-chevron-up');
+      } else {
+        // Restaurer la dernière hauteur personnalisée (ou 220px par défaut)
+        const h = parseInt(localStorage.getItem('validator_console_height') || '', 10) || 220;
+        panel.style.height = h + 'px';
+        spacer.style.height = h + 'px';
+        chevron.classList.replace('fa-chevron-up', 'fa-chevron-down');
+      }
+    }
+
+    function clearConsole() {
+      consoleEntries = [];
+      renderConsole();
+      document.getElementById('consoleBadge').classList.add('hidden');
+    }
+
+    function filterConsole(val) {
+      currentConsoleFilter = val;
+      renderConsole();
+    }
+
+    /**
+     * Ajoute une entrée dans la console.
+     * type : 'PREFILL' | 'BATCH' | 'ERROR'
+     * route : { method, path }
+     * status : code HTTP
+     * responseBody : objet JSON de la réponse
+     * duration : ms
+     */
+    function consoleLog({ type, label, route, status, responseBody, error, duration, requestUrl }) {
+      consoleEntries.unshift({ type, label, route, status, responseBody, error, duration, requestUrl, ts: new Date() });
+      if (consoleEntries.length > 200) consoleEntries.pop();
+      renderConsole();
+      // Badge compteur
+      const badge = document.getElementById('consoleBadge');
+      badge.textContent = consoleEntries.length;
+      badge.classList.remove('hidden');
+      // Auto-expand si réduit
+      if (consoleCollapsed) toggleConsole();
+    }
+
+    function renderConsole() {
+      const body = document.getElementById('consoleBody');
+      const filtered = currentConsoleFilter === 'ALL'
+        ? consoleEntries
+        : consoleEntries.filter(e => e.type === currentConsoleFilter);
+
+      if (filtered.length === 0) {
+        body.innerHTML = '<div class="text-slate-600 italic px-4 py-3">Aucune entrée.</div>';
+        return;
+      }
+
+      body.innerHTML = filtered.map((e, i) => {
+        const time = e.ts.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const methodColor = {
+          GET: 'text-emerald-400', POST: 'text-sky-400', PUT: 'text-amber-400',
+          DELETE: 'text-rose-400', PATCH: 'text-purple-400'
+        }[e.route?.method] || 'text-slate-400';
+
+        const typeColor = {
+          PREFILL:  'text-violet-400 bg-violet-950/60 border-violet-800',
+          BATCH:    'text-indigo-400 bg-indigo-950/60 border-indigo-800',
+          ERROR:    'text-rose-400 bg-rose-950/60 border-rose-800',
+          JS_ERROR: 'text-orange-400 bg-orange-950/60 border-orange-800',
+        }[e.type] || 'text-slate-400 bg-slate-800 border-slate-700';
+
+        const statusColor = !e.status ? 'text-slate-500'
+          : e.status < 300 ? 'text-emerald-400'
+          : e.status < 400 ? 'text-amber-400'
+          : 'text-rose-400';
+
+        const hasBody = e.responseBody !== undefined && e.responseBody !== null;
+        const entryId = `console-entry-${i}`;
+
+        return `
+          <div class="px-4 py-1.5 hover:bg-slate-900/50 transition">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="toggleConsoleEntry('${entryId}')">
+              <span class="text-slate-600 flex-shrink-0">${time}</span>
+              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${typeColor}">${e.type}</span>
+              ${e.route ? `<span class="font-bold flex-shrink-0 ${methodColor}">${e.route.method}</span>
+              <span class="text-slate-300 truncate flex-1" title="${e.requestUrl || e.route.path}">${e.requestUrl || e.route.path}</span>` : `<span class="text-slate-300 flex-1">${e.label || ''}</span>`}
+              ${e.status ? `<span class="flex-shrink-0 font-bold ${statusColor}">HTTP ${e.status}</span>` : ''}
+              ${e.duration ? `<span class="text-slate-600 flex-shrink-0">${e.duration}ms</span>` : ''}
+              ${e.error ? `<span class="text-rose-400 truncate flex-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${e.error}</span>` : ''}
+              ${hasBody ? `<i class="fa-solid fa-chevron-right text-[8px] text-slate-600 flex-shrink-0 transition-transform" id="${entryId}-chevron"></i>` : ''}
+            </div>
+            ${hasBody ? `
+            <div id="${entryId}" class="hidden mt-1 ml-4 pl-3 border-l border-slate-700">
+              <pre class="text-[10px] text-sky-300 bg-slate-900 rounded p-2 max-h-40 overflow-auto whitespace-pre-wrap break-all">${JSON.stringify(e.responseBody, null, 2)}</pre>
+            </div>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    window.toggleConsoleEntry = function(id) {
+      const el = document.getElementById(id);
+      const chevron = document.getElementById(id + '-chevron');
+      if (!el) return;
+      const hidden = el.classList.toggle('hidden');
+      chevron?.classList.toggle('rotate-90', !hidden);
+    };
+
+    // Exposer consoleLog globalement pour les appels dans callRouteForPrefill et le batch
+    window._consoleLog = consoleLog;
+
+    // ── Capture globale des erreurs JavaScript vers la console API ────────
+    // Permet de voir les crashs directement dans la console de l'appli.
+    window.addEventListener('error', (event) => {
+      const src = event.filename ? `${event.filename.split('/').pop()}:${event.lineno}:${event.colno}` : '';
+      consoleLog({
+        type: 'JS_ERROR',
+        label: `Erreur JS : ${event.message}${src ? ' (' + src + ')' : ''}`,
+        responseBody: event.error?.stack ? { message: event.message, stack: event.error.stack } : undefined,
+      });
+    });
+
+    // Promesses rejetées non gérées (async/await sans catch)
+    window.addEventListener('unhandledrejection', (event) => {
+      const reason = event.reason;
+      const msg = reason?.message || String(reason);
+      consoleLog({
+        type: 'JS_ERROR',
+        label: `Promesse rejetée : ${msg}`,
+        responseBody: reason?.stack ? { message: msg, stack: reason.stack } : undefined,
+      });
+    });
+
+    // ── Redimensionnement de la console par glisser-déposer ───────────────
+    (function initConsoleResize() {
+      const panel = document.getElementById('apiConsole');
+      const handle = document.getElementById('consoleResizeHandle');
+      const spacer = panel.nextElementSibling;
+      const MIN_H = 80;
+      const MAX_H = () => window.innerHeight - 100; // laisser de la place en haut
+
+      let dragging = false;
+
+      // Restaurer la hauteur sauvegardée
+      const savedH = parseInt(localStorage.getItem('validator_console_height') || '', 10);
+      if (savedH && savedH >= MIN_H) {
+        panel.style.height = savedH + 'px';
+        spacer.style.height = savedH + 'px';
+      }
+
+      handle.addEventListener('mousedown', (e) => {
+        if (consoleCollapsed) return; // pas de resize si réduite
+        dragging = true;
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'ns-resize';
+        // Désactiver la transition pendant le drag pour un suivi fluide
+        panel.style.transition = 'none';
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        // Hauteur = distance entre le bas de la fenêtre et la position du curseur
+        let newH = window.innerHeight - e.clientY;
+        newH = Math.max(MIN_H, Math.min(newH, MAX_H()));
+        panel.style.height = newH + 'px';
+        spacer.style.height = newH + 'px';
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false;
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        panel.style.transition = ''; // réactiver la transition
+        // Sauvegarder la hauteur choisie
+        localStorage.setItem('validator_console_height', String(parseInt(panel.style.height, 10)));
+      });
+    })();
+  </script>
+</body>
+</html>

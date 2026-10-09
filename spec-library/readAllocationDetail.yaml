@@ -1,0 +1,6171 @@
+openapi: 3.0.3
+info:
+  title: Unified backoffice API
+  version: 1.11.8
+  description: Unified back office API for Vivaticket ticket sales management
+    We decided to use meaningful, service-oriented names.
+    For the get api we decided to use find, read and search as prefix for our APIs.
+    Read -> returns an entity starting from a code. For performance reasons, this type of API allows user to make a group of calls by passing more than one parameter
+    Find -> returns multiple entities starting from one or more request parameters
+    Search -> same as Find, but the response supports the pagination
+
+  contact:
+    name: VivaTicket
+    email: info@vivaticket.com
+tags:
+  - name: account
+  - name: asset
+    description: static assets, such as images
+  - name: auth
+    description: services relating to authentication
+  - name: b2b
+  - name: cache
+  - name: cart
+  - name: document
+  - name: family
+  - name: mask
+    description: configurations relating to the user's data entry masks
+  - name: offer
+  - name: order
+  - name: performance
+  - name: price
+  - name: product
+  - name: promotion
+  - name: renewal
+  - name: report
+  - name: seat
+  - name: sell
+  - name: ticket
+  - name: theme
+  - name: upgrade
+
+security:
+  - BearerAuth: [ ]
+
+paths:
+  # ==================================================
+  # ENDPOINTS GROUP: ACCOUNT
+  # ==================================================
+
+  /api/v1/account/createAccount:
+    post:
+      tags:
+        - account
+      summary: create a new account
+      operationId: createAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAccountRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/readAccount:
+    get:
+      tags:
+        - account
+      summary: Read account  by code
+      operationId: readAccount
+      parameters:
+        - in: query
+          name: accountCode
+          required: true
+          description: List of account code
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: askSubscriptionInfo
+          required: false
+          description: Ask the core system to fill in the subscription info data
+          schema:
+            type: boolean
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadAccountRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/readAccountFinancial:
+    get:
+      tags:
+        - account
+      summary: Read account financial by code
+      operationId: readAccountFinancial
+      parameters:
+        - in: query
+          name: accountCode
+          required: true
+          description: List of account code
+          schema:
+            type: array
+            items:
+              type: string
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadAccountFinancialRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/updateAccount:
+    patch:
+      tags:
+        - account
+      summary: update account
+      operationId: updateAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccountReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateAccountRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/searchAccount:
+    post:
+      tags:
+        - account
+      summary: search account
+      operationId: searchAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchAccountReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchAccountRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/searchAccountCredit:
+    post:
+      tags:
+        - account
+      summary: search account credit
+      operationId: searchAccountCredit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchAccountCreditReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchAccountCreditRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/accountCreditRecharge:
+    post:
+      tags:
+        - account
+      summary: account credit recharge
+      operationId: accountCreditRecharge
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountCreditRechargeReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountCreditRechargeRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/checkCreditAccount:
+    post:
+      tags:
+        - account
+      summary: check credit account
+      operationId: checkCreditAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckCreditAccountReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckCreditAccountRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: ASSET
+  # ==================================================
+
+  /api/v1/asset/readImage:
+    get:
+      tags:
+        - asset
+      summary: Read image list by code
+      operationId: readImage
+      parameters:
+        - in: query
+          name: imageCode
+          required: true
+          description: List of image code
+          schema:
+            type: array
+            items:
+              type: string
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadImageRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/asset/createImage:
+    post:
+      tags:
+        - asset
+      summary: Create image
+      operationId: createImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateImageReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateImageRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: AUTH
+  # ==================================================
+
+  /api/v1/auth/signin:
+    post:
+      tags:
+        - auth
+      summary: signin
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9017450/AccountLogIn
+      operationId: signin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninReq"
+      responses:
+        # ErrorCode: ACCOUNT.2 - ACCOUNT.5 - ACCOUNT.6 - ACCOUNT.7
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SigninRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/auth/signout:
+    post:
+      tags:
+        - auth
+      summary: signout
+      description: Signs out the account identified by login
+      operationId: signout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignoutReq"
+      responses:
+        204:
+          description: Successfully signed out
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/auth/changePassword:
+    post:
+      tags:
+        - auth
+      summary: Change password
+      description: Vision /api/customers/updatePassword
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangePasswordRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/auth/searchLoginAccount: #TODO rename in find
+    get:
+      tags:
+        - auth
+      summary: Search active login account by email and return minimal data
+      operationId: SearchLoginAccount
+      parameters:
+        - in: query
+          name: value
+          required: true
+          description: Value to use for search account. Default is email address
+          schema:
+            type: string
+        - in: query
+          name: fieldCode
+          description: Specify the search field if different from email
+          schema:
+            $ref: "#/components/schemas/FieldCodeType"
+        - in: query
+          name: bosAccountCategoryCode
+          schema:
+            type: string
+      responses:
+        # ErrorCode: ACCOUNT.2
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchLoginAccountRes"
+
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/auth/resetPassword:
+    post:
+      tags:
+        - auth
+      summary: Change password
+      description: Vision /api/customers/reinitializePassword
+      operationId: resetPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordReq"
+      responses:
+        # ErrorCode: ACCOUNT.66
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResetPasswordRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: CART
+  # ==================================================
+
+  /api/v1/cart/checkCart:
+    post:
+      tags:
+        - cart
+      summary: Check cart
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018236/CheckBasket
+      operationId: checkCart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckCartReq"
+      responses:
+        # ErrorCode: COUPON.0 - COUPON.2 - PERFORMANCE.1
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckCartRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/cart/tryExchange:
+    post:
+      tags:
+        - cart
+      summary: try exchange
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018396/TryUpgrade
+      operationId: tryExchange
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TryExchangeReq"
+      responses:
+        # ErrorCode : TICKET.08 - TICKET.10
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TryExchangeRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/cart/tryRenewal:
+    post:
+      tags:
+        - cart
+      summary: try renewal
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018396/TryRenew
+      operationId: tryRenewal
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TryRenewalReq"
+      responses:
+        # ErrorCode: TICKET.105 - TICKET.111
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TryRenewalRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/cart/removeCart:
+    delete:
+      tags:
+        - cart
+      summary: Empty cart. This API can only be called if a checkCart has been executed
+      operationId: removeCart
+      parameters:
+        - in: query
+          name: cartCode
+          description: code of the cart to empty
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Ok
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS - CONTACTS
+  # ==================================================
+
+  /api/v1/account/createAccountRelationship:
+    post:
+      tags:
+        - account
+      summary: create relationship
+      description: create relationship between accounts
+      operationId: createAccountRelationship
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createAccountRelationshipReq"
+      responses:
+        204:
+          description: OK
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/deleteAccountRelationship:
+    delete:
+      tags:
+        - account
+      summary: delete relationship
+      description: delete relationship between accounts
+      operationId: deleteAccountRelationship
+      parameters:
+        - in: query
+          name: sourceAccountCode
+          description: organization account code
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: targetAccountCode
+          description: account code
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: OK
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: FAMILY
+  # ==================================================
+
+  /api/v1/family/findParentFamilies:
+    get:
+      tags:
+        - family
+      summary: Find all parent family codes given a code
+      operationId: findParentFamilies
+      parameters:
+        - in: query
+          name: code
+          description: "If core system haven't different parent family groups, it can be used a conventional code: 'default'"
+          required: true
+          schema:
+            type: array #TODO trasform this field from array to single code
+            items:
+              type: string
+        - in: query
+          name: accountCode
+          description: "It allows to filter the retrieved families by logged user, for future use"
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: organizationAccountCode
+          description: "It allows to filter the retrieved families by organization account. Used by the B2B"
+          required: false
+          schema:
+            type: array #TODO trasform this field from array to single code
+            items:
+              type: string
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindParentFamiliesRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/family/readParentFamily:
+    get:
+      tags:
+        - family
+      summary: Read parent family given a parent family code
+      operationId: readParentFamily
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+        - in: query
+          name: parentFamilyCode
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadParentFamilyRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/family/readFamily:
+    get:
+      tags:
+        - family
+      summary: Read family given a family code
+      operationId: readFamily
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+        - in: query
+          name: familyCode
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadFamilyRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/theme/readTheme:
+    get:
+      tags:
+        - theme
+      summary: Read theme for the family code
+      operationId: readTheme
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+        - in: query
+          name: themeCode
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadThemeRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: MASK
+  # ==================================================
+
+  /api/v1/mask/readDataList:
+    get:
+      tags:
+        - mask
+      summary: Read datalist by code
+      operationId: readDataList
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+        - in: query
+          name: key
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/DataListKeyCompactType"
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadDataListRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/mask/readMaskCategory:
+    get:
+      tags:
+        - mask
+      summary: read mask category (as account category)
+      operationId: readMaskCategory
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+        - in: query
+          name: maskCategoryCode
+          required: true
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadMaskCategoryRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: OFFER
+  # ==================================================
+
+  /api/v1/offer/findOfferCodesByFamily:
+    get:
+      tags:
+        - offer
+      summary: Read offer codes by family code
+      operationId: findOfferCodesByFamily
+      parameters:
+        - in: query
+          name: familyCode
+          required: true
+          description: List of family code
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: accountCode
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: askIsFamilySoldOut
+          required: false
+          description: Fill "isFamilySoldOut" field in the response with true if every single family offer availability is sold-out
+          schema:
+            type: boolean
+        - in: query
+          name: organizationAccountCode
+          required: false
+          description: Organization account code used to verify if the B2B customer is allowed to buy this offer
+          schema:
+            type: string
+        - in: query
+          name: availabilityQuantityMin
+          required: false
+          description: Minimum available quantity required during the requested availability period. Only offers with available quantity greater than or equal to the specified value are returned.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+        - in: query
+          name: availabilityDay
+          required: false
+          description: Day used to filter offers by availability. Only offers with availability on the specified day are returned.
+          schema:
+            $ref: "#/components/schemas/DateType"
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindOfferCodesByFamilyRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        403:
+          $ref: "#/components/responses/ForbiddenResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/offer/readOffer:
+    get:
+      tags:
+        - offer
+      summary: Read offer data by offer code
+      operationId: readOffer
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+        - in: query
+          name: offerCode
+          required: true
+          description: List of offer code
+          schema:
+            type: array
+            items:
+              type: string
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadOfferRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/offer/findFirstAvailableDate:
+    get:
+      tags:
+        - offer
+      summary: Find the first available date for an offer
+      operationId: findFirstAvailableDate
+      parameters:
+        - in: query
+          name: offerCode
+          description: required if productCode is empty
+          schema:
+            type: string
+        - in: query
+          name: productCode
+          description: required if offerCode is empty
+          schema:
+            type: string
+        - in: query
+          name: themeCode
+          schema:
+            type: string
+        - in: query
+          name: deliveryLanguageCode
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindFirstAvailableDateRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: ORDER
+  # ==================================================
+
+  /api/v1/order/beginOrderTrans:
+    post:
+      tags:
+        - order
+      summary: Begin order transaction. Must be followed by cancelOrderTrans or confirmOrderTrans
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018240/CheckOut
+      operationId: beginOrderTrans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeginOrderTransReq"
+      responses:
+        # ErrorCode: COUPON.0 - COUPON.2
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeginOrderTransRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/order/cancelOrderTrans:
+    post:
+      tags:
+        - order
+      summary: Cancel order transaction
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018176/AbortSale
+      operationId: cancelOrderTrans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelOrderTransReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancelOrderTransRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/order/confirmOrderTrans:
+    post:
+      tags:
+        - order
+      summary: Confirm order transaction
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018278/CloseOrder
+      operationId: confirmOrderTrans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmOrderTransReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfirmOrderTransRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/order/readOrderDetails:
+    get:
+      tags:
+        - order
+      summary: read order
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018334/ReadOrderByAK
+      operationId: readOrderDetails
+      parameters:
+        - in: query
+          name: orderCode
+          required: true
+          description: List of order code
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: askTicketHolderInfo
+          description: If false, the client does not need the ticket holder information.  So the server can avoid processing and returning this information
+          schema:
+            type: boolean
+
+      responses:
+        # ErrorCode: ORDER.0
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadOrderDetailsRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/order/searchOrder:
+    post:
+      tags:
+        - order
+      summary: Search order
+      operationId: searchOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchOrderReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchOrderRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/order/searchOrderTickets:
+    post:
+      tags:
+        - order
+      summary: Search order tickets
+      operationId: searchOrderTickets
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018982/SearchReservationTicket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchOrderTicketsReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchOrderTicketsRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/order/exchangeTrans:
+    post:
+      tags:
+        - order
+      summary: exchangeTrans. Must be followed by cancelOrderTrans or confirmOrderTrans
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018416/Upgrade
+      operationId: exchangeTrans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExchangeTransReq"
+      responses:
+        # ErrorCode: TICKET.10 - TICKET.18
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeTransRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/order/renewalTrans:
+    post:
+      tags:
+        - order
+      summary: renewalTrans. Must be followed by cancelOrderTrans or confirmOrderTrans
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018416/Renew
+      operationId: renewalTrans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenewalTransReq"
+      responses:
+        # ErrorCode: TICKET.105 - TICKET.111
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalTransRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/order/linkSubscriptionToOrder:
+    post:
+      tags:
+        - order
+      description: This API is needed to save the information of Meetch subscription to the related order.
+      summary: linkSubscriptionToOrder
+      operationId: linkSubscriptionToOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LinkSubscriptionToOrderReq"
+      responses:
+        204:
+          description: subscription saved
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: PERFORMANCE
+  # ==================================================
+
+  /api/v1/performance/findCalendarDays:
+    get:
+      tags:
+        - performance
+      summary: find the available date
+      operationId: findCalendarDays
+      parameters:
+        - $ref: "#/components/parameters/dateFrom.query"
+        - $ref: "#/components/parameters/dateTo.query"
+        - in: query
+          name: offerCode
+          schema:
+            type: string
+        - in: query
+          name: accountCode
+          description: Account code (useful for B2B)
+          schema:
+            type: string
+        - in: query
+          name: productCodes
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: familyCode
+          description: Used by the core system to obtain its familyThemeCode (with data integrity checking), which can be used for filtering response data. This parameter is an alternative to offerThemeCode.
+          schema:
+            type: string
+        - in: query
+          name: themeCode
+          description: Retrieve days with requested product theme code.
+          schema:
+            type: string
+        - in: query
+          name: offerThemeCode
+          deprecated: true # Use themeCode
+          description: Retrieve days with requested offer theme code. This parameter is an alternative to familyCode.
+          schema:
+            type: string
+        - in: query
+          deprecated: true # Use themeCode
+          name: productThemeCode
+          description: Retrieve days with requested product theme code.
+          schema:
+            type: string
+        - in: query
+          name: deliveryLanguageCode
+          description: Retrieve days with requested DeliveryLanguage code
+          schema:
+            $ref: "#/components/schemas/LocaleType"
+        - in: query
+          name: numberOfTickets
+          description: total number of tickets reserved
+          schema:
+            type: integer
+        - in: query
+          name: askPrice
+          description: If false, the client does not need the price. So the server can avoid processing and returning this information
+          schema:
+            type: boolean
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindCalendarDaysRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/performance/findPerformanceByDay:
+    get:
+      tags:
+        - performance
+      summary: find the timeslots available
+      operationId: findCalendarTimeslots
+      parameters:
+        - $ref: "#/components/parameters/timeFrom.query"
+        - $ref: "#/components/parameters/timeTo.query"
+        - in: query
+          name: date
+          required: true
+          schema:
+            $ref: "#/components/schemas/DateType"
+        - in: query
+          name: offerCode
+          schema:
+            type: string
+        - in: query
+          name: accountCode
+          description: If false, the client does not need the price. So the server can avoid processing and returning this information
+          schema:
+            type: string
+        - in: query
+          name: productCodes
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: familyCode
+          description: Used by the core system to obtain its familyThemeCode (with data integrity checking), which can be used for filtering response data. This parameter is an alternative to offerThemeCode.
+          schema:
+            type: string
+        - in: query
+          name: themeCode
+          description: Retrieve performance with requested theme code
+          schema:
+            type: string
+        - in: query
+          name: offerThemeCode
+          deprecated: true # use themeCode
+          description: Retrieve performance with requested offer theme code. This parameter is an alternative to familyCode.
+          schema:
+            type: string
+        - in: query
+          name: deliveryLanguageCode
+          description: Retrieve performance with requested DeliveryLanguage code
+          schema:
+            $ref: "#/components/schemas/LocaleType"
+        - in: query
+          name: numberOfTickets
+          description: filter out performances with less avail than input value
+          schema:
+            type: integer
+        - in: query
+          name: askPrice
+          description: If false, the client does not need the price. So the server can avoid processing and returning this information
+          schema:
+            type: boolean
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindPerformanceByDayRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: PRICE
+  # ==================================================
+
+  /api/v1/price/findPrices:
+    get:
+      tags:
+        - price
+      summary: search for product prices for a specific performance
+      operationId: findPrices
+      parameters:
+        - in: query
+          name: performancesCode
+          schema:
+            type: string
+        - in: query
+          name: date
+          schema:
+            $ref: "#/components/schemas/DateType"
+        - in: query
+          name: productCodes
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: accountCode
+          required: false
+          description: Account code (useful for B2B)
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindPricesRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: PRODUCT
+  # ==================================================
+
+  /api/v1/product/findProductCodes:
+    get:
+      tags:
+        - product
+      summary: Read product codes
+      operationId: findProduct
+      parameters:
+        - in: query
+          name: offerCode
+          description: required if performanceCode or performanceDate is empty
+          schema:
+            type: string
+        - in: query
+          name: performanceCode
+          description: required if offerCode or performanceDate is empty
+          schema:
+            type: string
+        - in: query
+          name: performanceDate
+          description: required if offerCode or performanceCode is empty
+          schema:
+            $ref: "#/components/schemas/DateType"
+        - in: query
+          name: familyCode
+          description: Family code (useful for Vision)
+          schema:
+            type: string
+        - in: query
+          name: accountCode
+          description: Account code (useful for B2B)
+          schema:
+            type: string
+        - in: query
+          name: askPrice
+          description: If false, the client does not need the price. So the server can avoid processing and returning this information
+          schema:
+            type: boolean
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindProductCodesRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/product/readProduct:
+    get:
+      tags:
+        - product
+      summary: Read product by code
+      operationId: readProduct
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+        - in: query
+          name: productCode
+          required: true
+          description: List of product code
+          schema:
+            type: array
+            items:
+              type: string
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadProductRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: seat
+  # ==================================================
+
+  /api/v1/seat/bestSeat:
+    post:
+      tags:
+        - seat
+      summary: bestSeat
+      description: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9019000/SeatInfo
+      operationId: bestSeat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BestSeatReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BestSeatRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: SELL
+  # ==================================================
+
+  /api/v1/sell/upSell:
+    post:
+      tags:
+        - sell
+      summary: UpSell product
+      operationId: upSell
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpSellReq"
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpSellRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/sell/crossSell:
+    post:
+      tags:
+        - sell
+      summary: CrossSell product for shopCart
+      operationId: crossSell
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CrossSellReq"
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrossSellRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: RENEWAL
+  # ==================================================
+
+  /api/v1/ticket/readRenewalProducts:
+    get:
+      tags:
+        - renewal
+      summary: read renewal products by mediaCode or ticketCode
+      operationId: readRenewalProducts
+      description: Important! one of mediaCode and ticketCode is required
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+        - in: query
+          name: mediaCode
+          required: false
+          description: List of mediacode
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: ticketCode
+          required: false
+          description: List of ticket code
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        # ErrorCode: MEMBERSHIP.0 - MEMBERSHIP.1 - RENEWAL.0 - RENEWAL.1
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadRenewalProductsRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: UPGRADE
+  # ==================================================
+
+  /api/v1/ticket/readUpgradeProducts:
+    get:
+      tags:
+        - upgrade
+      summary: get upgrade products by mediaCode or ticketCode
+      operationId: readUpgradeProducts
+      description: Important! one of mediaCode and ticketCode is required
+      parameters:
+        - in: query
+          name: mediaCode
+          required: false
+          description: List of mediacode
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: ticketCode
+          required: false
+          description: List of ticket code
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadUpgradeProductsRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: TICKET
+  # ==================================================
+
+  /api/v1/ticket/findSubscription:
+    get:
+      tags:
+        - ticket
+      summary: Retrieve user's subscriptions (membership and season pass)
+      operationId: findSubscription
+      parameters:
+        - in: query
+          name: accountCode
+          required: true
+          description: Account code
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindSubscriptionRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          # TICKET.40  The ticket's validity has expired
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/ticket/findRedeemables:
+    get:
+      tags:
+        - ticket
+      summary: Find redeemable products by media code
+      operationId: readRedeemable
+      parameters:
+        - in: query
+          name: mediaCode
+          required: true
+          description: List of media code
+          schema:
+            type: array
+            items:
+              type: string
+
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindRedeemablesRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/ticket/generatePDF:
+    get:
+      tags:
+        - ticket
+      summary: generate ticket PDF
+      operationId: generatePDF
+      parameters:
+        - in: query
+          name: orderCode
+          description: The PDF contains all the tickets in the order. Required if mediaCode is empty
+          schema:
+            type: string
+        - in: query
+          name: mediaCode
+          description: The PDF for one ticket. Required if orderCode is empty
+          schema:
+            type: string
+      responses:
+        200:
+          description: Ok
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: base64
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/ticket/readTicket:
+    get:
+      tags:
+        - ticket
+      summary: read ticket info by mediaCode or ticketCode
+      operationId: readTicket
+      description: Important! one of mediaCode and ticketCode is required
+      parameters:
+        - in: query
+          name: mediaCode
+          schema:
+            type: string
+        - in: query
+          name: ticketCode
+          schema:
+            type: string
+        - in: query
+          name: askTicketHolderInfo
+          description: If false, the client does not need the ticket holder information, so the server passes only the ticketHolderCode
+          schema:
+            type: boolean
+        - in: query
+          name: askPerformance
+          description: If false, the performance information are not needed
+          schema:
+            type: boolean
+
+      responses:
+        # ErrorCode: TICKET.0
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadTicketRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/ticket/readMoneyCard:
+    get:
+      tags:
+        - ticket
+      summary: read money card info by mediaCode
+      operationId: readMoneyCard
+      parameters:
+        - in: query
+          name: mediaCode
+          required: true
+          schema:
+            type: string
+
+      responses:
+        # ErrorCode: TICKET.0
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadMoneyCardRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/ticket/readExchangeInfo:
+    get:
+      tags:
+        - ticket
+      summary: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9019152/ReadUpgradeInfo
+      operationId: readExchangeInfo
+      description: Important! one of mediaCode and ticketCode is required
+      parameters:
+        - in: query
+          name: mediaCode
+          schema:
+            type: string
+        - in: query
+          name: ticketCode
+          schema:
+            type: string
+
+      responses:
+        # ErrorCode: TICKET.0 - TICKET.1
+
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadExchangeInfoRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/report/printAccountReport:
+    get:
+      tags:
+        - report
+      summary: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018898/PrintAccountReport
+      operationId: printAccountReport
+      description: Generate an Account Report
+      parameters:
+        - in: query
+          name: reportID
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: accountCode
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: format
+          required: true
+          schema:
+            $ref: "#/components/schemas/ReportFormatEnum"
+        - in: query
+          name: dateFrom
+          required: false
+          schema:
+            $ref: "#/components/schemas/DateType"
+        - in: query
+          name: dateTo
+          required: false
+          schema:
+            $ref: "#/components/schemas/DateType"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: base64
+            application/vnd.ms-excel:
+              schema:
+                type: string
+                format: base64
+
+        # ErrorCode: REPORT.03
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/report/printReservationConfirm:
+    get:
+      tags:
+        - report
+      summary: BOS https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9018918/PrintReservationConfirm
+      operationId: printReservationConfirm
+      description: Generate a Reservation Confirmation Report
+      parameters:
+        - in: query
+          name: reportID
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: saleCode
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: format
+          required: true
+          schema:
+            $ref: "#/components/schemas/ReportFormatEnum"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: base64
+            application/vnd.ms-excel:
+              schema:
+                type: string
+                format: base64
+
+  /api/v1/document/generateDocument:
+    get:
+      tags:
+        - document
+      summary: generate document
+      operationId: generateDocument
+      parameters:
+        - in: query
+          name: orderCode
+          description: order code of the reservation
+          schema:
+            type: string
+        - in: query
+          name: allocationCode
+          description: allocation ticket code
+          schema:
+            type: string
+        - in: query
+          name: documentCode
+          description: code of the document to be generated
+          schema:
+            type: string
+        - in: query
+          name: mediaCode
+          schema:
+            type: string
+        - in: query
+          name: documentType
+          schema:
+            $ref: "#/components/schemas/DocumentTypeEnum"
+        - in: query
+          name: outputType
+          required: true
+          schema:
+            $ref: "#/components/schemas/OutputTypeEnum"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: base64
+
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: B2B
+  # ==================================================
+
+  /api/v1/account/searchNotAllocatedTickets:
+    post:
+      tags:
+        - b2b
+      summary: find not allocated tickets
+      description: Retrieves the list of unassigned tickets by organization account code.
+      operationId: searchNotAllocatedTickets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchNotAllocatedTicketsReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchNotAllocatedTicketsRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/findSubAccounts:
+    get:
+      tags:
+        - b2b
+      summary: find sub accounts
+      operationId: findSubAccounts
+      parameters:
+        - in: query
+          name: accountCode
+          required: false
+          description: account code (mandatory in case of B2C)
+          schema:
+            type: string
+        - in: query
+          name: organizationAccountCode
+          required: false
+          description: organization account code (mandatory in case of B2B)
+          schema:
+            type: string
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindSubAccountsRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/createAllocation:
+    post:
+      tags:
+        - b2b
+      summary: create allocation
+      description: Create a new allocation for an organization account.
+      operationId: createAllocation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAllocationReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAllocationRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/searchAllocations:
+    post:
+      tags:
+        - b2b
+      summary: find allocated tickets
+      description: Retrieves the list of assigned tickets by organization account code.
+      operationId: searchAllocations
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchAllocationsReq"
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchAllocationsRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /api/v1/account/readAllocationDetails:
+    get:
+      tags:
+        - b2b
+      summary: read allocation details
+      operationId: readAllocationDetails
+      parameters:
+        - $ref: "#/components/parameters/locale.query"
+        - in: query
+          name: allocationId
+          required: true
+          description: allocation code
+          schema:
+            type: string
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadAllocationDetailsRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: CACHE
+  # ==================================================
+
+  /api/v1/cache/refresh:
+    delete:
+      tags:
+        - cache
+      summary: refresh cache
+      operationId: refresh
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dateTime:
+                    $ref: "#/components/schemas/DateType"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  # ==================================================
+  # ENDPOINTS GROUP: PROMOTION
+  # ==================================================
+  /api/v1/promotion/readIndividualCoupon:
+    get:
+      tags:
+        - promotion
+      summary: read individual coupon by code
+      operationId: readIndividualCoupon
+      parameters:
+        - in: query
+          name: code
+          required: true
+          description: List of individual coupon code
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadIndividualCouponRes"
+        400:
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/NotAuthenticatedResponse"
+        404:
+          $ref: "#/components/responses/NotFoundResponse"
+        500:
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+components:
+  # ==================================================
+  # PARAMETERS - REQUEST
+  # ==================================================
+  parameters:
+    locale.query:
+      in: query
+      name: locale
+      description: Language (and country) code, such as 'en' or 'en-US'
+      required: true
+      schema:
+        type: array
+        items:
+          type: string
+
+    dateFrom.query:
+      in: query
+      name: dateFrom
+      required: true
+      schema:
+        type: string
+
+    dateTo.query:
+      in: query
+      name: dateTo
+      required: true
+      schema:
+        type: string
+
+    timeFrom.query:
+      in: query
+      name: timeFrom
+      schema:
+        type: string
+
+    timeTo.query:
+      in: query
+      name: timeTo
+      schema:
+        type: string
+
+  # ==================================================
+  # SECURITY SCHEMES
+  # ==================================================
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    # ==================================================
+    # COMMON
+    # ==================================================
+    Locales:
+      type: object
+      description: Language (and country) code, such as 'en' or 'en-US'
+      required:
+        - locale
+      properties:
+        locale:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocaleType"
+
+    # ==================================================
+    # REQUEST GROUP: ACCOUNT
+    # ==================================================
+
+    CreateAccountReq:
+      type: object
+      required:
+        - accountData
+      properties:
+        accountData:
+          $ref: "#/components/schemas/AccountData"
+
+    UpdateAccountReq:
+      type: object
+      required:
+        - accountCode
+        - accountData
+      properties:
+        accountCode:
+          type: string
+        accountData:
+          $ref: "#/components/schemas/AccountData"
+
+    SearchAccountReq:
+      type: object
+      required:
+        - accountCriteria
+        - page
+      properties:
+        page:
+          $ref: "#/components/schemas/Page"
+        accountCriteria:
+          type: array
+          items:
+            $ref: "#/components/schemas/Criteria"
+        maskCategoryCode:
+          type: string
+        status:
+          $ref: "#/components/schemas/AccountStatusEnum"
+
+    SearchAccountCreditReq:
+      type: object
+      required:
+        - page
+        - accountCode
+      properties:
+        page:
+          $ref: "#/components/schemas/Page"
+        saleDate:
+          $ref: "#/components/schemas/DateFromTo"
+        accountCode:
+          type: string
+        operationType:
+          $ref: "#/components/schemas/SearchCreditTypeEnum"
+
+    AccountCreditRechargeReq:
+      type: object
+      required:
+        - amount
+        - accountCode
+      properties:
+        amount:
+          type: number
+        accountCode:
+          type: string
+        note:
+          type: string
+
+    CheckCreditAccountReq:
+      type: object
+      required:
+        - accountCode
+        - amount
+      properties:
+        accountCode:
+          type: string
+        amount:
+          type: number
+
+    # ==================================================
+    # REQUEST GROUP: ASSET
+    # ==================================================
+
+    CreateImageReq:
+      type: object
+      required:
+        - image
+      properties:
+        image:
+          $ref: "#/components/schemas/Image"
+
+    # ==================================================
+    # REQUEST GROUP: AUTH
+    # ==================================================
+
+    SigninReq:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          $ref: "#/components/schemas/EncryptedPasswordType"
+        bosFieldCode:
+          $ref: "#/components/schemas/FieldCodeType"
+        bosAccountCategoryCode:
+          type: array
+          items:
+            type: string
+
+    SignoutReq:
+      type: object
+      required:
+        - accountCode
+      properties:
+        accountCode:
+          type: string
+          description: Account code
+
+    ChangePasswordReq:
+      type: object
+      required:
+        - accountCode
+        - oldPassword
+        - newPassword
+      properties:
+        accountCode:
+          type: string
+        oldPassword:
+          $ref: "#/components/schemas/EncryptedPasswordType"
+        newPassword:
+          $ref: "#/components/schemas/EncryptedPasswordType"
+
+    ResetPasswordReq:
+      type: object
+      required:
+        - accountCode
+      properties:
+        accountCode:
+          type: string
+        VisionSendEMail:
+          description: if set to true, send mail
+          type: boolean
+
+    # ==================================================
+    # REQUEST GROUP: CART
+    # ==================================================
+
+    CheckCartReq:
+      type: object
+      required:
+        - shopCart
+      properties:
+        capacityManagement:
+          type: boolean
+          description: Toggle capacity management feature for capacity and assigned seating performances
+        ignoreWarnings:
+          type: boolean
+          description: Toggle check on warnings for Extended Ticket Info, Variable Expiration Range, Force Ticket to Media Link and Ticket Holder.
+        shopCart:
+          $ref: "#/components/schemas/ShopCart"
+        organizationAccountCode:
+          type: string
+
+    TryExchangeReq:
+      type: object
+      required:
+        - exchangeCart
+      properties:
+        ignoreWarnings:
+          type: boolean
+          description: Toggle check on warnings for Extended Ticket Info, Variable Expiration Range, Force Ticket to Media Link and Ticket Holder.
+        exchangeCart:
+          $ref: "#/components/schemas/ExchangeCart"
+
+    TryRenewalReq:
+      type: object
+      required:
+        - renewalCart
+      properties:
+        renewalCart:
+          $ref: "#/components/schemas/RenewalCart"
+
+    # ==================================================
+    # REQUEST GROUP: CONTACTS
+    # ==================================================
+
+    createAccountRelationshipReq:
+      type: object
+      required:
+        - sourceAccountCode
+        - targetAccountCode
+      properties:
+        sourceAccountCode:
+          description: organization account code
+          type: string
+        targetAccountCode:
+          description: account code
+          type: string
+        relationshipCode:
+          description: type code from core system related to allocation recipient
+          type: string
+
+    # ==================================================
+    # REQUEST GROUP: ORDER
+    # ==================================================
+
+    BeginOrderTransReq:
+      type: object
+      required:
+        - shopCart
+        - reservationOwnerCode
+      properties:
+        shopCart:
+          $ref: "#/components/schemas/ShopCart"
+        reservationOwnerCode:
+          type: string
+          description: accountCode of the user logged in
+        delivery:
+          $ref: "#/components/schemas/Delivery"
+        paymentCode:
+          type: string
+        linkMembershipToUser:
+          description: The core system proceeds to link the membership (one contained in the cart) to the reservation owner
+          type: boolean
+        orderCode:
+          type: string
+          description: Used to modify an existing order
+        externalCode:
+          type: string
+          description: Optional code used to assign a custom identifier to the order
+        organizationAccountCode:
+          type: string
+
+    CancelOrderTransReq:
+      type: object
+      required:
+        - orderCode
+      properties:
+        orderCode:
+          type: string
+
+    ConfirmOrderTransReq:
+      type: object
+      required:
+        - orderCode
+      properties:
+        orderCode:
+          type: string
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentApplied"
+        insuranceRef:
+          type: string
+
+    SearchOrderReq:
+      type: object
+      required:
+        - page
+      properties:
+        page:
+          $ref: "#/components/schemas/Page"
+        saleDate:
+          $ref: "#/components/schemas/DateFromTo"
+        publicOrderCode:
+          type: string
+        visitDate:
+          $ref: "#/components/schemas/DateFromTo"
+        statusCode:
+          $ref: "#/components/schemas/OrderStatusEnum"
+        externalOrderCode:
+          type: string
+        reservationOwnerAccount:
+          $ref: "#/components/schemas/AccountSearch"
+        sort:
+          $ref: "#/components/schemas/SortEnum"
+
+    SearchOrderTicketsReq:
+      type: object
+      required:
+        - page
+      properties:
+        page:
+          $ref: "#/components/schemas/Page"
+        lastModifiedDate:
+          $ref: "#/components/schemas/DateFromTo"
+        reservationOwnerAccount:
+          $ref: "#/components/schemas/AccountSearch"
+        productCodes:
+          type: array
+          items:
+            type: string
+        sort:
+          $ref: "#/components/schemas/SortEnum"
+
+    ExchangeTransReq:
+      type: object
+      required:
+        - shopCart
+        - reservationOwnerCode
+      properties:
+        shopCart:
+          $ref: "#/components/schemas/ExchangeCart"
+        reservationOwnerCode:
+          type: string
+          description: accountCode of the user logged in
+        paymentCode: #TODO not used in BOS
+          type: string
+
+    RenewalTransReq:
+      type: object
+      required:
+        - shopCart
+        - reservationOwnerCode
+      properties:
+        shopCart:
+          $ref: "#/components/schemas/RenewalCart"
+        reservationOwnerCode:
+          type: string
+          description: accountCode of the user logged in
+        paymentCode: #TODO not used in BOS
+          type: string
+
+    LinkSubscriptionToOrderReq:
+      type: object
+      required:
+        - subscriptionCode
+        - orderCode
+      properties:
+        subscriptionCode:
+          type: string
+        orderCode:
+          type: string
+
+    # ==================================================
+    # REQUEST GROUP: SEAT
+    # ==================================================
+
+    BestSeatReq:
+      type: object
+      required:
+        - sectionCode
+        - quantity
+      properties:
+        sectionCode:
+          description: A group of seats
+          type: string
+        quantity:
+          type: string
+        productCode:
+          type: string
+        bosItemGuid:
+          type: string
+
+    # =================================================
+    # REQUEST GROUP: SELL
+    # =================================================
+
+    UpSellReq:
+      type: object
+      required:
+        - shopCart
+      properties:
+        shopCart:
+          $ref: "#/components/schemas/ShopCart"
+
+    CrossSellReq:
+      type: object
+      required:
+        - shopCart
+      properties:
+        shopCart:
+          $ref: "#/components/schemas/ShopCart"
+
+    # =================================================
+    # REQUEST GROUP: B2B
+    # =================================================
+
+    SearchNotAllocatedTicketsReq:
+      type: object
+      required:
+        - page
+        - organizationAccountCode
+        - sortBy
+      properties:
+        page:
+          $ref: "#/components/schemas/Page"
+        organizationAccountCode:
+          type: string
+        searchCriteria:
+          type: array
+          items:
+            $ref: "#/components/schemas/Criteria"
+        sortBy:
+          $ref: "#/components/schemas/SortByEnum"
+        sort:
+          $ref: "#/components/schemas/SortEnum"
+
+    SearchAllocationsReq:
+      type: object
+      required:
+        - page
+        - organizationAccountCode
+        - sortBy
+      properties:
+        page:
+          $ref: "#/components/schemas/Page"
+        organizationAccountCode:
+          type: string
+        searchCriteria:
+          type: array
+          items:
+            $ref: "#/components/schemas/Criteria"
+        sortBy:
+          $ref: "#/components/schemas/SortByEnum"
+        sort:
+          $ref: "#/components/schemas/SortEnum"
+
+    CreateAllocationReq:
+      type: object
+      required:
+        - ticketList
+        - sourceAllocationAccountCode
+        - targetAllocationAccountCode
+      properties:
+        ticketList:
+          type: array
+          items:
+            type: string
+        sourceAllocationAccountCode:
+          type: string
+        targetAllocationAccountCode:
+          type: string
+
+    # ==================================================
+    # RESPONSES GROUP: ACCOUNT
+    # ==================================================
+
+    CreateAccountRes:
+      type: object
+      required:
+        - accountCode
+        - person
+      properties:
+        accountCode:
+          type: string
+        person:
+          $ref: "#/components/schemas/Person"
+
+    ReadAccountRes:
+      type: object
+      required:
+        - account
+      properties:
+        account:
+          type: array
+          items:
+            $ref: "#/components/schemas/Account"
+
+    ReadAccountFinancialRes:
+      type: object
+      required:
+        - accountFinancial
+      properties:
+        accountFinancial:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountFinancial"
+
+    UpdateAccountRes:
+      type: object
+      properties:
+        accountCode:
+          type: string
+        person:
+          $ref: "#/components/schemas/Person"
+
+    SearchAccountRes:
+      type: object
+      required:
+        - pagination
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        accountCode:
+          type: array
+          items:
+            type: string
+
+    SearchAccountCreditRes:
+      type: object
+      required:
+        - pagination
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        creditItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditItem"
+
+    AccountCreditRechargeRes:
+      type: object
+      required:
+        - orderCode
+        - total
+      properties:
+        orderCode:
+          type: string
+        total:
+          $ref: "#/components/schemas/PriceComplete"
+        date:
+          $ref: "#/components/schemas/DatetimeType"
+
+    CheckCreditAccountRes:
+      type: object
+      required:
+        - canPay
+        - remainCredit
+      properties:
+        canPay:
+          type: boolean
+        remainCredit:
+          type: number
+
+    # ==================================================
+    # RESPONSES GROUP: ASSET
+    # ==================================================
+
+    ReadImageRes:
+      type: array
+      items:
+        $ref: "#/components/schemas/Image"
+
+    CreateImageRes:
+      type: object
+      required:
+        - imageCode
+      properties:
+        imageCode:
+          type: string
+
+    # ==================================================
+    # RESPONSES GROUP: AUTH
+    # ==================================================
+
+    SigninRes:
+      type: object
+      required:
+        - accountCode
+        - displayName
+      properties:
+        accountCode:
+          type: string
+        displayName:
+          description: private person (first name and last name) or (last name and first name), Legal person (company name)
+          type: string
+        organizationAccountCode:
+          type: string
+
+    SearchLoginAccountRes:
+      type: object
+      properties:
+        active:
+          type: boolean
+        accountCode:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        firstName:
+          description: Useful for referring to the user in a less formal way than the displayName which also contains the surname. If not filled in, then the displayName is used
+          type: string
+
+    ChangePasswordRes:
+      type: object
+      required:
+        - accountCode
+      properties:
+        accountCode:
+          type: string
+
+    ResetPasswordRes:
+      type: object
+      required:
+        - accountCode
+      properties:
+        accountCode:
+          type: string
+        temporaryPassword:
+          $ref: "#/components/schemas/EncryptedPasswordType"
+
+    # ==================================================
+    # RESPONSES GROUP: CART
+    # ==================================================
+
+    CheckCartRes:
+      type: object
+      properties:
+        preOrder:
+          $ref: "#/components/schemas/PreOrderCart"
+
+    TryExchangeRes:
+      type: object
+      properties:
+        preOrder:
+          $ref: "#/components/schemas/PreExchangeOrderCart"
+
+    TryRenewalRes:
+      type: object
+      properties:
+        preOrder:
+          $ref: "#/components/schemas/PreRenewalOrderCart"
+
+    # ==================================================
+    # RESPONSES GROUP: PARENT FAMILY
+    # ==================================================
+
+    FindParentFamiliesRes:
+      type: object
+      required:
+        - parentFamilies
+      properties:
+        parentFamilies:
+          type: array
+          items:
+            # $ref: "#/components/schemas/ParentFamilyRef"
+            type: string
+
+    ParentFamilyRef:
+      type: object
+      required:
+        - code
+        - refs
+      properties:
+        code:
+          type: string
+          description: superior entity code
+        refs:
+          type: array
+          description: code list of the contained entities
+          items:
+            $ref: "#/components/schemas/Ref"
+
+    ReadParentFamilyRes:
+      type: object
+      required:
+        - parentFamilies
+      properties:
+        parentFamilies:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParentFamily"
+
+    # ==================================================
+    # RESPONSES GROUP: FAMILY
+    # ==================================================
+
+    ReadFamilyRes:
+      type: object
+      required:
+        - families
+      properties:
+        families:
+          type: array
+          items:
+            $ref: "#/components/schemas/Family"
+
+    # ==================================================
+    # RESPONSES GROUP: THEME
+    # ==================================================
+
+    ReadThemeRes:
+      type: object
+      required:
+        - themes
+      properties:
+        themes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Theme"
+
+    # ==================================================
+    # RESPONSES GROUP: MASK
+    # ==================================================
+
+    ReadDataListRes:
+      type: object
+      required:
+        - dataList
+      properties:
+        dataList:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataList"
+
+    ReadMaskCategoryRes:
+      type: object
+      required:
+        - maskCategory
+      properties:
+        maskCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/MaskCategory"
+
+    # ==================================================
+    # RESPONSES GROUP: OFFER
+    # ==================================================
+
+    FindOfferCodesByFamilyRes:
+      type: object
+      required:
+        - families
+      properties:
+        families:
+          type: array
+          description: List of family codes (ex. Statistical Groups)
+          items:
+            $ref: "#/components/schemas/FamilyOfferRef"
+
+    ReadOfferRes:
+      type: object
+      required:
+        - offers
+      properties:
+        offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Offer"
+
+    FindFirstAvailableDateRes:
+      type: object
+      required:
+        - date
+        - unique
+      properties:
+        date:
+          $ref: "#/components/schemas/DateType"
+        unique:
+          type: boolean
+
+    # ==================================================
+    # RESPONSES GROUP: ORDER
+    # ==================================================
+
+    BeginOrderTransRes:
+      type: object
+      required:
+        - preOrder
+      properties:
+        orderCode:
+          type: string
+        publicOrderCode:
+          type: string
+        preOrder:
+          $ref: "#/components/schemas/PreOrderCart"
+
+    CancelOrderTransRes:
+      type: object
+      required:
+        - orderCode
+      properties:
+        orderCode:
+          type: string
+
+    ConfirmOrderTransRes:
+      type: object
+      required:
+        - orderCode
+      properties:
+        orderCode:
+          type: string
+
+    ReadOrderDetailsRes:
+      type: object
+      required:
+        - orders
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderDetails"
+
+    SearchOrderRes:
+      type: object
+      required:
+        - pagination
+        - orders
+        - totals
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+        totals:
+          $ref: "#/components/schemas/OrdersTotals"
+
+    SearchOrderTicketsRes:
+      type: object
+      required:
+        - pagination
+        - orders
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+
+    ExchangeTransRes:
+      type: object
+      required:
+        - preOrder
+      properties:
+        orderCode:
+          type: string
+        publicOrderCode:
+          type: string
+        preOrder:
+          $ref: "#/components/schemas/PreExchangeOrderCart"
+
+    RenewalTransRes:
+      type: object
+      required:
+        - preOrder
+      properties:
+        orderCode:
+          type: string
+        publicOrderCode:
+          type: string
+        preOrder:
+          $ref: "#/components/schemas/PreRenewalOrderCart"
+
+    # ==================================================
+    # RESPONSES GROUP: PRICE
+    # ==================================================
+
+    FindPricesRes:
+      type: object
+      required:
+        - products
+      properties:
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductCodesRef"
+
+    # ==================================================
+    # RESPONSES GROUP: PERFORMANCE
+    # ==================================================
+
+    FindCalendarDaysRes:
+      type: object
+      required:
+        - days
+      properties:
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/Day"
+
+    FindPerformanceByDayRes:
+      type: object
+      description: For BOS always sellable = true
+      required:
+        - performances
+      properties:
+        performances:
+          type: array
+          items:
+            $ref: "#/components/schemas/Performance"
+
+    # ==================================================
+    # RESPONSES GROUP: PRODUCT
+    # ==================================================
+
+    FindProductCodesRes:
+      type: object
+      required:
+        - products
+      properties:
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductCodesRef"
+
+    ReadProductRes:
+      type: object
+      required:
+        - products
+      properties:
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+
+    # ==================================================
+    # RESPONSES GROUP: PROMOTION
+    # ==================================================
+
+    ReadIndividualCouponRes:
+      type: object
+      required:
+        - coupons
+      properties:
+        coupons:
+          type: array
+          items:
+            $ref: "#/components/schemas/IndividualCoupon"
+
+    # ==================================================
+    # RESPONSES GROUP: SEAT
+    # ==================================================
+
+    BestSeatRes:
+      type: object
+      required:
+        - bosItemGuid
+      properties:
+        bosItemGuid:
+          type: string
+
+    # ==================================================
+    # RESPONSES GROUP: SELL
+    # ==================================================
+
+    UpSellRes:
+      type: object
+      properties:
+        upSellGroup:
+          type: array
+          items:
+            $ref: "#/components/schemas/UpSellGroup"
+
+    CrossSellRes:
+      type: object
+      properties:
+        crossSellGroup:
+          type: array
+          items:
+            $ref: "#/components/schemas/CrossSellGroup"
+
+    # ==================================================
+    # RESPONSES GROUP: RENEWAL
+    # ==================================================
+
+    ReadRenewalProductsRes:
+      type: array
+      items:
+        $ref: "#/components/schemas/RenewalProductInfo"
+
+    RenewalProductInfo:
+      type: object
+      required:
+        - products
+      properties:
+        mediaCode:
+          type: string
+        ticketCode:
+          type: string
+        dateActiveTo:
+          $ref: "#/components/schemas/DateType"
+        dateRenewalExpired:
+          $ref: "#/components/schemas/DateType"
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/RenewalProduct"
+
+    # ==================================================
+    # RESPONSES GROUP: UPGRADE
+    # ==================================================
+
+    ReadUpgradeProductsRes:
+      type: array
+      items:
+        $ref: "#/components/schemas/UpgradeProductsInfo"
+
+    UpgradeProductsInfo:
+      type: object
+      required:
+        - products
+      properties:
+        mediaCode:
+          type: string
+        ticketCode:
+          type: string
+        dateActiveTo:
+          $ref: "#/components/schemas/DateType"
+        dateRenewalExpired:
+          $ref: "#/components/schemas/DateType"
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/RenewalProduct"
+
+    # ==================================================
+    # RESPONSES GROUP: TICKET
+    # ==================================================
+
+    ReadTicketRes:
+      type: array
+      items:
+        $ref: "#/components/schemas/Ticket"
+
+    ReadMoneyCardRes:
+      type: object
+      required:
+        - mediaCode
+        - balance
+      properties:
+        mediaCode:
+          type: string
+        balance:
+          $ref: "#/components/schemas/PriceComplete"
+
+    ReadExchangeInfoRes:
+      type: array
+      items:
+        $ref: "#/components/schemas/ExchangeInfo"
+
+    FindSubscriptionRes:
+      type: array
+      items:
+        $ref: "#/components/schemas/Subscription"
+
+    FindRedeemablesRes:
+      type: array
+      items:
+        $ref: "#/components/schemas/Redeemable"
+
+    # ==================================================
+    # RESPONSES GROUP: B2B
+    # ==================================================
+
+    SearchNotAllocatedTicketsRes:
+      type: object
+      required:
+        - noAttributeTicketList
+        - products
+        - pagination
+      properties:
+        noAttributeTicketList:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationTicket"
+        families:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseFamily"
+        themes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Theme"
+        offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseOffer"
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseProduct"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    FindSubAccountsRes:
+      type: object
+      properties:
+        subAccountList:
+          type: array
+          items:
+            type: object
+            properties:
+              accountCode:
+                type: string
+              person:
+                $ref: "#/components/schemas/Person"
+
+    CreateAllocationRes:
+      type: object
+      required:
+        - allocationId
+      properties:
+        allocationId:
+          type: string
+
+    SearchAllocationsRes:
+      type: object
+      required:
+        - allocationList
+        - products
+        - pagination
+      properties:
+        allocationList:
+          type: array
+          items:
+            $ref: "#/components/schemas/Allocation"
+        families:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseFamily"
+        themes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Theme"
+        offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseOffer"
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseProduct"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    ReadAllocationDetailsRes:
+      type: object
+      required:
+        - allocation
+        - products
+      properties:
+        allocation:
+          $ref: "#/components/schemas/Allocation"
+        families:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseFamily"
+        themes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Theme"
+        offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseOffer"
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/BaseProduct"
+
+
+    # ==================================================
+    # ENTITIES GROUP: ACCOUNT
+    # ==================================================
+
+    Account:
+      type: object
+      required:
+        - accountCode
+        - person
+        - data
+      properties:
+        accountCode:
+          type: string
+        organizationAccountCode:
+          type: string
+        accountType:
+          $ref: "#/components/schemas/AccountTypeEnum"
+        person:
+          $ref: "#/components/schemas/Person"
+        data:
+          $ref: "#/components/schemas/AccountData"
+        subscriptionInfo:
+          # If required by the "askSubscriptionInfo" request parameter, the core system must compile it, otherwise it can skip it
+          $ref: "#/components/schemas/AccountSubscriptionInfo"
+
+    AccountData:
+      type: object
+      required:
+        - fields
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/Field"
+        bosAccountCategoryCode:
+          description: defines the ak to use instead of the one derived from accountCategoryType
+          type: string
+
+    AccountSubscriptionInfo:
+      type: object
+      description: Account subscription informations
+      required:
+        - hasSubscriptions
+        - isMembershipLinked
+      properties:
+        hasSubscriptions:
+          type: boolean
+          description: The user can  access the page to see their active and inactive subscriptions (memberships and/or seasonpasses). The core system decides what to show, if there are no user subscriptions to show then this flag should be set to false
+        linkedMembershipCode:
+          type: string
+          description: If the user has an active linked membership, this field contains ticketCode of this membership.
+        isLinkedMembershipRenewable:
+          type: boolean
+          description: Indicates whether user membership can be renewed. For example, when a user with a membership tries to purchase a membership he is blocked and the dialog may propose to renewal
+
+    Field:
+      type: object
+      required:
+        - fieldCode
+      properties:
+        fieldCode:
+          type: integer
+        value:
+          type: string
+        kind:
+          $ref: "#/components/schemas/FieldKindEnum"
+
+    Person:
+      description: Minimum descriptive reference to a person (private or legal). For example display name of the logged in user
+      type: object
+      required:
+        - displayName
+      properties:
+        displayName:
+          type: string
+        email:
+          type: string
+        firstName:
+          description: Useful for referring to the user in a less formal way than the displayName which also contains the surname. If not filled in, then the DisplayName is used
+          type: string
+
+    AccountFinancial:
+      description: "Financial account information"
+      type: object
+      properties:
+        validPaymentList:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidPayment"
+        creditInfo:
+          $ref: "#/components/schemas/CreditInfo"
+        priceListCode:
+          type: string
+        billingInfo:
+          $ref: "#/components/schemas/BillingInfo"
+        taxExemptable:
+          type: boolean
+
+    BillingInfo:
+      type: object
+      properties:
+        billingCode:
+          type: string
+        hasParent:
+          type: boolean
+
+    ValidPayment:
+      type: object
+      properties:
+        validPaymentCode:
+          type: string
+        validPaymentDesc:
+          type: string
+
+    CreditInfo:
+      type: object
+      properties:
+        creditPerTrans:
+          type: number
+        totalCredit:
+          type: number
+        itemPerTrans:
+          type: integer
+        creditDays:
+          type: number
+        remainCredit:
+          type: number
+        minimumDepositLimit:
+          type: number
+        totalActivity:
+          type: number
+        totalPaid:
+          type: number
+        amountDue:
+          type: number
+
+    CreditItem:
+      type: object
+      properties:
+        credit:
+          $ref: "#/components/schemas/Credit"
+        settleSale:
+          $ref: "#/components/schemas/Sale"
+        originSale:
+          $ref: "#/components/schemas/Sale"
+
+    Sale:
+      type: object
+      properties:
+        saleCode:
+          type: string
+        date:
+          $ref: "#/components/schemas/DatetimeType"
+
+    Credit:
+      type: object
+      required:
+        - creditCode
+        - creditDesc
+        - creditType
+        - date
+        - payment
+        - amount
+      properties:
+        creditCode:
+          type: string
+        creditDesc:
+          type: string
+        creditType:
+          type: string
+        date:
+          $ref: "#/components/schemas/DatetimeType"
+        payment:
+          $ref: "#/components/schemas/Payment"
+        amount:
+          $ref: "#/components/schemas/PriceComplete"
+        dueDate:
+          $ref: "#/components/schemas/DatetimeType"
+
+    Payment:
+      type: object
+      required:
+        - paymentCode
+        - paymentDesc
+        - paymentType
+      properties:
+        paymentCode:
+          type: string
+        paymentDesc:
+          type: string
+        paymentType:
+          type: string
+
+    AccountSearch:
+      type: object
+      properties:
+        accountCode:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        surname:
+          type: string
+
+    Criteria:
+      type: object
+      properties:
+        fieldCode:
+          type: string
+        value:
+          type: string
+        searchType:
+          $ref: "#/components/schemas/SearchTypeEnum"
+
+    # ==================================================
+    # ENTITIES GROUP: ASSET
+    # ==================================================
+
+    Image:
+      type: object
+      required:
+        - imageCode
+        - content
+      properties:
+        imageCode:
+          type: string
+        fileName:
+          type: string
+        content:
+          type: string
+          format: base64
+
+    # ==================================================
+    # ENTITIES GROUP: CART
+    # ==================================================
+
+    Cart:
+      type: object
+      required:
+        - orderItems
+        - total
+      properties:
+        total:
+          $ref: "#/components/schemas/PriceComplete"
+        promotionApplied:
+          type: array
+          items:
+            $ref: "#/components/schemas/PromotionApplied"
+        orderItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+
+    ExchangeOrderCart:
+      type: object
+      required:
+        - orderItems
+        - total
+      properties:
+        total:
+          $ref: "#/components/schemas/PriceComplete"
+        promotionApplied:
+          type: array
+          items:
+            $ref: "#/components/schemas/PromotionApplied"
+        orderItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExchangeOrderItem"
+
+    RenewalOrderCart:
+      type: object
+      required:
+        - orderItems
+        - total
+      properties:
+        total:
+          $ref: "#/components/schemas/PriceComplete"
+        promotionApplied:
+          type: array
+          items:
+            $ref: "#/components/schemas/PromotionApplied"
+        orderItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/RenewalOrderItem"
+
+    ShopCart:
+      type: object
+      description: list of products chosen by user
+      properties:
+        cartItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShopCartItem"
+        redeemableCartItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/RedeemableShopCartItem"
+        cartCode:
+          description: you can pass a cart code obtained previously
+          type: string
+        coupons:
+          type: array
+          description: List of coupons
+          items:
+            type: string
+
+    ShopCartItem:
+      type: object
+      required:
+        - item
+      properties:
+        item:
+          $ref: "#/components/schemas/BaseShopCartItem"
+        modified:
+          type: boolean
+          description: it is modified if operation is creation or update
+          default: true
+        cartItemCode:
+          type: string
+          description: required if modified=true and it is an update operation
+        salePrice:
+          $ref: "#/components/schemas/PriceComplete"
+
+    RedeemableShopCartItem:
+      type: object
+      required:
+        - item
+        - ticketCode
+        - uuid
+      properties:
+        item:
+          $ref: "#/components/schemas/BaseShopCartItem"
+        uuid:
+          type: string
+          description: Secure identifier to identify the redeemable group from which to scale the quantity to be redeemed. In addition to this data, BOS also requires the ticketCode
+        ticketCode:
+          description: The ticket code that is the source of the redeem
+          type: string
+
+    ExchangeCart:
+      type: object
+      description: list of products chosen by user
+      required:
+        - cartItems
+      properties:
+        cartItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExchangeCartItem"
+        cartCode:
+          description: you can pass a cart code obtained previously
+          type: string
+        coupons:
+          type: array
+          description: List of coupons
+          items:
+            type: string
+
+    RenewalCart:
+      type: object
+      description: list of products chosen by user
+      required:
+        - cartItems
+      properties:
+        cartItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/RenewalCartItem"
+        cartCode:
+          description: you can pass a cart code obtained previously
+          type: string
+
+    ExchangeCartItem:
+      type: object
+      required:
+        - from
+        - to
+      properties:
+        to:
+          $ref: "#/components/schemas/ExchangeItemTo"
+        from:
+          $ref: "#/components/schemas/ExchangeItemFrom"
+        cartItemCode:
+          type: string
+
+    RenewalCartItem:
+      type: object
+      required:
+        - from
+        - to
+      properties:
+        to:
+          $ref: "#/components/schemas/RenewalItemTo"
+        from:
+          $ref: "#/components/schemas/RenewalItemFrom"
+        cartItemCode:
+          type: string
+
+    ExchangeItemFrom:
+      type: object
+      required:
+        - ticketCode
+      properties:
+        ticketCode:
+          type: string
+        ticketMediaCode:
+          type: string
+
+    RenewalItemFrom:
+      type: object
+      required:
+        - ticketCode
+      properties:
+        ticketCode:
+          type: string
+        ticketMediaCode:
+          type: string
+
+    ExchangeItemTo:
+      type: object
+      required:
+        - productCode
+        - performanceCodes
+        - peopleCount
+        - ticketDetail
+      properties:
+        productCode:
+          type: string
+        performanceCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PerformanceCode"
+        peopleCount:
+          description: Each ticket is valid for multiple people
+          type: integer
+        ticketDetail:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketDetailShopCart"
+
+    RenewalItemTo:
+      type: object
+      required:
+        - productCode
+      properties:
+        productCode:
+          type: string
+        performanceCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PerformanceCode"
+        peopleCount:
+          description: Each ticket is valid for multiple people
+          type: integer
+        ticketDetail:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketDetailShopCart"
+
+    # ==================================================
+    # ENTITIES GROUP: PARENT FAMILY
+    # ==================================================
+
+    ParentFamily:
+      type: object
+      required:
+        - parentFamilyCode
+        - childFamilyCodes
+        - localeFields
+      properties:
+        parentFamilyCode:
+          type: string
+        childFamilyCodes:
+          type: array
+          items:
+            type: string
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParentFamilyI18N"
+
+    ParentFamilyI18N:
+      type: object
+      required:
+        - locale
+        - title
+      properties:
+        locale:
+          $ref: "#/components/schemas/LocaleType"
+        title:
+          type: string
+        description:
+          type: string
+        extendedDescription:
+          type: string
+        imageRef:
+          $ref: "#/components/schemas/ImageRef"
+
+    # ==================================================
+    # ENTITIES GROUP: FAMILY
+    # ==================================================
+
+    BaseFamily:
+      type: object
+      required:
+        - familyCode
+        - localeFields
+      properties:
+        familyCode:
+          type: string
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/FamilyI18N"
+
+    Family:
+      type: object
+      required:
+        - familyCode
+        - localeFields
+      properties:
+        familyCode:
+          type: string
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/FamilyI18N"
+        themeCode:
+          type: string
+          description: Default theme based on family
+        externalUrl:
+          type: string
+          description: Manage the fake family case where the family doesn't have attached offers
+        externalUrlTargetTab:
+          # Use String instead of Enum, to allow for future extensions. See JS 'Target' parameter of function 'OpenWindow'
+          type: string
+          description: External url target tab. Default value '' - Opens a new browser tab. Value 'SELF' - Use current browser tab.
+
+    FamilyI18N:
+      type: object
+      required:
+        - locale
+        - title
+      properties:
+        locale:
+          $ref: "#/components/schemas/LocaleType"
+        title:
+          type: string
+        description:
+          type: string
+        extendedDescription:
+          type: string
+        imageRef:
+          $ref: "#/components/schemas/ImageRef"
+
+    Theme:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ThemeI18N"
+
+    ThemeI18N:
+      type: object
+      required:
+        - locale
+        - title
+      properties:
+        locale:
+          $ref: "#/components/schemas/LocaleType"
+        title:
+          type: string
+        subtitle:
+          type: string
+        description:
+          type: string
+          description: html content
+        tagline:
+          type: string
+        imageRef:
+          $ref: "#/components/schemas/ImageRef"
+
+    # ==================================================
+    # ENTITIES GROUP: MASK
+    # ==================================================
+
+    DataListKey:
+      type: object
+      required:
+        - dataListCode
+      properties:
+        dataListCode:
+          type: string
+        key1:
+          type: string
+        key2:
+          type: string
+
+    DataList:
+      type: object
+      required:
+        - dataListKey
+        - items
+      properties:
+        dataListKey:
+          $ref: "#/components/schemas/DataListKey"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataListItem"
+
+    DataListItem:
+      type: object
+      required:
+        - code
+        - localeFields
+      properties:
+        code:
+          type: string
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataListI18N"
+
+    DataListI18N:
+      type: object
+      required:
+        - locale
+        - title
+      properties:
+        locale:
+          $ref: "#/components/schemas/LocaleType"
+        title:
+          type: string
+
+    MaskCategory:
+      type: object
+      required:
+        - maskCategoryCode
+        - kind
+        - mask
+      properties:
+        maskCategoryCode:
+          type: string
+        kind:
+          $ref: "#/components/schemas/MaskCategoryKindEnum"
+        mask:
+          $ref: "#/components/schemas/Mask"
+
+    Mask:
+      type: object
+      required:
+        - fields
+      properties:
+        maskCode:
+          type: string
+        fields:
+          description: sorted list of mask field
+          type: array
+          items:
+            $ref: "#/components/schemas/MaskField"
+
+    MaskField:
+      type: object
+      description: sorted element of mask
+      required:
+        - fieldCode
+        - dataType
+      properties:
+        fieldCode:
+          type: integer
+        fieldName:
+          description: usefull for html name in form
+          type: string
+        dataType:
+          $ref: "#/components/schemas/MaskFieldDataTypeEnum"
+        dataProviderCode:
+          type: string
+        defaultValue:
+          type: string
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/MaskFieldI18n"
+        validation:
+          $ref: "#/components/schemas/MaskFieldValidation"
+
+    MaskFieldI18n:
+      type: object
+      required:
+        - locale
+      properties:
+        locale:
+          type: string
+        label:
+          type: string
+        placeHolder:
+          type: string
+
+    MaskFieldValidation:
+      type: object
+      properties:
+        required:
+          type: boolean
+          description: The field is required
+        depends:
+          $ref: "#/components/schemas/MaskFieldDependencyRule"
+        format:
+          $ref: "#/components/schemas/MaskFieldValidationFormatEnum"
+        displayFormat:
+          type: string
+          description: The must follow this format
+          example: dd/mm/yyyy 23/10/16(x) 23/10/2016(v)
+        minLength:
+          type: integer
+          description: Min length of the field
+          example: minLength=4 Win(x) Moon(v) Beach(v) Ticket(v)
+        maxLength:
+          type: integer
+          description: Max length of the field
+          example: maxLength=4 Win(v) Moon(v) Beach(x) Ticket(x)
+        minValue:
+          type: integer
+        maxValue:
+          type: integer
+        equalToFieldCode:
+          type: integer
+          description: The field value must be equal to the value of given field code.
+          example: Password and Confirm Password must be equal
+        readOnly:
+          type: boolean
+
+    MaskFieldDependencyRule:
+      type: object
+      required:
+        - fieldCode
+        - rule
+        - value
+      properties:
+        fieldCode:
+          type: integer
+          description: Field code of the field the value depends on
+        rule:
+          $ref: "#/components/schemas/DependencyRuleEnum"
+        value:
+          type: string
+          description: Value of the other field
+
+    # ==================================================
+    # ENTITIES GROUP: OFFER
+    # ==================================================
+
+    FamilyOfferRef:
+      type: object
+      required:
+        - familyCode
+        - offerRefs
+      properties:
+        familyCode:
+          type: string
+        isFamilySoldOut:
+          type: boolean
+          description: Return true if every single family offer availability is sold-out
+        offerRefs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ref"
+
+    BaseOffer:
+      type: object
+      required:
+        - offerCode
+        - localeFields
+      properties:
+        offerCode:
+          type: string
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/OfferI18N"
+
+    Offer:
+      type: object
+      required:
+        - offerCode
+        - localeFields
+      properties:
+        offerCode:
+          type: string
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/OfferI18N"
+        performanceRelation:
+          $ref: "#/components/schemas/PerformanceRelationEnum"
+        eventCode:
+          type: string
+        price:
+          $ref: "#/components/schemas/Price"
+        seatConfigs:
+          $ref: "#/components/schemas/SeatConfigs"
+        themeCodes:
+          type: array
+          items:
+            type: string
+        deliveryLanguageCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocaleType"
+
+    OfferI18N:
+      type: object
+      required:
+        - locale
+        - title
+      properties:
+        locale:
+          $ref: "#/components/schemas/LocaleType"
+        title:
+          type: string
+        subtitle:
+          type: string
+        description:
+          type: string
+          description: html content
+        tagline:
+          type: string
+        period:
+          type: string
+        priceLabel:
+          type: string
+        infoSelectTime:
+          type: string
+        infoDownsell:
+          type: string
+        squeals:
+          type: array
+          items:
+            type: string
+        imageRef:
+          $ref: "#/components/schemas/ImageRef"
+
+    # ==================================================
+    # ENTITIES GROUP: ORDER
+    # ==================================================
+
+    OrderDetails:
+      description: created order in the BO
+      type: object
+      required:
+        - orderCode
+        - publicOrderCode
+        - reservationOwner
+        - creationDate
+        - orderStatus
+        - cart
+      properties:
+        orderCode:
+          type: string
+        publicOrderCode:
+          description: public reference of the order
+          type: string
+        reservationOwner:
+          $ref: "#/components/schemas/ReservationOwner"
+        creationDate:
+          $ref: "#/components/schemas/DatetimeUTCType"
+        orderStatus:
+          $ref: "#/components/schemas/OrderStatusEnum"
+        orderCounters:
+          $ref: "#/components/schemas/OrderCounters"
+        deliveryApplied:
+          $ref: "#/components/schemas/DeliveryApplied"
+        paymentsApplied:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentApplied"
+        cart:
+          $ref: "#/components/schemas/Cart"
+
+    PreOrderCart:
+      type: object
+      required:
+        - cartCode
+        - cart
+      properties:
+        cartCode:
+          type: string
+        deliveryCodes:
+          type: array
+          items:
+            type: string
+        paymentCodes:
+          type: array
+          items:
+            type: string
+            example: XPAY
+        cart:
+          $ref: "#/components/schemas/Cart"
+
+    PreExchangeOrderCart:
+      type: object
+      required:
+        - cartCode
+        - cart
+      properties:
+        cartCode:
+          type: string
+        deliveryCodes:
+          type: array
+          items:
+            type: string
+        paymentCodes:
+          type: array
+          items:
+            type: string
+            example: XPAY
+        cart:
+          $ref: "#/components/schemas/ExchangeOrderCart"
+
+    PreRenewalOrderCart:
+      type: object
+      required:
+        - cartCode
+        - cart
+      properties:
+        cartCode:
+          type: string
+        deliveryCodes:
+          type: array
+          items:
+            type: string
+        paymentCodes:
+          type: array
+          items:
+            type: string
+            example: XPAY
+        cart:
+          $ref: "#/components/schemas/RenewalOrderCart"
+
+    Order:
+      description: Order without the cart and other detailed data
+      type: object
+      required:
+        - orderCode
+        - publicOrderCode
+        - reservationOwner
+        - creationDate
+        - orderStatus
+        - total
+        - numberOfTickets
+      properties:
+        orderCode:
+          type: string
+        publicOrderCode:
+          type: string
+        externalOrderCode:
+          type: string
+        reservationOwner:
+          $ref: "#/components/schemas/ReservationOwner"
+        creationDate:
+          $ref: "#/components/schemas/DatetimeUTCType"
+        orderStatus:
+          $ref: "#/components/schemas/OrderStatusEnum"
+        total:
+          $ref: "#/components/schemas/PriceComplete"
+        numberOfTickets:
+          type: integer
+        performanceDateItem: #show the firstPerformance visible before going to the detail
+          $ref: "#/components/schemas/PerformanceDateItem"
+
+    OrdersTotals:
+      type: object
+      required:
+        - ordersCount
+        - ticketsCount
+        - totalAmount
+      properties:
+        ordersCount:
+          type: integer
+        ticketsCount:
+          type: integer
+        totalAmount:
+          $ref: "#/components/schemas/PriceComplete"
+
+    PerformanceDateItem:
+      type: object
+      required:
+        - date
+      properties:
+        date:
+          $ref: "#/components/schemas/DatetimeType"
+        isFullDay:
+          description: "If isFullDay on FE side we show only the date without the time"
+          type: boolean
+
+    ReservationOwner:
+      type: object
+      required:
+        - accountCode
+        - person
+      properties:
+        accountCode:
+          type: string
+        person:
+          $ref: "#/components/schemas/Person"
+
+    DeliveryApplied:
+      type: object
+      required:
+        - deliveryCode
+      properties:
+        deliveryCode:
+          type: string
+        price:
+          $ref: "#/components/schemas/PriceComplete"
+
+    PaymentApplied:
+      type: object
+      required:
+        - paymentCode
+        - amount
+        - paymentDate
+      properties:
+        paymentCode:
+          type: string
+          description: This field is used to store the payment gateway code
+        paymentMethodCode:
+          type: string
+          description:
+            This field is used to store the payment method code. The difference with the paymentCode field
+            is that a payment gateway corresponds to a WEB3 integration with a payment processor while a payment method
+            is one of the option choosen by a user to pay in the payment page and its code can be captured only on the
+            gateway response to WEB3 system.
+        transactionId:
+          type: string
+          description:
+            This field is used to store the unique transaction identifier. In case of multiple transactions
+            (e.g. TrxSubPayment) each of them will contain a unique transactionId
+        amount:
+          $ref: "#/components/schemas/Price"
+        paymentDate:
+          $ref: "#/components/schemas/DatetimeUTCType"
+        billingAccountCode:
+          type: string
+        bosPayment:
+          $ref: "#/components/schemas/BOSPayment"
+
+    BOSPayment:
+      type: object
+      properties:
+        moneyCardInfo:
+          type: string
+        fee:
+          $ref: "#/components/schemas/PriceComplete"
+        CreditCardInfo:
+          $ref: "#/components/schemas/CreditCardInfo"
+        FlexContractAk:
+          type: string
+
+    CreditCardInfo:
+      type: object
+      properties:
+        isoCode:
+          type: string
+        acqRefData:
+          type: string
+        appLabel:
+          type: string
+        approvalCode:
+          type: string
+        b24Code:
+          type: string
+        cardHolderName:
+          type: string
+        cardNumber:
+          type: string
+        creditCardType:
+          type: string
+        processData:
+          type: string
+        recordNo:
+          type: string
+        referenceNumber:
+          type: string
+        resultCodeAVS:
+          type: string
+        resultCodeCCV:
+          type: string
+        retrievalReference:
+          type: string
+        sequenceNumber:
+          type: number
+        systemTraceAuditNumber:
+          type: number
+        transactionDateTime:
+          $ref: "#/components/schemas/DatetimeUTCType"
+        transactionType:
+          type: number
+        validityEnd:
+          type: string
+        validityStart:
+          type: string
+        verificationModeCH:
+          type: number
+        verificationResult:
+          type: string
+
+    OrderCounters:
+      type: object
+      properties:
+        deliveryCount:
+          type: integer
+        productCount:
+          type: integer
+        ticketCount:
+          type: integer
+        totalCount:
+          type: integer
+
+    BaseOrderItem:
+      type: object
+      required:
+        - quantity
+        - productCode
+        - performanceCodes
+        - price
+      properties:
+        quantity:
+          type: integer
+        productCode:
+          type: string
+        performanceCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PerformanceCode"
+        peopleCount:
+          description: Each ticket is valid for multiple people
+          type: integer
+        ticketDetail:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketDetail"
+        price:
+          # description: Unit price of the BaseOrderItem
+          $ref: "#/components/schemas/PriceComplete"
+        activeFrom:
+          $ref: "#/components/schemas/DatetimeType"
+        activeTo:
+          $ref: "#/components/schemas/DatetimeType"
+        subItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderSubItem"
+
+    OrderSubItem:
+      type: object
+      required:
+        - productCode
+        - quantity
+      properties:
+        productCode:
+          type: string
+        quantity:
+          type: integer
+        performanceRef:
+          $ref: "#/components/schemas/PerformanceRef"
+
+    CartSubItem:
+      description: Used for package
+      type: object
+      required:
+        - productCode
+        - quantity
+      properties:
+        productCode:
+          type: string
+        quantity:
+          type: integer
+        performanceRef:
+          $ref: "#/components/schemas/PerformanceRef"
+
+    BaseShopCartItem:
+      type: object
+      required:
+        - productCode
+        - quantity
+      properties:
+        productCode:
+          type: string
+        quantity:
+          type: integer
+        performanceCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PerformanceCode"
+        peopleCount:
+          description: Each ticket is valid for multiple people
+          type: integer
+        ticketDetail:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketDetailShopCart"
+        activeFrom:
+          $ref: "#/components/schemas/DatetimeType"
+        activeTo:
+          $ref: "#/components/schemas/DatetimeType"
+        subItems:
+          type: array
+          description: List of subItems contained in a package
+          items:
+            $ref: "#/components/schemas/CartSubItem"
+
+    OrderItem:
+      type: object
+      required:
+        - item
+        - total
+      properties:
+        orderItemCode:
+          type: string
+        item:
+          $ref: "#/components/schemas/BaseOrderItem"
+        total:
+          # description: Total price of the OrderItem
+          $ref: "#/components/schemas/PriceComplete"
+        performanceTime:
+          $ref: "#/components/schemas/TimeType"
+        promotionsApplied:
+          type: array
+          items:
+            $ref: "#/components/schemas/PromotionApplied"
+
+    ExchangeOrderItem:
+      type: object
+      description:
+        If only the 'to' field is present, the price in the 'to' is the final price the user must pay. If the 'from' field is also present,
+        the price specified in the 'to' is the price of the new product, so the price the user has to pay should be equal to priceTo - priceFrom
+      required:
+        - to
+      properties:
+        from:
+          $ref: "#/components/schemas/OrderItem"
+        to:
+          $ref: "#/components/schemas/OrderItem"
+
+    RenewalOrderItem:
+      $ref: "#/components/schemas/ExchangeOrderItem"
+
+    PromotionApplied:
+      type: object
+      required:
+        - promotionType
+      properties:
+        promotionType:
+          $ref: "#/components/schemas/PromotionTypeEnum"
+        coupon:
+          type: string
+        discount:
+          $ref: "#/components/schemas/PriceComplete"
+
+    TicketDetail:
+      type: object
+      properties:
+        mediaCode:
+          type: string
+        ticketHolder:
+          $ref: "#/components/schemas/TicketHolder"
+        ticketNote:
+          $ref: "#/components/schemas/TicketNote"
+        seat:
+          $ref: "#/components/schemas/OrderSeat"
+        ticketStatus:
+          $ref: "#/components/schemas/TicketStatusEnum"
+
+    TicketDetailShopCart:
+      type: object
+      properties:
+        mediaCode:
+          type: string
+        ticketHolder:
+          $ref: "#/components/schemas/TicketHolderShopCart"
+        ticketNote:
+          $ref: "#/components/schemas/TicketNote"
+        seat:
+          $ref: "#/components/schemas/OrderSeat"
+
+    TicketHolder:
+      type: object
+      properties:
+        ticketHolderCode:
+          description: Bos use ticketHolderCode
+          type: string
+        accountCategoryCode:
+          description: Bos use accountCategoryCode
+          type: string
+        firstName:
+          description: Vision use first name
+          type: string
+        lastName:
+          description: Vision use last name
+          type: string
+
+    TicketHolderShopCart:
+      type: object
+      properties:
+        ticketHolderCode:
+          description: used for ticket holder of season pass
+          type: string
+        fields:
+          description: used for simple ticket holder
+          type: array
+          items:
+            $ref: "#/components/schemas/Field"
+
+    TicketNote:
+      type: array
+      items:
+        type: string
+
+    OrderSeat:
+      type: object
+      required:
+        - seat
+        - seatRequestKey
+      properties:
+        col:
+          type: integer
+        colLabel:
+          type: string
+        row:
+          type: integer
+        rowLabel:
+          type: string
+        seat:
+          type: integer
+        seatLabel:
+          type: string
+        seatRequestKey:
+          type: string
+
+    Delivery:
+      type: object
+      required:
+        - deliveryCode
+      properties:
+        deliveryCode:
+          type: string
+        bosAccountCode:
+          type: string
+          description: Optional account code linked to the delivery. Example user that should receive the payment link
+
+    # ==================================================
+    # ENTITIES GROUP: PERFORMANCE
+    # ==================================================
+
+    Day:
+      type: object
+      required:
+        - date
+        - isFullDay
+      properties:
+        date:
+          $ref: "#/components/schemas/DateType"
+        availability:
+          $ref: "#/components/schemas/Availability"
+        referencePrice:
+          $ref: "#/components/schemas/ReferencePrice"
+        productPrice:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductWithPrice"
+        isFullDay:
+          description: the day has only one performance (mono timeslot). If it is false there is the multi timeslot case.
+          type: boolean
+        fullDayPerformanceCode:
+          description: This is optional data, which allows you to avoid the findCalendarTimeslot call. If providing this information is effortless for the CoreSystem, then it's best to return it to VivaWeb.
+          type: string
+        deliveryLanguageCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocaleType"
+
+    ProductWithPrice:
+      type: object
+      required:
+        - productCode
+        - price
+      properties:
+        productCode:
+          type: string
+        price:
+          $ref: "#/components/schemas/Price"
+
+    Performance:
+      type: object
+      required:
+        - performanceCode
+        - date
+        - time
+      properties:
+        performanceCode:
+          $ref: "#/components/schemas/PerformanceCode"
+        date:
+          $ref: "#/components/schemas/DateType"
+        time:
+          $ref: "#/components/schemas/TimeType"
+        endTime:
+          $ref: "#/components/schemas/TimeType"
+        availability:
+          $ref: "#/components/schemas/Availability"
+        referencePrice:
+          $ref: "#/components/schemas/Price"
+        isFullDay:
+          type: boolean
+          description: the day has only one performance (mono timeslot). If it is false there is the multi timeslot case.
+        deliveryLanguageCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocaleType"
+
+    TicketPerformance:
+      type: object
+      description: performanceDetail returned only if askPerformance = true
+      required:
+        - performanceCode
+      properties:
+        performanceCode:
+          $ref: "#/components/schemas/PerformanceCode"
+        performanceDetail:
+          $ref: "#/components/schemas/PerformanceDetail"
+
+    PerformanceDetail:
+      type: object
+      required:
+        - date
+      properties:
+        date:
+          $ref: "#/components/schemas/DateType"
+        time:
+          # Time is optional with full day performances, and mandatory for non-full day performances
+          $ref: "#/components/schemas/TimeType"
+        endTime:
+          $ref: "#/components/schemas/TimeType"
+        isFullDay:
+          type: boolean
+          description: the day has only one performance (mono timeslot). If it is false there is the multi timeslot case.
+
+    PerformanceRef:
+      type: object
+      required:
+        - performanceCode
+        - performanceType
+        - date
+      properties:
+        performanceCode:
+          type: string
+        performanceType:
+          $ref: "#/components/schemas/PerformanceTypeEnum"
+        date:
+          $ref: "#/components/schemas/DateType"
+        time:
+          # Time is mandatory for performanceType=DAY+TIME
+          $ref: "#/components/schemas/TimeType"
+        endTime:
+          $ref: "#/components/schemas/TimeType"
+
+    PerformanceCode:
+      type: object
+      description: The "code" field is the correct way to identify a performance. There is an exception in Vision where, in the absence of the performanceCode, the "date" field (day without time) is used.
+      properties:
+        code:
+          type: string
+        date:
+          $ref: "#/components/schemas/DateType"
+
+    ProductCodeWithQuantity:
+      type: object
+      description: Product code with quantity
+      required:
+        - productCode
+        - quantity
+      properties:
+        productCode:
+          type: string
+        quantity:
+          type: number
+
+    # ==================================================
+    # ENTITIES GROUP: PRODUCT
+    # ==================================================
+
+    ProductCodesRef:
+      type: object
+      required:
+        - productCode
+      properties:
+        productCode:
+          type: string
+        price:
+          $ref: "#/components/schemas/PriceComplete"
+
+    BaseProduct:
+      type: object
+      required:
+        - productCode
+        - localeFields
+      properties:
+        productCode:
+          type: string
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductFieldI18N"
+
+    Product:
+      type: object
+      required:
+        - productCode
+        - localeFields
+        - type
+      properties:
+        productCode:
+          type: string
+        performanceRelation:
+          $ref: "#/components/schemas/PerformanceRelationEnum"
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductFieldI18N"
+        warning:
+          $ref: "#/components/schemas/ProductWarning"
+        type:
+          $ref: "#/components/schemas/ProductTypeEnum"
+        isFullDay:
+          description: the day has only one performance (mono timeslot). If it is false there is the multi timeslot case.
+          type: boolean
+        bosPrice:
+          $ref: "#/components/schemas/PriceComplete"
+        bosSortOrder:
+          type: integer
+        bosComponents:
+          type: array
+          items:
+            $ref: "#/components/schemas/BosProductComponent"
+        gift:
+          type: boolean
+          description: Whether this is a gift product
+        subProductRelations:
+          type: array
+          description: List of sub-products. The product is a package if it has at least one sub-product (since 1.8.0)
+          items:
+            $ref: "#/components/schemas/SubProductRelation"
+        signinRequired:
+          type: boolean
+          description: Sign in required to purchase this product
+
+    SubProductRelation:
+      type: object
+      description: Product-by-SubProduct relationship data (since 1.8.0)
+      required:
+        - subProduct
+        - quantityRule
+        - performanceRule
+      properties:
+        subProduct:
+          $ref: "#/components/schemas/SubProduct"
+        quantityRule:
+          $ref: "#/components/schemas/QuantityRule"
+        performanceRule:
+          $ref: "#/components/schemas/PerformanceRuleEnum"
+        themeCode:
+          type: string
+          description: The themeCode is used by Vision and V5 to associate a performance calendar different from the one set on the offer
+        derivatedPerformanceRule:
+          #  Rules for assigning a secondary performance
+          $ref: "#/components/schemas/DerivatedPerformanceRuleEnum"
+
+    SubProduct:
+      type: object
+      required:
+        - type
+        - productCode
+        - localeFields
+
+      properties:
+        productCode:
+          type: string
+        type:
+          $ref: "#/components/schemas/ProductTypeEnum"
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductFieldI18N"
+
+    QuantityRule:
+      type: object
+      description: Rules for assigning quantities (since 1.8.0)
+      properties:
+        min:
+          type: integer
+          description: Also used for fixed quantity
+
+    ProductWarning:
+      type: object
+      properties:
+        saleRestriction:
+          $ref: "#/components/schemas/ProductWarningMinMax"
+
+    ProductWarningMinMax:
+      type: object
+      properties:
+        min:
+          type: integer
+        max:
+          type: integer
+
+    ProductFieldI18N:
+      type: object
+      description: Pair of key,value for the i18n
+      required:
+        - locale
+        - title
+      properties:
+        locale:
+          $ref: "#/components/schemas/LocaleType"
+        fullTitle:
+          type: string
+          description: the full title is the sum of Title, SectionTitle and ShortTitle (es "Gardaland Park 1 day - Adult", "Mowgli 4D - Balcony - Adult")
+        title:
+          type: string
+          description: this field is focused on the description of the generic title (es "Gardaland Park 1 day"), without section or reduction indications
+        sectionTitle:
+          type: string
+          description: section information of full title (as "Balcony")
+        specificTitle:
+          type: string
+          description: specific information of full title as the type of reduction (es "Adult")
+        info:
+          type: string
+          description: The field is displayed directly under the product title. This should be a concise HTML text, as it occupies visual space in the product showcase. To provide a quick, attention-grabbing snippet of information about the product.
+        infoExtended:
+          type: string
+          description: The field is shown in a modal dialog that appears when the "details" link or button is clicked. This can be a longer HTML text, allowing for more detailed information, including images, bullet lists, and links.  The modal can be closed by clicking on the 'x' or 'Close' button.
+
+    BosProductComponent:
+      type: object
+      required:
+        - componentCode
+        - attributeCodes
+      properties:
+        componentCode:
+          type: string
+        attributeCodes:
+          type: array
+          items:
+            type: string
+
+    # ==================================================
+    # ENTITIES GROUP: PROMOTION
+    # ==================================================
+
+    IndividualCoupon:
+      type: object
+      required:
+        - code
+        - promotionCode
+        - status
+      properties:
+        code:
+          type: string
+        promotionCode:
+          type: string
+        status:
+          $ref: "#/components/schemas/CouponStatusEnum"
+        orderCode:
+          type: string
+          description: if the coupon has been used, the code of the order in which it has been used
+
+    # ==================================================
+    # ENTITIES GROUP: SELL
+    # ==================================================
+
+    UpSellGroup:
+      type: object
+      properties:
+        code:
+          type: string
+        upSells:
+          type: array
+          items:
+            $ref: "#/components/schemas/UpSell"
+
+    UpSell:
+      type: object
+      required:
+        - itemTo
+        - itemFrom
+        - priceDiff
+      properties:
+        itemTo:
+          $ref: "#/components/schemas/UpSellItemTo"
+        itemFrom:
+          $ref: "#/components/schemas/UpsellItemFrom"
+        priceDiff:
+          $ref: "#/components/schemas/PriceComplete"
+        type:
+          $ref: "#/components/schemas/UpSellTypeEnum"
+
+    UpSellItemTo:
+      type: object
+      required:
+        - productCode
+        - quantity
+      properties:
+        offerCode:
+          type: string
+        productCode:
+          type: string
+        listPerformanceCode:
+          type: array
+          items:
+            type: string
+        performanceRelation:
+          $ref: "#/components/schemas/PerformanceRelationEnum"
+        quantity:
+          type: integer
+
+    UpsellItemFrom:
+      type: object
+      required:
+        - productCode
+      properties:
+        productCode:
+          type: string
+        listPerformanceCode:
+          type: array
+          items:
+            type: string
+
+    CrossSellGroup:
+      type: object
+      properties:
+        code:
+          type: string
+        crossSells:
+          type: array
+          items:
+            $ref: "#/components/schemas/CrossSell"
+
+    CrossSell:
+      type: object
+      required:
+        - productCode
+      properties:
+        offerCode:
+          type: string
+        productCode:
+          type: string
+        type:
+          $ref: "#/components/schemas/CrossSellTypeEnum"
+
+    # ==================================================
+    # ENTITIES GROUP: RENEWAL
+    # ==================================================
+
+    RenewalProduct:
+      type: object
+      required:
+        - productCode
+        - price
+        - localeFields
+      properties:
+        productCode:
+          type: string
+        price:
+          $ref: "#/components/schemas/Price"
+        localeFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductFieldI18N"
+        originalPrice:
+          $ref: "#/components/schemas/Price"
+        ageMin:
+          description: minimum age (in years) of the ticket holder accepted
+          type: integer
+        ageMax:
+          description: maximum age (in years) of the ticket holder accepted
+          type: integer
+
+    # ==================================================
+    # ENTITIES GROUP: TICKET
+    # ==================================================
+
+    Ticket:
+      type: object
+      required:
+        - ticketCode
+      properties:
+        mediaCodes:
+          type: array
+          items:
+            type: string
+        ticketCode:
+          type: string
+        activeFrom:
+          $ref: "#/components/schemas/DatetimeType"
+        activeTo:
+          $ref: "#/components/schemas/DatetimeType"
+        peopleCount:
+          type: integer
+        price:
+          $ref: "#/components/schemas/PriceComplete"
+        ticketHolderInfo:
+          type: array
+          description: one for each person in peopleCount
+          items:
+            $ref: "#/components/schemas/TicketHolderPerson"
+        orderCode:
+          type: string
+        ticketPerformances:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketPerformance"
+        entryCount:
+          type: integer
+          description: usage count. If it's more than one then the ticket is used
+        ticketStatus:
+          $ref: "#/components/schemas/TicketStatusEnum"
+
+    TicketHolderPerson:
+      type: object
+      required:
+        - ticketHolderCode
+      properties:
+        ticketHolderCode:
+          type: string
+        person:
+          $ref: "#/components/schemas/Person"
+
+    ExchangeInfo:
+      type: object
+      required:
+        - ticketCode
+        - mediaCode
+        - productCodes
+      properties:
+        ticketCode:
+          type: string
+        mediaCode:
+          type: string
+        productCodes:
+          type: array
+          items:
+            type: string
+
+    Subscription:
+      type: object
+      description: A subscription is a season pass or membership
+      required:
+        - type
+        - mediaCode
+        - firstName
+        - lastName
+        - activeFrom
+        - activeTo
+        - productCode
+        - isRenewable
+        - isTicketDownloadable
+      properties:
+        type:
+          $ref: "#/components/schemas/SubscriptionTypeEnum"
+        mediaCode:
+          type: string
+          description: Membership/season pass number
+        firstName:
+          description: Firstname of ticketholder
+          type: string
+        lastName:
+          description: Lastname of ticketholder
+          type: string
+        activeFrom:
+          $ref: "#/components/schemas/DatetimeType"
+        activeTo:
+          $ref: "#/components/schemas/DatetimeType"
+        productCode:
+          type: string
+        isRenewable:
+          type: boolean
+          description: The core system checks if there are conditions for a renewal. If so, the renewal button is activated that leads to the specific page
+        isTicketDownloadable:
+          type: boolean
+          description: The core system checks if the ticket is downloadable
+        isDedicatedOffer:
+          type: boolean
+          description: The core system checks if the ticket is linked to dedicated offers
+        isLinkedToUser:
+          type: boolean
+          description: The core system checks if there is a ticket linked to the membership/seasonPass
+        memberCode:
+          type: string
+          description: member code is optional
+        price:
+          # price is optional
+          $ref: "#/components/schemas/Price"
+
+    Redeemable:
+      type: object
+      required:
+        - redeemSource
+        - redeemableGroups
+      properties:
+        redeemSource:
+          $ref: "#/components/schemas/RedeemSource"
+        redeemableGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/RedeemableGroup"
+
+    RedeemSource:
+      type: object
+      description: Redeem source is the ticket containing redeemable groups of products
+      required:
+        - ticketCode
+        - mediaCode
+        - productCode
+      properties:
+        ticketCode:
+          description: ticketCode
+          type: string
+        mediaCode:
+          type: string
+        productCode:
+          type: string
+        activeFrom:
+          $ref: "#/components/schemas/DatetimeType"
+        activeTo:
+          $ref: "#/components/schemas/DatetimeType"
+        price:
+          # for futere use. Example the voucher price
+          $ref: "#/components/schemas/Price"
+
+    RedeemableGroup:
+      type: object
+      description: Redeemable product group
+      required:
+        - uuid
+        - totalQuantity
+        - leftQuantity
+        - productCodes
+      properties:
+        uuid:
+          description: Secure identifier of the redeemable group. Allow to scale the remaining quantities when a redeem is consumed
+          type: string
+        totalQuantity:
+          type: integer
+        leftQuantity:
+          type: integer
+        expireDate:
+          type: string
+        productCodes:
+          description: product code with price for exchange it (not the voucher price)
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductCodesRef"
+
+    # ==================================================
+    # ENTITIES GROUP: B2B
+    # ==================================================
+
+    AllocationTicket:
+      type: object
+      required:
+        - productCode
+        - ticketList
+      properties:
+        familyCode:
+          type: string
+        themeCode:
+          type: string
+        offerCode:
+          type: string
+        productCode:
+          type: string
+        validity:
+          $ref: "#/components/schemas/DateTimeFromTo"
+        ticketList:
+          type: array
+          items:
+            type: string
+
+    Allocation:
+      type: object
+      required:
+        - id
+        - attributeTicketList
+      properties:
+        id:
+          type: string
+        creationDateTime:
+          $ref: "#/components/schemas/DatetimeType"
+        sourceAllocation:
+          $ref: "#/components/schemas/ReservationOwner"
+        targetAllocation:
+          $ref: "#/components/schemas/ReservationOwner"
+        attributeTicketList:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationTicket"
+
+    # ==================================================
+    # GENERIC ENTITIES
+    # ==================================================
+
+    Ref:
+      description: Entity reference
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+        lastModified:
+          $ref: "#/components/schemas/LastModifiedType"
+
+    Availability:
+      type: object
+      description: available
+      required:
+        - available
+        - total
+        - capacity
+      properties:
+        available:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+        capacity:
+          type: boolean
+          description: |
+            If true means that the current item has a limited capacity described from the total and available fields.
+            When false it is referring to general admission item (unlimited capacity)
+
+    DateFromTo:
+      type: object
+      properties:
+        from:
+          $ref: "#/components/schemas/DateType"
+        to:
+          $ref: "#/components/schemas/DateType"
+
+    DateTimeFromTo:
+      type: object
+      properties:
+        from:
+          $ref: "#/components/schemas/DatetimeType"
+        to:
+          $ref: "#/components/schemas/DatetimeType"
+
+    ImageRef:
+      type: object
+      description: Reference to the image to read with an appropriate endpoint or url of the image is available (e.g. if it's on Cloudinary)
+      properties:
+        ref:
+          $ref: "#/components/schemas/Ref"
+        url:
+          type: string
+          description: if a url of the image is available (e.g. if it's on Cloudinary)
+
+    ReferencePrice:
+      type: object
+      description: price to show in the calendar, if missing use the min price of all products prices
+      properties:
+        min:
+          $ref: "#/components/schemas/Price"
+        max:
+          $ref: "#/components/schemas/Price"
+        price:
+          $ref: "#/components/schemas/Price"
+
+    Price:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          $ref: "#/components/schemas/PriceType"
+        currency:
+          type: string
+
+    PriceComplete:
+      type: object
+      required:
+        - gross
+      properties:
+        gross:
+          $ref: "#/components/schemas/PriceType"
+        currency:
+          type: string
+        net:
+          $ref: "#/components/schemas/PriceType"
+        tax:
+          $ref: "#/components/schemas/PriceType"
+
+    SeatConfigs:
+      type: object
+      required:
+        - SeatAssignmentType
+        - currency
+      properties:
+        seatAssignmentType:
+          $ref: "#/components/schemas/SeatAssignmentEnum"
+        seatMapId:
+          type: string
+        seatAreaCode:
+          description: Sector Area code. (Oversector)
+          type: string
+
+    TimeFromTo:
+      type: object
+      properties:
+        from:
+          $ref: "#/components/schemas/TimeType"
+        to:
+          $ref: "#/components/schemas/TimeType"
+
+    Pagination:
+      type: object
+      required:
+        - pageNumber
+        - total
+      properties:
+        pageNumber:
+          $ref: "#/components/schemas/PageNumberType"
+        total:
+          description: Total number of pages
+          type: integer
+          format: int32
+        items:
+          description: Number of items found by the search
+          type: integer
+          format: int32
+        pageSize:
+          description: Number of items per page
+          type: integer
+          format: int32
+
+    Page:
+      type: object
+      required:
+        - pageNumber
+      properties:
+        pageNumber:
+          $ref: "#/components/schemas/PageNumberType"
+        itemsPerPage:
+          type: integer
+
+    # ==================================================
+    # SCHEMA - DATE AND TIME TYPE
+    # ==================================================
+
+    DateType:
+      description: |
+        date in ISO 8601 format
+        The string format is more robust, and avoids problems with the various formats handled by the OpenAPI generators
+      example: "2029-12-31"
+      type: string # workaround problem API Generator format date-time
+      pattern: '^\d{4}-\d{2}-\d{2}$'
+
+    DatetimeType:
+      description: |
+        date-time in ISO 8601 format.
+        The string format is more robust, and avoids problems with the various formats handled by the OpenAPI generators
+      example: 2029-12-31T23:59:59
+      type: string # workaround problem API Generator format date-time
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'
+
+    DatetimeUTCType:
+      description: |
+        date-time in ISO 8601 format.
+        The string format is more robust, and avoids problems with the various formats handled by the OpenAPI generators
+      example: 2029-12-31T23:59:59Z 2020-12-31T23:59:59+01 2020-12-31T23:59:59-01:30
+      type: string # workaround problem API Generator format date-time
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(([+-]\d{2}(:\d{2})?)|Z)$'
+
+    LastModifiedType:
+      description: |
+        same as DatetimeUTCType
+        Date and time when the origin server believes the resource was last modified.
+        In a hierarchical structure of information, it is the most recent modification date considering recursively the child entities.
+        It lets the API client know if it can keep the cached data valid or needs an update.
+        If it is not provided, the API client will not be able to determine if the data it has is still valid, so it will have to update it periodically.
+      example: 2029-12-31T23:59:59Z
+      type: string # workaround problem API Generator format date-time
+
+    TimeType:
+      description: Time format in ISO 8601 format hh:mm
+      example: "03:09"
+      type: string
+      pattern: '^\d{2}:\d{2}$'
+
+    # ==================================================
+    # SCHEMA - TYPE
+    # ==================================================
+
+    CurrencyType:
+      type: string
+      description: Currency ISO 4217 code
+      example: EUR
+
+    DataListKeyCompactType:
+      description: DataListKey in compact format (only one string for get request parameter). The data are "dataListCode", "key1", "key2" as CSV list
+      example: <dataListCode> or <dataListCode>,<key1> or <dataListCode>,<key1>,<key2>
+      type: string
+
+    EncryptedPasswordType:
+      description: For security, the password must be encrypted.
+        The string must be in UTF-8 format and must use 256-bit AES encryption.
+        The client and the server must have previously exchanged data for encryption (password and salt)
+        Default values are defined, so that it is not mandatory to configure them on every environment
+      type: string
+
+    FieldCodeType:
+      description: Field code, see file unified-backoffice-fieldcode.txt
+        For full list see https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/9019964/Object+Types
+      type: integer
+
+    LocaleType:
+      description: Language (and country) code. In case of language and country format, "-" is the separator character, as per ISO_3166 and ISO_639
+      example: en-US
+      type: string
+
+    PageNumberType:
+      description: Page number (start from 1)
+      type: integer
+      format: int32
+
+    PriceType:
+      description: for currencies a double is more correct than a float
+      type: number
+      format: double
+
+    # ==================================================
+    # SCHEMA - ENUM
+    # ==================================================
+
+    AccountRoleEnum:
+      type: string
+      enum:
+        - USER
+        - AGENT
+        - AGENCY
+
+    DependencyRuleEnum:
+      type: string
+      enum:
+        - EQUALS
+        - NOT_EQUALS
+      default: EQUALS
+
+    FieldKindEnum:
+      type: string
+      enum:
+        - NORMAL
+        - IMAGE
+      default: NORMAL
+
+    MaskCategoryKindEnum:
+      type: string
+      enum:
+        - ACCOUNT
+        - TICKET_NOTE
+
+    MaskFieldDataTypeEnum:
+      type: string
+      enum:
+        - TEXT
+        - DATE
+        - PASSWORD
+        - EMAIL
+        - PHONE
+        - TEXT_AREA
+        - CHECKBOX
+        - SELECT
+        - RADIO
+        - IMAGE
+        - LABEL
+        - HTML_LABEL
+      default: TEXT
+
+    MaskFieldValidationFormatEnum:
+      type: string
+      enum:
+        - ALPHANUMERIC # it must contain digits and letters
+        - DIGITS # it must contain only digits
+        - LETTERS_ONLY #  it must contain only letters
+        - IBAN # it must be a valid iban
+
+    PromotionTypeEnum:
+      type: string
+      enum:
+        - COUPON
+
+    SeatAssignmentEnum:
+      type: string
+      enum:
+        - NONE # no sector management
+        - STATIC-IMAGE # Static image. No sector management
+        - STATIC-ONLYCAPACITY # Static Map. Selection of sectors with capacity management. No seat management
+        - STATIC # Static Map. Selection of sectors with assignment with non-modifiable best seat
+        - STATIC-SUBSECTOR # Static Map. Selection of sectors and subsector with assignment with non-modifiable best seat
+        - VIVATICKET-BESTSEAT # Vivaticket plugin. Selection of sectors with best seat
+        - VIVATICKET-MANUAL # Vivaticket plugin. Selection of sectors with manual seat
+        - VIVATICKET-SUGGESTIVE # Vivaticket plugin. Selection of sectors with assignment with best seat. Possibility to change the assigned seats
+        - MMC-BESTSEAT # MMC plugin. Selection of sectors with best seat
+        - MMC-MANUAL # MMC plugin. Selection of sectors with manual seat
+        - MMC-SUGGESTIVE # MMC plugin. Selection of sectors with assignment with best seat. Possibility to change the assigned seats
+
+    OrderStatusEnum:
+      type: string
+      enum:
+        - NEW # BOS FOR_APPROVAL
+        - APPROVED # confirmed, but not yet paid. For example, it is possible to pay it within a certain time via the payment link sent via email
+        - PAID # Paied, but tickets not delivered to the user
+        - COMPLETED # done everything
+        - PURGED # Order cancelled on FE before proceed with payment
+        - CANCELLED # Even if deleted, the order status continues to be preserved in the OrderStatus field
+
+    ReportFormatEnum:
+      type: string
+      enum:
+        - XLS
+        - PDF
+
+    SortByEnum:
+      type: string
+      enum:
+        - FAMILY
+        - OFFER
+        - PRODUCT
+        - THEME
+        - START_DATE
+        - END_DATE
+
+    SortEnum:
+      type: string
+      enum:
+        - ASCENDING
+        - DESCENDING
+
+    PerformanceRelationEnum:
+      description:
+        There are performances, for which the days must be read and for each day there is the indication fullDay.
+        Case 0 There are no performances configured, so the user does not have to choose a day (and a timeslot)
+        Case 1 multi day and multi timeslot. The user choose the day and then choose the timeslot
+        Case 2 multi day and MONO timeslot. There is only one time slot and it is assigned automatically without asking the user to choose.
+        Case 3 MONO day and multi timeslot. Not covered, case in which the user chooses the time slot and does not choose the day
+        Case 4 MONO day and MONO timeslot. Not covered
+      type: string
+      enum:
+        - NO_PERFORMANCE
+        - MULTI_PERFORMANCE # effect-> Show calendar to the user
+        # - MONO_PERFORMANCE effect-> Show calendar to the user without timeslot choose
+
+    ProductTypeEnum:
+      type: string
+      enum:
+        - TICKET
+        - SEASONPASS
+        - MEMBERSHIP
+        - GENERIC_PRODUCT
+        - INSURANCE
+
+    SubscriptionTypeEnum:
+      type: string
+      enum:
+        - SEASONPASS
+        - MEMBERSHIP
+
+    UpSellTypeEnum:
+      type: string
+      enum:
+        - MANAGED # the performance is not needed or it's automatically assigned by the remote system
+        - SAME_DAY # Same day and if necessary choose timeslot
+        - CHOOSE # Choose day (if necessary choose timeslot)
+      default: MANAGED
+
+    CrossSellTypeEnum:
+      type: string
+      enum:
+        - MANAGED # the performance is not needed or it's automatically assigned by the remote system
+        - CHOOSE
+      default: MANAGED
+
+    PerformanceRuleEnum:
+      type: string
+      description: Rules for assigning a calendar date (e.g. for each sub-product of a package)
+      enum:
+        - NO-DATE # The entity does not have a date
+        - DAY # The entity needs the choice of a day (it use dated ticket and not performance)
+        - DAY+TIME # The entity needs the choice of a day and time (performance)
+        - FULLDAY # The entity needs the choice of a day. Time is assigned automatically, because there is only one (performance)
+      default: NO-DATE
+
+    DerivatedPerformanceRuleEnum:
+      type: string
+      description: Rules for assigning a secondary performance
+      enum:
+        - SAME-DAY # Derive secondary performance in other calendar (through product theme code) using same day of primary performance (offer performance)
+      default: SAME-DAY
+
+    PerformanceTypeEnum:
+      type: string
+      enum:
+        - DAY+TIME # Day with a time slot. There are multiple time slots to choose from during the day. (BOS Performance, Vision Session)
+        - FULLDAY # A time slot that applies throughout the day. Since there is only one time slot, it makes no sense to choose it. (BOS fullday Performance,  Vision Session)
+        - DAY # Day without a time slot ( "dated")
+      default: DAY+TIME
+
+    AccountStatusEnum:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+
+    SearchTypeEnum:
+      type: string
+      enum:
+        - EQUALS
+        - NOT_EQUALS
+        - LOWER_THAN
+        - LOWER_EQUALS_THAN
+        - GREATER_THAN
+        - GREATER_EQUALS_THAN
+      default: EQUALS
+
+    SearchCreditTypeEnum:
+      type: string
+      enum:
+        - INGOING
+        - OUTGOING
+        - ALL
+      default: ALL
+
+    TicketStatusEnum:
+      type: string
+      description: https://vivaticket.atlassian.net/wiki/spaces/BD31/pages/8972642/API+-+Ticket+Voidtype
+      enum:
+        - VALID #(active)
+        - PENDING_VALIDATION #(inactive)
+        - BLOCKED
+        - NOT_VALID
+        - EXPIRED
+        - CANCELLED
+
+    DocumentTypeEnum:
+      type: string
+      enum:
+        - INVOICE
+        - PROOF_OF_PURCHASE
+        - QUOTATION
+        - ALLOCATION_DATA_EXPORT
+        - TICKET_LIST # List of tickets with the standard template
+        - TICKET_DATA_EXPORT # List of ticket datas ( code, validity, …)
+
+    OutputTypeEnum:
+      type: string
+      enum:
+        - PDF
+        - EXCEL
+        - CSV
+
+    AccountTypeEnum:
+      type: string
+      enum:
+        - AGENT
+        - AGENCY
+        - COMPANY
+
+    CouponStatusEnum:
+      type: string
+      enum:
+        - AVAILABLE
+        - IN_USE
+        - USED
+
+    # ==================================================
+    # SCHEMA - ERROR - RESPONSE
+    # ==================================================
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          $ref: "#/components/schemas/ErrorCode"
+        msg:
+          description: "Used for documentation and debug purpose. It's never used by Web3"
+          type: string
+        validations:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+
+    ErrorCode:
+      type: string
+      description: For cases where httpStatus is not sufficient. For use by the caller for handling specific errors
+      enum:
+        - ACCOUNT.2 # Unable to Retrieve Account (BOS 1002)
+        - ACCOUNT.4 # No Match For This Account (BOS 1004)
+        - ACCOUNT.5 # Invalid Password (BOS 1005)
+        - ACCOUNT.6 # The Selected Account is Blocked (BOS 1006)
+        - ACCOUNT.7 # The Selected Account is Disabled (BOS 1007)
+        - ACCOUNT.13 # Payment amount exceeds credit (BOS 1013)
+        - ACCOUNT.16 # Invalid Dmg Category AK: Not found (BOS 1016)
+        - ACCOUNT.21 # Fields Validator Error (BOS 1021)
+        - ACCOUNT.66 # Maximum number of reset (BOS 1066)
+        - COUPON.0 #  Invalid Coupon Code: Not Found (BOS 4000)
+        - COUPON.2 # Coupon is already Used (BOS 4002)
+        - SEAT.0 # Seat not Found (BOS 28000)
+        - SEAT.1 # Seat/s not available (BOS 28001)
+        - SEAT.35 # Seat category sold out (BOS 5035)
+        - EVENT.1 # Unable to find events (BOS 2001)
+        - ORDER.0 # Order id not found (BOS 5000)
+        - REPORT.03 # Report generation error (BOS 18003)
+        - TICKET.0 # Unable to find ticket (BOS 9000)
+        - TICKET.1 # Ticket not active (BOS 9001)
+        - TICKET.8 # Ticket upgrade period exceeded (BOS 5108)
+        - TICKET.10 # Ticket not upgradable (BOS 5100)
+        - TICKET.18 # Ticket already renewed (BOS 5018)
+        - TICKET.40 # The ticket's validity has expired
+        - TICKET.111 # No tickets to be renewed (BOS 5111)
+        - TICKET.105 # Ticket not renewable (BOS 5105)
+        - PERFORMANCE.1 #Performance quota exceeded (BOS 5088)
+        - MEMBERSHIP.0 #Membership not renewable
+        - MEMBERSHIP.1 #Membership not valild
+        - RENEWAL.0 #Renewal requested too early
+        - RENEWAL.1 #Renewal requested too late
+        - REDEEM.1 # Redeem management is not active for this product
+
+    ValidationCode:
+      type: string
+      enum:
+        - UNHANDLE
+        - VALUE_MUST_BE_UNIQUE
+        - QUANTITY_MIN
+        - QUANTITY_MAX
+        - QUANTITY_EXCEEDED_REMAINING_QUOTA
+
+    ValidationError:
+      type: object
+      required:
+        - code
+        - entityCode
+      properties:
+        code:
+          $ref: "#/components/schemas/ValidationCode"
+        entityCode:
+          type: string
+          description: Code of the entity to which the validation error refers
+
+  responses:
+    BadRequestResponse:
+      description: Some fields are incorrect or missing
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    NotAuthenticatedResponse:
+      description: You are not authenticated
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    ConflictResponse:
+      description: conflict with the current state of the target resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    ForbiddenResponse:
+      description: You don't have the rights to do this operation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    NotFoundResponse:
+      description: The element you are looking for was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    InternalServerErrorResponse:
+      description: Something went wrong
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

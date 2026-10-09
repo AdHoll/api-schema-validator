@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <!-- Bouclier -->
+  <path d="M32 9 L51 16 V33 C51 45 42 52 32 56 C22 52 13 45 13 33 V16 Z"
+        fill="none" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Accolades { } évoquant le JSON/schéma -->
+  <path d="M26 24 C22 24 23 31 19 31 C23 31 22 39 26 39"
+        fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M38 24 C42 24 41 31 45 31 C41 31 42 39 38 39"
+        fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Coche de validation -->
+  <path d="M27 32 L31 36 L38 27"
+        fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
