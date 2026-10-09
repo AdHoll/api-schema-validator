@@ -2,6 +2,8 @@
 
 Validateur de schéma OpenAPI/YAML avec authentification OAuth2 (scope **B2B**/**B2C**).
 
+*Lire ceci en [anglais](./README.en.md).*
+
 L'outil permet de charger une spécification OpenAPI, de sélectionner des routes, d'appeler
 une API réelle en s'authentifiant en OAuth2 (`client_credentials`), puis de **comparer les
 réponses au schéma attendu** afin de détecter les écarts (champs requis manquants, champs non
