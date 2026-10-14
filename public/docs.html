@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VivAPI Unified Validator — Documentation</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <div class="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow flex flex-col gap-6">
+
+    <!-- Header + onglets -->
+    <header class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div class="flex items-center gap-4">
+        <img src="/logo.svg" alt="VivAPI Unified Validator" class="h-12 sm:h-14 w-auto flex-shrink-0">
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
+          <a href="/index.html" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-list-check mr-1.5"></i> <span data-i18n="nav.validator">Validateur</span>
+          </a>
+          <a href="/status.html" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-heart-pulse mr-1.5"></i> <span data-i18n="nav.status">Statut des APIs</span>
+          </a>
+          <a href="/docs.html" class="px-4 py-1.5 rounded-md transition bg-indigo-600 text-white">
+            <i class="fa-solid fa-book mr-1.5"></i> <span data-i18n="nav.docs">Documentation</span>
+          </a>
+        </div>
+        <!-- Sélecteur de langue (rempli par i18n.js) -->
+        <div class="lang-switcher"></div>
+      </div>
+    </header>
+
+    <!-- Introduction -->
+    <section class="bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-2">
+      <h1 class="text-lg font-bold text-indigo-300 flex items-center gap-2">
+        <i class="fa-solid fa-diagram-project"></i> <span data-i18n="docs.title">Documentation des flux API</span>
+      </h1>
+      <p class="text-sm text-slate-300" data-i18n="docs.intro">Carte des parcours front et des routes backoffice appelées, avec le chaînage des données d'une route à l'autre.</p>
+      <p class="text-xs text-slate-400 italic" data-i18n="docs.source">Source : unified-backoffice-api v1.11.16 — le back-end consomme cette API et expose les données au front.</p>
+      <p class="text-xs text-slate-500" data-i18n="docs.legend">Chaque bloc est une route backoffice. Flèche grise = séquence d'appel. Flèche orange = donnée réinjectée dans l'appel suivant.</p>
+    </section>
+
+    <!-- Carte des flux -->
+    <section class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/80 shadow-lg space-y-3">
+      <div class="flex justify-end">
+        <a href="/flux-api-backoffice.svg" target="_blank" rel="noopener"
+          class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+          <span data-i18n="docs.openFull">Ouvrir en plein écran</span>
+        </a>
+      </div>
+      <div class="bg-slate-950/60 rounded-lg border border-slate-700/60 p-3 overflow-auto">
+        <!-- Le SVG est rendu via <object> pour conserver le vectoriel et permettre le zoom natif -->
+        <object type="image/svg+xml" data="/flux-api-backoffice.svg"
+          class="w-full h-auto min-h-[500px]" aria-label="Carte des flux API backoffice">
+          <img src="/flux-api-backoffice.svg" alt="Carte des flux API backoffice" class="w-full h-auto">
+        </object>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="/i18n.js"></script>
+</body>
+</html>

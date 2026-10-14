@@ -51,15 +51,24 @@ async function refreshVaultStatus() {
   } catch { setVaultUI(false); }
 }
 
+// Helper i18n : utilise I18n.t si disponible, sinon retombe sur le libellé fourni.
+// vars (optionnel) permet l'interpolation {clé} aussi bien via I18n.t que sur le fallback.
+function tr(key, fallback, vars) {
+  if (window.I18n && typeof window.I18n.t === 'function') return window.I18n.t(key, vars);
+  let s = fallback;
+  if (vars) for (const [k, v] of Object.entries(vars)) s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), String(v));
+  return s;
+}
+
 function setVaultUI(unlocked) {
   if (unlocked) {
-    vaultStatus.innerHTML = '<i class="fa-solid fa-lock-open text-emerald-400"></i> <span>Déverrouillé</span>';
+    vaultStatus.innerHTML = `<i class="fa-solid fa-lock-open text-emerald-400"></i> <span>${tr('bw.unlocked', 'Déverrouillé')}</span>`;
     vaultStatus.className = 'text-xs flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-700 bg-emerald-950/40 text-emerald-300';
     unlockBtn.classList.add('hidden');
     lockBtn.classList.remove('hidden');
     masterPassword.value = '';
   } else {
-    vaultStatus.innerHTML = '<i class="fa-solid fa-lock text-rose-400"></i> <span>Verrouillé</span>';
+    vaultStatus.innerHTML = `<i class="fa-solid fa-lock text-rose-400"></i> <span>${tr('bw.locked', 'Verrouillé')}</span>`;
     vaultStatus.className = 'text-xs flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400';
     unlockBtn.classList.remove('hidden');
     lockBtn.classList.add('hidden');
@@ -71,7 +80,7 @@ unlockForm.addEventListener('submit', async (e) => {
   const pwd = masterPassword.value;
   if (!pwd) return;
   unlockBtn.disabled = true;
-  unlockBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Déverrouillage...';
+  unlockBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${tr('bw.unlocking', 'Déverrouillage...')}`;
   try {
     const res = await fetch('/api/status/unlock', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -79,13 +88,13 @@ unlockForm.addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     masterPassword.value = ''; // on efface immédiatement
-    if (!res.ok) throw new Error(data.error || 'Déverrouillage échoué');
+    if (!res.ok) throw new Error(data.error || tr('bw.unlockFailed', 'Déverrouillage échoué'));
     setVaultUI(true);
   } catch (err) {
-    alert('Erreur : ' + err.message);
+    alert(tr('common.error', 'Erreur') + ' : ' + err.message);
   } finally {
     unlockBtn.disabled = false;
-    unlockBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> Déverrouiller';
+    unlockBtn.innerHTML = `<i class="fa-solid fa-unlock"></i> ${tr('bw.unlock', 'Déverrouiller')}`;
   }
 });
 
@@ -99,10 +108,10 @@ document.getElementById('loginTerminalBtn').addEventListener('click', async () =
   try {
     const res = await fetch('/api/status/open-login-terminal', { method: 'POST' });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Échec');
-    alert('Un terminal PowerShell s\'est ouvert.\n\nSuivez les invites pour vous connecter (serveur EU + login + 2FA éventuel).\nUne fois connecté, revenez ici et déverrouillez avec votre mot de passe maître.');
+    if (!res.ok) throw new Error(data.error || tr('bw.terminalFailed', 'Échec'));
+    alert(tr('bw.terminalOpened', 'Un terminal PowerShell s\'est ouvert.'));
   } catch (err) {
-    alert('Erreur : ' + err.message);
+    alert(tr('common.error', 'Erreur') + ' : ' + err.message);
   }
 });
 
@@ -133,8 +142,8 @@ function renderTagFilters() {
   if (tags.length === 0) { tagFilters.innerHTML = ''; return; }
 
   tagFilters.innerHTML =
-    `<span class="text-slate-400 font-medium mr-1"><i class="fa-solid fa-filter"></i> Filtrer :</span>` +
-    `<button type="button" data-tag="" class="tag-filter px-3 py-1 rounded-lg border font-semibold transition ${activeTagFilter === null ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900 text-slate-400 border-slate-700 hover:bg-slate-800'}">Tous</button>` +
+    `<span class="text-slate-400 font-medium mr-1"><i class="fa-solid fa-filter"></i> ${tr('api.filter', 'Filtrer :')}</span>` +
+    `<button type="button" data-tag="" class="tag-filter px-3 py-1 rounded-lg border font-semibold transition ${activeTagFilter === null ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900 text-slate-400 border-slate-700 hover:bg-slate-800'}">${tr('api.all', 'Tous')}</button>` +
     tags.map(tag => {
       const active = activeTagFilter === tag;
       return `<button type="button" data-tag="${tag}" class="tag-filter px-3 py-1 rounded-lg border font-semibold transition ${active ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900 text-slate-400 border-slate-700 hover:bg-slate-800'}">
@@ -162,8 +171,10 @@ function renderApiList() {
     : targets;
 
   if (list.length === 0) {
-    apiList.innerHTML = '<div class="text-slate-500 italic text-center py-6">Aucune API' +
-      (activeTagFilter ? ` pour le tag ${activeTagFilter}` : ' configurée') + '.</div>';
+    const suffix = activeTagFilter
+      ? ` ${tr('api.emptyForTag', 'pour le tag')} ${activeTagFilter}`
+      : ` ${tr('api.emptyConfigured', 'configurée')}`;
+    apiList.innerHTML = `<div class="text-slate-500 italic text-center py-6">${tr('api.emptyBase', 'Aucune API')}${suffix}.</div>`;
     return;
   }
 
@@ -171,16 +182,16 @@ function renderApiList() {
     const r = results[t.id];
     const loading = r && r._loading;
     let dotHtml = '<span class="w-3 h-3 rounded-full flex-shrink-0 bg-slate-600"></span>';
-    let info = '<span class="text-slate-500">Non testé</span>', clickable = '';
+    let info = `<span class="text-slate-500">${tr('api.notTested', 'Non testé')}</span>`, clickable = '';
 
     if (loading) {
       dotHtml = '<i class="fa-solid fa-spinner fa-spin text-indigo-400 w-3 flex-shrink-0"></i>';
-      info = '<span class="text-indigo-400"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Test en cours…</span>';
+      info = `<span class="text-indigo-400"><i class="fa-solid fa-spinner fa-spin mr-1"></i>${tr('api.testing', 'Test en cours…')}</span>`;
     } else if (r) {
       const dot = r.ok ? 'bg-emerald-500' : 'bg-rose-500';
       const glow = r.ok ? '' : 'style="box-shadow:0 0 6px rgba(244,63,94,.6)"';
       dotHtml = `<span class="w-3 h-3 rounded-full flex-shrink-0 ${dot}" ${glow}></span>`;
-      const code = r.statusCode != null ? `HTTP ${r.statusCode}` : 'Pas de réponse';
+      const code = r.statusCode != null ? `HTTP ${r.statusCode}` : tr('api.noResponse', 'Pas de réponse');
       info = `<span class="${r.ok ? 'text-emerald-400' : 'text-rose-400'} font-semibold">${code}</span>
               <span class="text-slate-500">· ${r.durationMs} ms</span>
               ${r.error ? `<span class="text-rose-400 italic ml-1" title="${r.error}">· ${r.error}</span>` : ''}`;
@@ -224,7 +235,7 @@ async function runTests(selector) {
   // selector = { ids: [...] } ou { tags: [...] } ou {} pour tout
   const res = await fetch('/api/status/vault-status');
   const vs = await res.json();
-  if (!vs.unlocked) { alert('Déverrouillez d\'abord le coffre Bitwarden.'); return; }
+  if (!vs.unlocked) { alert(tr('api.vaultLockedFirst', 'Déverrouillez d\'abord le coffre Bitwarden.')); return; }
 
   // Marquer les lignes concernées "en cours"
   const concerned = selector.ids
@@ -247,10 +258,10 @@ async function runTests(selector) {
       body: JSON.stringify(selector),
     });
     const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Erreur de test');
+    if (!r.ok) throw new Error(data.error || tr('api.testError', 'Erreur de test'));
     (data.results || []).forEach(res => { results[res.id] = res; });
   } catch (err) {
-    alert('Erreur : ' + err.message);
+    alert(tr('common.error', 'Erreur') + ' : ' + err.message);
   } finally {
     // Lever le flag de chargement sur les lignes restées en cours
     concerned.forEach(t => {
@@ -272,10 +283,10 @@ window.showDetail = function(id) {
   const t = targets.find(x => x.id === id);
   const r = results[id];
   if (!t || !r) return;
-  detailTitle.textContent = `${t.label} — ${r.statusCode != null ? 'HTTP ' + r.statusCode : 'Pas de réponse'}`;
+  detailTitle.textContent = `${t.label} — ${r.statusCode != null ? 'HTTP ' + r.statusCode : tr('api.noResponse', 'Pas de réponse')}`;
   detailBody.textContent = r.responseBody !== undefined
     ? JSON.stringify(r.responseBody, null, 2)
-    : (r.error || '// Aucune réponse');
+    : (r.error || tr('api.noResponseComment', '// Aucune réponse'));
   detailModal.classList.remove('hidden');
 };
 document.getElementById('closeDetailBtn').addEventListener('click', () => detailModal.classList.add('hidden'));
@@ -284,7 +295,7 @@ detailModal.addEventListener('click', (e) => { if (e.target === detailModal) det
 // ── CRUD des cibles ──────────────────────────────────────────────────
 function openApiModal(target) {
   editingId = target?.id || null;
-  apiModalTitle.textContent = target ? 'Modifier l\'API' : 'Ajouter une API';
+  apiModalTitle.textContent = target ? tr('api.editTitle', 'Modifier l\'API') : tr('apiModal.addTitle', 'Ajouter une API');
   fLabel.value = target?.label || '';
   fOwner.value = target?.owner || '';
   fCollection.value = target?.collection || '';
@@ -299,7 +310,7 @@ window.editApi = function(id) { openApiModal(targets.find(t => t.id === id)); };
 
 window.deleteApi = async function(id) {
   const t = targets.find(x => x.id === id);
-  if (!t || !confirm(`Supprimer « ${t.label} » ?`)) return;
+  if (!t || !confirm(tr('api.confirmDelete', 'Supprimer « {label} » ?', { label: t.label }))) return;
   targets = targets.filter(x => x.id !== id);
   delete results[id];
   await saveTargets();
@@ -310,7 +321,7 @@ window.deleteApi = async function(id) {
 document.getElementById('saveApiBtn').addEventListener('click', async () => {
   const label = fLabel.value.trim();
   const bwItemName = fItemName.value.trim();
-  if (!label || !bwItemName) { alert('Le libellé et le nom de l\'entrée Bitwarden sont requis.'); return; }
+  if (!label || !bwItemName) { alert(tr('api.requiredFields', 'Le libellé et le nom de l\'entrée Bitwarden sont requis.')); return; }
 
   const payload = {
     id: editingId || ('api-' + Date.now()),
@@ -336,6 +347,15 @@ document.getElementById('saveApiBtn').addEventListener('click', async () => {
 document.getElementById('cancelApiBtn').addEventListener('click', () => apiModal.classList.add('hidden'));
 document.getElementById('closeApiModalBtn').addEventListener('click', () => apiModal.classList.add('hidden'));
 apiModal.addEventListener('click', (e) => { if (e.target === apiModal) apiModal.classList.add('hidden'); });
+
+// Re-render des zones générées en JS à l'init de i18n et à chaque changement de langue
+function refreshStatusI18n() {
+  refreshVaultStatus();
+  renderTagFilters();
+  renderApiList();
+}
+document.addEventListener('i18n:ready', refreshStatusI18n);
+document.addEventListener('i18n:changed', refreshStatusI18n);
 
 // ── Init ─────────────────────────────────────────────────────────────
 refreshVaultStatus();

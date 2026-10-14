@@ -34,38 +34,43 @@
     <header class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
       <div class="flex items-center gap-4">
         <img src="/logo.svg" alt="VivAPI Unified Validator" class="h-12 sm:h-14 w-auto flex-shrink-0">
-        <p class="text-slate-400 text-xs sm:text-sm hidden md:block max-w-xs">
+        <p class="text-slate-400 text-xs sm:text-sm hidden md:block max-w-xs" data-i18n="header.tagline">
           Vérification automatique de conformité OpenAPI/YAML sécurisée par OAuth2 (b2b / b2c)
         </p>
       </div>
       <div class="flex items-center gap-3">
-        <!-- Onglets de page : Validateur / Statut des APIs -->
+        <!-- Onglets de page : Validateur / Statut des APIs / Documentation -->
         <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
           <a href="/index.html" class="px-4 py-1.5 rounded-md transition bg-indigo-600 text-white">
-            <i class="fa-solid fa-list-check mr-1.5"></i> Validateur
+            <i class="fa-solid fa-list-check mr-1.5"></i> <span data-i18n="nav.validator">Validateur</span>
           </a>
           <a href="/status.html" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
-            <i class="fa-solid fa-heart-pulse mr-1.5"></i> Statut des APIs
+            <i class="fa-solid fa-heart-pulse mr-1.5"></i> <span data-i18n="nav.status">Statut des APIs</span>
+          </a>
+          <a href="/docs.html" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-book mr-1.5"></i> <span data-i18n="nav.docs">Documentation</span>
           </a>
         </div>
+        <!-- Sélecteur de langue (rempli par i18n.js) -->
+        <div class="lang-switcher"></div>
         <!-- Switch de mode compact -->
         <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
           <button type="button" id="modeManualBtn"
             class="mode-btn px-3 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
-            <i class="fa-solid fa-sliders mr-1"></i> Manuel
+            <i class="fa-solid fa-sliders mr-1"></i> <span data-i18n="mode.manual">Manuel</span>
           </button>
           <button type="button" id="modeScenarioBtn"
             class="mode-btn px-3 py-1.5 rounded-md transition bg-indigo-600 text-white">
-            <i class="fa-solid fa-diagram-project mr-1"></i> Scénarios
+            <i class="fa-solid fa-diagram-project mr-1"></i> <span data-i18n="mode.scenario">Scénarios</span>
           </button>
         </div>
         <div class="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-400 flex items-center gap-2">
-          <i class="fa-solid fa-folder-open text-indigo-400"></i> Logs dans <code class="text-indigo-300">/logs</code>
+          <i class="fa-solid fa-folder-open text-indigo-400"></i> <span data-i18n="logs.in">Logs dans</span> <code class="text-indigo-300">/logs</code>
         </div>
         <button type="submit" form="validatorForm" id="submitBtn" disabled
           class="py-2.5 px-5 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border disabled:border-slate-700 border-indigo-500 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm whitespace-nowrap"
           title="">
-          <i class="fa-solid fa-play"></i> Lancer la validation
+          <i class="fa-solid fa-play"></i> <span data-i18n="btn.runValidation">Lancer la validation</span>
         </button>
       </div>
     </header>
@@ -79,26 +84,26 @@
         <div class="lg:col-span-4 bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg flex flex-col justify-between space-y-4">
           <div class="space-y-3">
             <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-              <i class="fa-solid fa-file-code"></i> 1. Spécification YAML
+              <i class="fa-solid fa-file-code"></i> <span data-i18n="sec1.title">1. Spécification YAML</span>
             </h2>
 
             <!-- Sélecteur de version embarquée -->
             <div>
               <label class="block text-xs font-medium text-slate-400 mb-1.5">
-                <i class="fa-solid fa-layer-group text-indigo-400 mr-1"></i> Version de la spec (bibliothèque)
+                <i class="fa-solid fa-layer-group text-indigo-400 mr-1"></i> <span data-i18n="sec1.versionLabel">Version de la spec (bibliothèque)</span>
               </label>
               <select id="specVersionSelect"
                 class="w-full text-xs bg-slate-900/80 border border-slate-700 text-slate-300 px-2.5 py-2 rounded-lg font-mono focus:outline-none focus:border-indigo-500">
-                <option value="">-- Chargement des versions… --</option>
+                <option value="" data-i18n="sec1.versionLoading">-- Chargement des versions… --</option>
               </select>
             </div>
 
             <div class="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-wide">
-              <span class="flex-1 h-px bg-slate-700/60"></span> ou <span class="flex-1 h-px bg-slate-700/60"></span>
+              <span class="flex-1 h-px bg-slate-700/60"></span> <span data-i18n="sec1.or">ou</span> <span class="flex-1 h-px bg-slate-700/60"></span>
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-slate-400 mb-1.5">Fichier OpenAPI (.yaml / .yml)</label>
+              <label class="block text-xs font-medium text-slate-400 mb-1.5" data-i18n="sec1.fileLabel">Fichier OpenAPI (.yaml / .yml)</label>
               <input type="file" id="specFile" name="spec" accept=".yaml,.yml"
                 class="block w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer bg-slate-900/80 rounded-lg border border-slate-700/80">
             </div>
@@ -107,9 +112,9 @@
             <div id="yamlHistorySection" class="hidden pt-2 border-t border-slate-700/60">
               <div class="flex justify-between items-center mb-1">
                 <span class="text-[11px] font-medium text-slate-400 flex items-center gap-1">
-                  <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Sessions récentes sauvegardées :
+                  <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> <span data-i18n="sec1.historyLabel">Sessions récentes sauvegardées :</span>
                 </span>
-                <button type="button" id="clearYamlHistoryBtn" class="text-[10px] text-slate-500 hover:text-rose-400 transition">Effacer</button>
+                <button type="button" id="clearYamlHistoryBtn" class="text-[10px] text-slate-500 hover:text-rose-400 transition" data-i18n="sec1.clear">Effacer</button>
               </div>
               <div id="yamlHistoryList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
             </div>
@@ -122,32 +127,32 @@
         <div class="lg:col-span-8 bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-              <i class="fa-solid fa-key"></i> 2. Authentification OAuth2
+              <i class="fa-solid fa-key"></i> <span data-i18n="sec2.title">2. Authentification OAuth2</span>
             </h2>
 
             <!-- Selecteur d'historique des cibles -->
             <div id="targetHistoryDropdown" class="hidden w-full sm:w-auto">
               <select id="targetHistorySelect" class="w-full text-xs bg-slate-900 border border-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg font-mono focus:outline-none focus:border-indigo-500">
-                <option value="">-- Choisir une cible dans l'historique --</option>
+                <option value="" data-i18n="sec2.historyPh">-- Choisir une cible dans l'historique --</option>
               </select>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
             <div class="md:col-span-6">
-              <label class="block text-xs font-medium text-slate-300 mb-1">URL de l'API Cible</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.targetUrl">URL de l'API Cible</label>
               <input type="url" id="targetUrl" name="targetUrl" placeholder="https://web3-vision-dev-fr.vivaticket.com" required
                 class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
             </div>
 
             <div class="md:col-span-3">
-              <label class="block text-xs font-medium text-slate-300 mb-1">Client ID</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.clientId">Client ID</label>
               <input type="text" id="clientId" name="clientId" placeholder="ApiUserW3" required
                 class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
             </div>
 
             <div class="md:col-span-3">
-              <label class="block text-xs font-medium text-slate-300 mb-1">Client Secret</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.clientSecret">Client Secret</label>
               <input type="password" id="clientSecret" name="clientSecret" required
                 class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
             </div>
@@ -155,14 +160,14 @@
 
           <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             <div class="md:col-span-4">
-              <label class="block text-xs font-medium text-slate-300 mb-1">Scope</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.scope">Scope</label>
               <select id="scope" name="scope" required class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-semibold">
                 <option value="b2c">b2c</option>
                 <option value="b2b">b2b</option>
               </select>
             </div>
             <div class="md:col-span-8 text-xs text-slate-400 italic pt-3 sm:pt-0">
-              * Les identifiants seront transmis via Query Parameters sur <code class="text-indigo-300">/api/v1/security/token</code>.
+              * <span data-i18n="sec2.tokenNote">Les identifiants seront transmis via Query Parameters sur</span> <code class="text-indigo-300">/api/v1/security/token</code>.
             </div>
           </div>
         </div>
@@ -173,30 +178,30 @@
       <div id="scenarioSection" class="hidden bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
           <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-            <i class="fa-solid fa-diagram-project"></i> Scénarios de test
+            <i class="fa-solid fa-diagram-project"></i> <span data-i18n="scn.title">Scénarios de test</span>
           </h2>
-          <span class="text-xs text-slate-400 italic">Enchaînement automatique d'appels avec dépendances de données.</span>
+          <span class="text-xs text-slate-400 italic" data-i18n="scn.subtitle">Enchaînement automatique d'appels avec dépendances de données.</span>
         </div>
 
         <!-- Sélecteur de scénario + mode d'exécution -->
         <div class="flex flex-col sm:flex-row gap-3 sm:items-end">
           <div class="flex-1">
-            <label class="block text-xs font-medium text-slate-400 mb-1.5">Choisir un scénario</label>
+            <label class="block text-xs font-medium text-slate-400 mb-1.5" data-i18n="scn.choose">Choisir un scénario</label>
             <select id="scenarioSelect"
               class="w-full text-xs bg-slate-900/80 border border-slate-700 text-slate-300 px-2.5 py-2 rounded-lg focus:outline-none focus:border-indigo-500">
-              <option value="">-- Sélectionner un scénario --</option>
+              <option value="" data-i18n="scn.choosePh">-- Sélectionner un scénario --</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1.5">Mode d'exécution</label>
+            <label class="block text-xs font-medium text-slate-400 mb-1.5" data-i18n="scn.execMode">Mode d'exécution</label>
             <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
               <button type="button" id="execAutoBtn"
                 class="exec-mode-btn px-3 py-1.5 rounded-md transition bg-indigo-600 text-white">
-                <i class="fa-solid fa-bolt mr-1"></i> Auto
+                <i class="fa-solid fa-bolt mr-1"></i> <span data-i18n="scn.auto">Auto</span>
               </button>
               <button type="button" id="execManualBtn"
                 class="exec-mode-btn px-3 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
-                <i class="fa-solid fa-hand-pointer mr-1"></i> Manuel
+                <i class="fa-solid fa-hand-pointer mr-1"></i> <span data-i18n="scn.manual">Manuel</span>
               </button>
             </div>
           </div>
@@ -210,12 +215,17 @@
         <div class="flex gap-2">
           <button type="button" id="runScenarioBtn" disabled
             class="flex-1 py-2.5 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border disabled:border-slate-700 border-indigo-500 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition flex justify-center items-center gap-2">
-            <i class="fa-solid fa-play"></i> Exécuter le scénario
+            <i class="fa-solid fa-play"></i> <span data-i18n="scn.run">Exécuter le scénario</span>
           </button>
           <button type="button" id="replayScenarioBtn"
             class="hidden py-2.5 px-4 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 text-sm font-bold rounded-lg transition flex justify-center items-center gap-2 whitespace-nowrap"
             title="Rejouer le dernier test avec les mêmes choix">
-            <i class="fa-solid fa-rotate-right"></i> Rejouer le dernier test
+            <i class="fa-solid fa-rotate-right"></i> <span data-i18n="scn.replay">Rejouer le dernier test</span>
+          </button>
+          <button type="button" id="retryStepBtn"
+            class="hidden py-2.5 px-4 bg-amber-700 hover:bg-amber-600 border border-amber-500 text-white text-sm font-bold rounded-lg transition flex justify-center items-center gap-2 whitespace-nowrap"
+            title="Rejouer uniquement l'étape qui a échoué, en conservant le contexte">
+            <i class="fa-solid fa-arrow-rotate-left"></i> <span data-i18n="scn.retryFailed">Rejouer l'étape échouée</span>
           </button>
         </div>
 
@@ -225,18 +235,18 @@
         <!-- Étape intermédiaire (mode manuel) : choix des paramètres de l'appel suivant -->
         <div id="scenarioStepConfig" class="hidden bg-slate-900/70 border border-indigo-800/60 rounded-lg p-4 space-y-3">
           <h3 class="text-xs font-semibold text-indigo-300 flex items-center gap-2">
-            <i class="fa-solid fa-sliders"></i> <span id="scenarioStepConfigTitle">Paramètres de l'appel suivant</span>
+            <i class="fa-solid fa-sliders"></i> <span id="scenarioStepConfigTitle" data-i18n="scn.stepConfig">Paramètres de l'appel suivant</span>
           </h3>
           <div id="scenarioStepConfigFields" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
           <p id="scenarioStepConfigError" class="hidden text-[11px] text-rose-400"></p>
           <div class="flex gap-2">
             <button type="button" id="scenarioPrevStepBtn"
               class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border border-slate-600 disabled:border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition flex justify-center items-center gap-2">
-              <i class="fa-solid fa-backward-step"></i> Étape précédente
+              <i class="fa-solid fa-backward-step"></i> <span data-i18n="scn.prevStep">Étape précédente</span>
             </button>
             <button type="button" id="scenarioNextStepBtn"
               class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border border-indigo-500 disabled:border-slate-700 text-white text-xs font-bold rounded-lg transition flex justify-center items-center gap-2">
-              <i class="fa-solid fa-forward-step"></i> Étape suivante
+              <i class="fa-solid fa-forward-step"></i> <span data-i18n="scn.nextStep">Étape suivante</span>
             </button>
           </div>
         </div>
@@ -250,19 +260,19 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
           <div class="flex items-center gap-3">
             <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-              <i class="fa-solid fa-route"></i> 3. Sélection des routes à tester
+              <i class="fa-solid fa-route"></i> <span data-i18n="sec3.title">3. Sélection des routes à tester</span>
             </h2>
             <span id="activeSourceBadge" class="hidden text-[11px] bg-indigo-950/80 border border-indigo-700 text-indigo-300 font-mono px-2 py-0.5 rounded-md"></span>
           </div>
           <div class="text-xs text-slate-400 flex items-center gap-3">
-            <button type="button" id="selectAllBtn" class="hover:text-indigo-400 font-medium transition"><i class="fa-solid fa-check-double"></i> Tout cocher</button>
+            <button type="button" id="selectAllBtn" class="hover:text-indigo-400 font-medium transition"><i class="fa-solid fa-check-double"></i> <span data-i18n="sec3.selectAll">Tout cocher</span></button>
             <span class="text-slate-600">|</span>
-            <button type="button" id="deselectAllBtn" class="hover:text-indigo-400 font-medium transition"><i class="fa-solid fa-xmark"></i> Tout décocher</button>
+            <button type="button" id="deselectAllBtn" class="hover:text-indigo-400 font-medium transition"><i class="fa-solid fa-xmark"></i> <span data-i18n="sec3.deselectAll">Tout décocher</span></button>
           </div>
         </div>
 
         <div id="routesContainer" class="bg-slate-900/90 rounded-lg border border-slate-700/80 p-3 max-h-64 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
-          <div class="col-span-full text-slate-500 italic text-center py-6">
+          <div class="col-span-full text-slate-500 italic text-center py-6" data-i18n="sec3.empty">
             Sélectionnez un fichier YAML ou chargez une session récente depuis l'historique ci-dessus.
           </div>
         </div>
@@ -274,13 +284,13 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
           <div class="flex items-center gap-3">
             <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-              <i class="fa-solid fa-sliders"></i> 4. Paramètres des routes
+              <i class="fa-solid fa-sliders"></i> <span data-i18n="sec4.title">4. Paramètres des routes</span>
             </h2>
-            <span class="text-xs text-slate-400 italic hidden sm:inline">Mutualisés entre toutes les routes qui les utilisent.</span>
+            <span class="text-xs text-slate-400 italic hidden sm:inline" data-i18n="sec4.subtitle">Mutualisés entre toutes les routes qui les utilisent.</span>
           </div>
           <button type="button" id="prefillBtn"
             class="flex items-center gap-2 px-3 py-1.5 bg-violet-700 hover:bg-violet-600 disabled:bg-slate-700 disabled:text-slate-500 disabled:border-slate-600 text-white text-xs font-semibold rounded-lg border border-violet-600 transition shadow-sm flex-shrink-0">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> Pré-remplissage automatique
+            <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="sec4.prefill">Pré-remplissage automatique</span>
           </button>
         </div>
         <!-- Barre de progression du pré-remplissage -->
@@ -297,15 +307,15 @@
         <!-- Champ global locale (appliqué à toutes les routes qui l'exigent) -->
         <div class="flex items-center gap-2 bg-indigo-950/40 border border-indigo-800/60 rounded-lg px-3 py-2">
           <i class="fa-solid fa-globe text-indigo-400 text-xs"></i>
-          <label for="globalLocale" class="text-xs font-semibold text-indigo-300 whitespace-nowrap">Locale (global)</label>
+          <label for="globalLocale" class="text-xs font-semibold text-indigo-300 whitespace-nowrap" data-i18n="sec4.localeGlobal">Locale (global)</label>
           <input type="text" id="globalLocale" value="fr-FR"
             class="w-32 bg-slate-900/80 border border-slate-700 rounded-md px-2.5 py-1 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 transition">
-          <span class="text-[10px] text-slate-500 italic">Injecté automatiquement dans toutes les routes utilisant le paramètre <code class="text-indigo-300">locale</code>.</span>
+          <span class="text-[10px] text-slate-500 italic"><span data-i18n="sec4.localeNote">Injecté automatiquement dans toutes les routes utilisant le paramètre</span> <code class="text-indigo-300">locale</code>.</span>
         </div>
         <!-- Barre de recherche des champs -->
         <div class="relative">
           <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[10px] pointer-events-none"></i>
-          <input type="text" id="paramSearch" placeholder="Rechercher un paramètre…"
+          <input type="text" id="paramSearch" placeholder="Rechercher un paramètre…" data-i18n-attr="placeholder:sec4.searchPh"
             class="w-full bg-slate-900/80 border border-slate-700 rounded-lg pl-7 pr-3 py-1.5 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
         </div>
         <div id="paramsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
@@ -315,10 +325,10 @@
       <div id="bodiesSection" class="hidden bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
           <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-            <i class="fa-solid fa-code"></i> 5. Corps des requêtes (JSON)
+            <i class="fa-solid fa-code"></i> <span data-i18n="sec5.title">5. Corps des requêtes (JSON)</span>
           </h2>
           <span class="text-xs text-slate-400 italic">
-            Utilisez <code class="text-indigo-300">{{variable}}</code> pour injecter une valeur des paramètres au moment de l'appel.
+            <span data-i18n="sec5.subtitlePre">Utilisez</span> <code class="text-indigo-300">{{variable}}</code> <span data-i18n="sec5.subtitlePost">pour injecter une valeur des paramètres au moment de l'appel.</span>
           </span>
         </div>
         <div id="bodiesContainer" class="space-y-3"></div>
@@ -334,31 +344,31 @@
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-slate-700/80 pb-4 gap-4">
         <div>
           <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <i class="fa-solid fa-square-poll-vertical text-indigo-400"></i> Résultats de la validation
+            <i class="fa-solid fa-square-poll-vertical text-indigo-400"></i> <span data-i18n="res.title">Résultats de la validation</span>
           </h3>
           <span id="resultsCount" class="text-xs font-mono text-slate-400 mt-1 block"></span>
         </div>
 
         <!-- Filtres par catégorie d'erreur -->
         <div class="flex flex-wrap items-center gap-2 text-xs">
-          <span class="text-slate-400 font-medium mr-1"><i class="fa-solid fa-filter"></i> Filtrer :</span>
+          <span class="text-slate-400 font-medium mr-1"><i class="fa-solid fa-filter"></i> <span data-i18n="res.filter">Filtrer :</span></span>
           <button type="button" data-filter="ALL" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-indigo-600 text-white border-indigo-500 shadow-sm transition">
-            Tous (<span id="countAll">0</span>)
+            <span data-i18n="res.all">Tous</span> (<span id="countAll">0</span>)
           </button>
           <button type="button" data-filter="SUCCESS" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-emerald-400 border-slate-700 hover:bg-slate-800 transition">
-            Conformes (<span id="countSuccess">0</span>)
+            <span data-i18n="res.conform">Conformes</span> (<span id="countSuccess">0</span>)
           </button>
           <button type="button" data-filter="DECLARED_ERROR" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-amber-400 border-slate-700 hover:bg-slate-800 transition">
-            Erreurs Prévues YAML (<span id="countDeclared">0</span>)
+            <span data-i18n="res.declaredErr">Erreurs Prévues YAML</span> (<span id="countDeclared">0</span>)
           </button>
           <button type="button" data-filter="UNDECLARED_ERROR" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-purple-400 border-slate-700 hover:bg-slate-800 transition">
-            Code HTTP Non Déclaré (<span id="countUndeclared">0</span>)
+            <span data-i18n="res.undeclaredErr">Code HTTP Non Déclaré</span> (<span id="countUndeclared">0</span>)
           </button>
           <button type="button" data-filter="SCHEMA_ERROR" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-rose-400 border-slate-700 hover:bg-slate-800 transition">
-            Non Conformes Schéma (<span id="countSchema">0</span>)
+            <span data-i18n="res.schemaErr">Non Conformes Schéma</span> (<span id="countSchema">0</span>)
           </button>
           <button type="button" data-filter="UNHANDLED_ERROR" class="filter-btn px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-900 text-cyan-400 border-slate-700 hover:bg-slate-800 transition">
-            Code HTTP Non Géré (<span id="countUnhandled">0</span>)
+            <span data-i18n="res.unhandledErr">Code HTTP Non Géré</span> (<span id="countUnhandled">0</span>)
           </button>
         </div>
       </div>
@@ -368,12 +378,12 @@
         <table class="w-full text-left text-xs border-collapse">
           <thead>
             <tr class="border-b border-slate-700 text-slate-400 uppercase font-semibold bg-slate-900/60">
-              <th class="py-3 px-4 w-20">Méthode</th>
-              <th class="py-3 px-4 w-1/4">Route / Endpoint</th>
-              <th class="py-3 px-4 w-24">Code HTTP</th>
-              <th class="py-3 px-4 w-52">Conformité</th>
-              <th class="py-3 px-4">Synthèse Erreurs</th>
-              <th class="py-3 px-4 w-28 text-right">Action</th>
+              <th class="py-3 px-4 w-20" data-i18n="res.colMethod">Méthode</th>
+              <th class="py-3 px-4 w-1/4" data-i18n="res.colRoute">Route / Endpoint</th>
+              <th class="py-3 px-4 w-24" data-i18n="res.colHttp">Code HTTP</th>
+              <th class="py-3 px-4 w-52" data-i18n="res.colConform">Conformité</th>
+              <th class="py-3 px-4" data-i18n="res.colErrors">Synthèse Erreurs</th>
+              <th class="py-3 px-4 w-28 text-right" data-i18n="res.colAction">Action</th>
             </tr>
           </thead>
           <tbody id="resultsTableBody" class="divide-y divide-slate-700/60"></tbody>
@@ -395,21 +405,21 @@
     <div class="flex items-center gap-3 px-4 py-2 bg-slate-900 border-b border-slate-700 flex-shrink-0 cursor-pointer select-none"
          onclick="toggleConsole()">
       <span class="flex items-center gap-2 text-xs font-semibold text-slate-300">
-        <i class="fa-solid fa-terminal text-indigo-400"></i> Console API
+        <i class="fa-solid fa-terminal text-indigo-400"></i> <span data-i18n="console.title">Console API</span>
         <span id="consoleBadge" class="hidden text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-600 text-white"></span>
       </span>
       <div class="flex items-center gap-2 ml-auto" onclick="event.stopPropagation()">
         <button type="button" onclick="clearConsole()"
           class="text-[10px] text-slate-500 hover:text-rose-400 transition px-2 py-0.5 rounded border border-slate-700 hover:border-rose-700">
-          <i class="fa-solid fa-trash-can mr-1"></i>Vider
+          <i class="fa-solid fa-trash-can mr-1"></i><span data-i18n="console.clear">Vider</span>
         </button>
         <select id="consoleFilter" onchange="filterConsole(this.value)"
           class="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-2 py-0.5 rounded focus:outline-none focus:border-indigo-500">
-          <option value="ALL">Tous</option>
-          <option value="PREFILL">Pré-remplissage</option>
-          <option value="BATCH">Validation</option>
-          <option value="ERROR">Erreurs API</option>
-          <option value="JS_ERROR">Erreurs JS</option>
+          <option value="ALL" data-i18n="console.all">Tous</option>
+          <option value="PREFILL" data-i18n="console.prefill">Pré-remplissage</option>
+          <option value="BATCH" data-i18n="console.batch">Validation</option>
+          <option value="ERROR" data-i18n="console.errApi">Erreurs API</option>
+          <option value="JS_ERROR" data-i18n="console.errJs">Erreurs JS</option>
         </select>
         <button type="button" onclick="toggleConsole()" class="text-slate-500 hover:text-slate-200 transition px-1">
           <i id="consoleChevron" class="fa-solid fa-chevron-down text-xs"></i>
@@ -441,7 +451,7 @@
         
         <div id="modalErrorsBlock" class="space-y-2">
           <h4 class="font-semibold text-rose-400 flex items-center gap-2 text-sm">
-            <i class="fa-solid fa-circle-exclamation"></i> Écarts détectés par rapport au schéma :
+            <i class="fa-solid fa-circle-exclamation"></i> <span data-i18n="modal.errorsTitle">Écarts détectés par rapport au schéma :</span>
           </h4>
           <div id="modalErrorsList" class="bg-rose-950/30 border border-rose-900/50 rounded-lg p-3 space-y-1 text-rose-300 font-mono text-[11px]"></div>
         </div>
@@ -454,7 +464,7 @@
                 <i class="fa-solid fa-arrow-down-short-wide"></i> Réponse reçue de l'API (HTTP <span id="modalCodeHttp"></span>)
               </h4>
               <button type="button" id="copyResponseBtn" class="text-[10px] text-slate-400 hover:text-slate-200 transition bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">
-                <i class="fa-regular fa-copy"></i> Copier JSON
+                <i class="fa-regular fa-copy"></i> <span data-i18n="modal.copyJson">Copier JSON</span>
               </button>
             </div>
             <pre id="modalReceivedJson" class="bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-[11px] text-sky-300 overflow-x-auto flex-grow max-h-96"></pre>
@@ -463,7 +473,7 @@
           <div class="space-y-2 flex flex-col">
             <div class="flex justify-between items-center">
               <h4 class="font-semibold text-indigo-400 flex items-center gap-2 text-xs">
-                <i class="fa-solid fa-file-contract"></i> Schéma attendu selon YAML
+                <i class="fa-solid fa-file-contract"></i> <span data-i18n="modal.expectedSchema">Schéma attendu selon YAML</span>
               </h4>
               <span id="modalExpectedStatus" class="text-[10px] text-slate-400 italic"></span>
             </div>
@@ -475,7 +485,7 @@
       </div>
 
       <div class="bg-slate-800/50 px-6 py-3 border-t border-slate-700/80 text-right">
-        <button type="button" id="closeModalBottomBtn" class="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition">
+        <button type="button" id="closeModalBottomBtn" class="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition" data-i18n="modal.close">
           Fermer
         </button>
       </div>
@@ -484,6 +494,14 @@
   </div>
 
   <script>
+    // Helper i18n local : I18n.t si dispo (avec interpolation {var}), sinon fallback FR.
+    function tr(key, fallback, vars) {
+      if (window.I18n && typeof window.I18n.t === 'function') return window.I18n.t(key, vars);
+      let s = fallback;
+      if (vars) for (const [k, v] of Object.entries(vars)) s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), String(v));
+      return s;
+    }
+
     const form = document.getElementById('validatorForm');
     const specFile = document.getElementById('specFile');
     const specVersionSelect = document.getElementById('specVersionSelect');
@@ -523,13 +541,13 @@
       const hasTarget = targetUrlInput.value.trim() !== '';
 
       const missing = [];
-      if (!hasYaml) missing.push('un fichier YAML');
-      if (!hasTarget) missing.push("l'URL de l'API cible");
+      if (!hasYaml) missing.push(tr('idx.missingYaml', 'un fichier YAML'));
+      if (!hasTarget) missing.push(tr('idx.missingTarget', "l'URL de l'API cible"));
 
       submitBtn.disabled = missing.length > 0;
       submitBtn.title = missing.length > 0
-        ? 'Il manque : ' + missing.join(' et ')
-        : 'Lancer la validation des routes sélectionnées';
+        ? tr('idx.submitMissing', 'Il manque : {items}', { items: missing.join(tr('idx.missingSep', ' et ')) })
+        : tr('idx.submitReady', 'Lancer la validation des routes sélectionnées');
     }
 
     // Réévaluer l'état du bouton dès que l'URL cible change
@@ -748,7 +766,7 @@
         return;
       }
       targetHistoryDropdown.classList.remove('hidden');
-      targetHistorySelect.innerHTML = '<option value="">-- Choisir une cible dans l\'historique --</option>' + 
+      targetHistorySelect.innerHTML = `<option value="">${tr('sec2.historyPh', '-- Choisir une cible dans l\'historique --')}</option>` +
         history.map((item, index) => 
           `<option value="${index}">[${item.scope.toUpperCase()}] ${item.targetUrl} (${item.clientId})</option>`
         ).join('');
@@ -859,7 +877,7 @@
       submitBtn.disabled = true; // désactivé le temps de récupérer le contenu YAML depuis IDB
 
       activeSourceBadge.classList.remove('hidden');
-      activeSourceBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Chargement depuis l'historique...`;
+      activeSourceBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> ${tr('idx.histLoading', "Chargement depuis l'historique...")}`;
       specFile.value = "";
 
       const yamlContent = await getYamlContentFromIDB(item.filename);
@@ -870,11 +888,11 @@
       cachedYamlContent = yamlContent;
 
       if (!yamlContent) {
-        activeSourceBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Historique chargé : ${item.filename} <span class="text-amber-400">(re-sélectionnez le fichier YAML pour valider)</span>`;
+        activeSourceBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> ${tr('idx.histLoadedPrefix', 'Historique chargé :')} ${item.filename} <span class="text-amber-400">${tr('idx.histReselect', '(re-sélectionnez le fichier YAML pour valider)')}</span>`;
         submitBtn.disabled = true;
         paramsSection.classList.add('hidden');
       } else {
-        activeSourceBadge.innerHTML = `<i class="fa-solid fa-box-archive mr-1"></i> Chargé depuis l'historique : ${item.filename}`;
+        activeSourceBadge.innerHTML = `<i class="fa-solid fa-box-archive mr-1"></i> ${tr('idx.histLoadedFrom', "Chargé depuis l'historique :")} ${item.filename}`;
         renderRoutesList(item.routes, item.tagOrder || []);
         renderParamsSection(item.routes);
         updateSubmitState();
@@ -935,7 +953,7 @@
               const badge = document.createElement('span');
               badge.className = 'saved-badge text-[9px] font-bold px-1 py-0.5 rounded bg-indigo-950 border border-indigo-700 text-indigo-400 ml-1';
               badge.title = `Valeur sauvegardée pour ${url}`;
-              badge.textContent = 'saved';
+              badge.textContent = tr('idx.badgeSaved', 'saved');
               label.appendChild(badge);
             }
           }
@@ -990,14 +1008,14 @@
       if (locked) {
         btn.classList.remove('bg-slate-700', 'border-slate-600', 'text-slate-400');
         btn.classList.add('bg-amber-600', 'border-amber-500', 'text-white');
-        btn.title = 'Champ verrouillé — cliquer pour déverrouiller';
+        btn.title = tr('idx.lockLocked', 'Champ verrouillé — cliquer pour déverrouiller');
         icon?.classList.remove('fa-lock-open');
         icon?.classList.add('fa-lock');
         card?.classList.add('border-amber-600/50');
       } else {
         btn.classList.add('bg-slate-700', 'border-slate-600', 'text-slate-400');
         btn.classList.remove('bg-amber-600', 'border-amber-500', 'text-white');
-        btn.title = 'Verrouiller ce champ (le pré-remplissage ne l\'écrasera plus)';
+        btn.title = tr('idx.lockUnlocked', 'Verrouiller ce champ (le pré-remplissage ne l\'écrasera plus)');
         icon?.classList.remove('fa-lock');
         icon?.classList.add('fa-lock-open');
         card?.classList.remove('border-amber-600/50');
@@ -1085,7 +1103,7 @@
                 <button type="button"
                   data-lock-for="${name}"
                   class="lock-btn w-5 h-5 rounded-full bg-slate-700 hover:bg-amber-600 border border-slate-600 hover:border-amber-500 text-slate-400 hover:text-white transition flex items-center justify-center text-[10px]"
-                  title="Verrouiller ce champ (le pré-remplissage ne l'écrasera plus)">
+                  title="${tr('idx.lockUnlocked', 'Verrouiller ce champ (le pré-remplissage ne l\'écrasera plus)')}">
                   <i class="fa-solid fa-lock-open"></i>
                 </button>
                 <!-- Bouton info + tooltip -->
@@ -1196,8 +1214,8 @@
               ${r.bodySchemaName ? `<span class="text-[10px] text-slate-500 ml-1">(${r.bodySchemaName})</span>` : ''}
               <button type="button" onclick="event.stopPropagation(); resetBodyEditor('${editorId}', ${i})"
                 class="ml-auto text-[10px] text-slate-500 hover:text-indigo-400 transition px-2 py-0.5 rounded border border-slate-700 hover:border-indigo-700"
-                title="Réinitialiser au squelette du YAML">
-                <i class="fa-solid fa-rotate-left mr-1"></i>Réinitialiser
+                title="${tr('idx.resetToYaml', 'Réinitialiser au squelette du YAML')}">
+                <i class="fa-solid fa-rotate-left mr-1"></i>${tr('idx.reset', 'Réinitialiser')}
               </button>
             </div>
             <div id="${editorId}-wrap">
@@ -1670,7 +1688,7 @@
      * Helper : construit et envoie un mini-batch pour une seule route.
      * Renvoie le responseBody du premier résultat, ou null en cas d'échec.
      */
-    async function callRouteForPrefill(route, userParams) {
+    async function callRouteForPrefill(route, userParams, requestBodies) {
       if (!cachedYamlContent) return null;
 
       const fd = new FormData();
@@ -1681,8 +1699,8 @@
       fd.set('scope', scopeInput.value);
       fd.set('selectedRoutes', JSON.stringify([route]));
       fd.set('userParams', JSON.stringify(userParams));
-      // Inclure le corps JSON de la route source si elle en a un (POST de recherche, etc.)
-      fd.set('requestBodies', JSON.stringify(collectRequestBodies()));
+      // Corps JSON : si fourni explicitement (POST avec body), sinon les bodies édités dans l'UI.
+      fd.set('requestBodies', JSON.stringify(requestBodies || collectRequestBodies()));
 
       const t0 = Date.now();
       try {
@@ -1719,7 +1737,7 @@
       if (label && !label.querySelector('.auto-badge')) {
         const badge = document.createElement('span');
         badge.className = 'auto-badge text-[9px] font-bold px-1 py-0.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-400 ml-1';
-        badge.textContent = 'auto';
+        badge.textContent = tr('idx.badgeAuto', 'auto');
         label.appendChild(badge);
       }
       return true;
@@ -1732,11 +1750,11 @@
      */
     async function autoPrefill() {
       if (!cachedYamlContent) {
-        alert('Veuillez d\'abord charger un fichier YAML.');
+        alert(tr('idx.loadYamlFirst', 'Veuillez d\'abord charger un fichier YAML.'));
         return;
       }
       if (!targetUrlInput.value || !clientIdInput.value || !clientSecretInput.value) {
-        alert('Veuillez renseigner l\'URL cible et les identifiants OAuth2 avant le pré-remplissage.');
+        alert(tr('idx.prefillCreds', 'Veuillez renseigner l\'URL cible et les identifiants OAuth2 avant le pré-remplissage.'));
         return;
       }
 
@@ -1748,7 +1766,7 @@
       const log = document.getElementById('prefillProgressLog');
 
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> En cours...';
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${tr('idx.prefillRunning', 'En cours...')}`;
       progress.classList.remove('hidden');
       log.innerHTML = '';
 
@@ -1784,7 +1802,7 @@
         // Vérifier que les params requis sont disponibles
         const missingRequired = step.requiredParams.filter(p => !currentParams[p]);
         if (missingRequired.length > 0) {
-          log.innerHTML += `<div class="text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Ignoré : <span class="text-slate-300">${step.label}</span> (manque : ${missingRequired.join(', ')})</div>`;
+          log.innerHTML += `<div class="text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ${tr('idx.prefillSkipped', 'Ignoré :')} <span class="text-slate-300">${step.label}</span> (${tr('idx.prefillMissing', 'manque')} : ${missingRequired.join(', ')})</div>`;
           skipped++;
           continue;
         }
@@ -1792,7 +1810,7 @@
         const body = await callRouteForPrefill(step.sourceRoute, currentParams);
 
         if (!body) {
-          log.innerHTML += `<div class="text-rose-400"><i class="fa-solid fa-xmark mr-1"></i> Échec : <span class="text-slate-300">${step.label}</span></div>`;
+          log.innerHTML += `<div class="text-rose-400"><i class="fa-solid fa-xmark mr-1"></i> ${tr('idx.prefillFail', 'Échec :')} <span class="text-slate-300">${step.label}</span></div>`;
           skipped++;
           continue;
         }
@@ -1813,7 +1831,7 @@
         }
 
         const icon = stepFilled > 0 ? 'fa-check text-emerald-400' : 'fa-minus text-slate-500';
-        const msg = stepFilled > 0 ? `${stepFilled} champ(s) rempli(s)` : 'aucune valeur extraite';
+        const msg = stepFilled > 0 ? tr('idx.prefillFieldsFilled', '{n} champ(s) rempli(s)', { n: stepFilled }) : tr('idx.prefillNoValue', 'aucune valeur extraite');
         log.innerHTML += `<div><i class="fa-solid ${icon} mr-1"></i> <span class="text-slate-300">${step.label}</span> — ${msg}</div>`;
         log.scrollTop = log.scrollHeight;
       }
@@ -1822,12 +1840,12 @@
       bar.style.width = '100%';
       bar.classList.replace('bg-indigo-500', filled > 0 ? 'bg-emerald-500' : 'bg-amber-500');
       label.innerHTML = filled > 0
-        ? `<i class="fa-solid fa-check text-emerald-400 mr-1"></i> Terminé — ${filled} champ(s) pré-rempli(s), ${skipped} étape(s) ignorée(s)`
-        : `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Terminé — aucune valeur obtenue`;
+        ? `<i class="fa-solid fa-check text-emerald-400 mr-1"></i> ${tr('idx.prefillDoneOk', 'Terminé — {filled} champ(s) pré-rempli(s), {skipped} étape(s) ignorée(s)', { filled, skipped })}`
+        : `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> ${tr('idx.prefillDoneNone', 'Terminé — aucune valeur obtenue')}`;
       count.textContent = '';
 
       btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Pré-remplissage automatique';
+      btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> ${tr('idx.prefillBtn', 'Pré-remplissage automatique')}`;
 
       // Sauvegarder les valeurs obtenues par le pré-remplissage
       saveParamValues();
@@ -1856,17 +1874,17 @@
           sourceName = uploadedFile.name;
         } else {
           const specRes = await fetch(`/api/spec/${encodeURIComponent(selectedVersion)}`);
-          if (!specRes.ok) throw new Error('Impossible de charger la version sélectionnée.');
+          if (!specRes.ok) throw new Error(tr('idx.loadVersionFail', 'Impossible de charger la version sélectionnée.'));
           yamlContent = await specRes.text();
           sourceName = selectedVersion;
         }
 
         activeSourceBadge.classList.remove('hidden');
-        activeSourceBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analyse de ${sourceName}...`;
+        activeSourceBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> ${tr('idx.specAnalyzing', 'Analyse de {name}...', { name: sourceName })}`;
 
         await parseAndRenderYaml(yamlContent, sourceName);
       } catch (err) {
-        alert('Erreur d\'analyse : ' + err.message);
+        alert(tr('idx.analyzeError', 'Erreur d\'analyse :') + ' ' + err.message);
       }
     }
 
@@ -1885,10 +1903,10 @@
       try {
         data = JSON.parse(responseText);
       } catch (e) {
-        throw new Error(`Le serveur a renvoyé un statut invalide (${res.status}).`);
+        throw new Error(tr('idx.serverInvalid', 'Le serveur a renvoyé un statut invalide ({status}).', { status: res.status }));
       }
 
-      if (!res.ok) throw new Error(data.error || 'Erreur lors du traitement.');
+      if (!res.ok) throw new Error(data.error || tr('idx.processError', 'Erreur lors du traitement.'));
 
       detectedRoutes = data.routes;
       detectedTagOrder = data.tagOrder || [];
@@ -1898,7 +1916,7 @@
       updateSubmitState();
 
       activeSourceBadge.classList.remove('hidden');
-      activeSourceBadge.innerHTML = `<i class="fa-solid fa-file-code mr-1"></i> Spec active : ${sourceName}`;
+      activeSourceBadge.innerHTML = `<i class="fa-solid fa-file-code mr-1"></i> ${tr('idx.specActive', 'Spec active : {name}', { name: sourceName })}`;
 
       saveYamlToHistory(sourceName, data.routes, yamlContent, data.tagOrder || []);
 
@@ -1915,13 +1933,13 @@
         const data = await res.json();
         const versions = data.versions || [];
         if (versions.length === 0) {
-          specVersionSelect.innerHTML = '<option value="">Aucune version dans la bibliothèque</option>';
+          specVersionSelect.innerHTML = `<option value="">${tr('idx.versionNone', 'Aucune version dans la bibliothèque')}</option>`;
           return;
         }
-        specVersionSelect.innerHTML = '<option value="">-- Choisir une version --</option>' +
+        specVersionSelect.innerHTML = `<option value="">${tr('idx.versionChoose', '-- Choisir une version --')}</option>` +
           versions.map(v => `<option value="${v.filename}">${v.label}</option>`).join('');
       } catch (e) {
-        specVersionSelect.innerHTML = '<option value="">Erreur de chargement des versions</option>';
+        specVersionSelect.innerHTML = `<option value="">${tr('idx.versionLoadErr', 'Erreur de chargement des versions')}</option>`;
       }
     }
 
@@ -2020,7 +2038,397 @@
       return [...new Set(out)];
     }
 
+    // ==================================================================
+    // GÉNÉRATEUR DE DONNÉES CLIENT FACTICES (faker maison)
+    // ------------------------------------------------------------------
+    // Produit un jeu de données plausibles, STABLE pour toute la durée d'un run
+    // de scénario (généré une fois dans scRun.fake). Utilisable dans les bodies
+    // via les placeholders {{@champ}} : @firstName, @lastName, @email, @address,
+    // @country, @phone, @login, @password (+ quelques dérivés utiles).
+    // ==================================================================
+    const FAKE_FIRST_NAMES = ['Alice', 'Lucas', 'Emma', 'Hugo', 'Léa', 'Noah', 'Chloé', 'Louis', 'Jade', 'Gabriel', 'Manon', 'Raphaël'];
+    const FAKE_LAST_NAMES = ['Martin', 'Bernard', 'Dubois', 'Thomas', 'Robert', 'Richard', 'Petit', 'Durand', 'Leroy', 'Moreau'];
+    const FAKE_CITIES = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nantes', 'Bordeaux', 'Lille', 'Nice'];
+    const FAKE_STREETS = ['rue de la Paix', 'avenue des Champs', 'rue Victor Hugo', 'boulevard Gambetta', 'rue de la République'];
+    const FAKE_COUNTRIES = ['FR', 'BE', 'CH', 'LU'];
+
+    function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function randDigits(n) { let s = ''; for (let i = 0; i < n; i++) s += Math.floor(Math.random() * 10); return s; }
+    // Retire les accents pour les emails/logins
+    function deburr(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+
+    /** Génère un jeu complet de données client factices, cohérent entre les champs. */
+    function generateFakeCustomer() {
+      const firstName = pickRandom(FAKE_FIRST_NAMES);
+      const lastName = pickRandom(FAKE_LAST_NAMES);
+      const rnd = randDigits(4);
+      const loginBase = `${deburr(firstName).toLowerCase()}.${deburr(lastName).toLowerCase()}`;
+      const email = `${loginBase}.${rnd}@test.example`;
+      const streetNo = 1 + Math.floor(Math.random() * 150);
+      return {
+        firstName,
+        lastName,
+        displayName: `${firstName} ${lastName}`,
+        email,
+        address: `${streetNo} ${pickRandom(FAKE_STREETS)}`,
+        city: pickRandom(FAKE_CITIES),
+        zip: randDigits(5),
+        country: pickRandom(FAKE_COUNTRIES),
+        phone: `+33${randDigits(9)}`,
+        login: `${loginBase}.${rnd}`,
+        password: `Test!${randDigits(4)}aA`,
+      };
+    }
+
+    /**
+     * Résout les placeholders {{@champ}} d'une chaîne (body JSON) à partir d'un
+     * jeu de données factices. Les placeholders normaux {{var}} sont laissés
+     * intacts (ils seront résolus côté serveur via userParams).
+     */
+    function resolveFakePlaceholders(template, fake) {
+      if (!template || !fake) return template;
+      return template.replace(/\{\{\s*@([\w.-]+)\s*\}\}/g, (match, key) => {
+        const v = fake[key];
+        return (v !== undefined && v !== null) ? String(v) : match;
+      });
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // Construit un item de panier adapté au type d'offre :
+    //  - si une performance a été trouvée (collected.performanceCode) → on l'inclut
+    //  - sinon (offre "open") → item sans performanceCodes
+    // Renvoie un fragment JSON (string) pour un cartItem.
+    // ──────────────────────────────────────────────────────────────────
+    // Détermine la typologie d'une offre (open / dated / timed) et, si applicable,
+    // sa performance. Renvoie { type, performanceCode?, performanceDate? } ou null si KO.
+    // ──────────────────────────────────────────────────────────────────
+    async function classifyOffer(collected, offerCode) {
+      const params = { ...collected, offerCode };
+      let date;
+      const fda = await callRouteForPrefill({ method: 'GET', path: '/api/v1/offer/findFirstAvailableDate' }, params);
+      const d0 = fda?.data?.date ?? fda?.date;
+      if (d0 && !String(d0).startsWith('0001')) date = String(d0).substring(0, 10);
+      if (!date) {
+        const t = new Date(); const to = new Date(); to.setMonth(to.getMonth() + 3);
+        const cal = await callRouteForPrefill({ method: 'GET', path: '/api/v1/performance/findCalendarDays' },
+          { ...params, dateFrom: t.toISOString().substring(0,10), dateTo: to.toISOString().substring(0,10) });
+        const days = cal?.data?.days ?? cal?.days ?? cal?.data ?? cal;
+        const first = Array.isArray(days) ? days[0] : days;
+        if (first?.date) date = String(first.date).substring(0, 10);
+      }
+      let perf = null;
+      if (date) {
+        const pd = await callRouteForPrefill({ method: 'GET', path: '/api/v1/performance/findPerformanceByDay' }, { ...params, date });
+        const list = pd?.performances ?? pd?.data?.performances ?? pd?.data ?? pd;
+        perf = Array.isArray(list) ? list[0] : (list && list.performanceCode ? list : null);
+      }
+      let type = !perf ? 'open' : (perf.isFullDay === true ? 'dated' : 'timed');
+      const out = { type, offerCode };
+      if (perf) {
+        out.performanceCode = (typeof perf.performanceCode === 'string') ? perf.performanceCode : (perf.performanceCode?.code ?? perf.code);
+        out.performanceDate = (perf.date ? String(perf.date).substring(0,10) : date);
+      }
+      return out;
+    }
+
+    // Récupère le 1er productCode d'une offre
+    async function firstProductOf(collected, offerCode) {
+      const pb = await callRouteForPrefill({ method: 'GET', path: '/api/v1/product/findProductCodes' }, { ...collected, offerCode });
+      const list = flattenProductCodes(pb || {});
+      return list[0];
+    }
+
+    // Construit un objet cartItem (avec performanceCodes si l'offre est datée/horodatée)
+    function buildCartItemObj(entry) {
+      const item = { productCode: entry.productCode, quantity: 1 };
+      if (entry.performanceCode) {
+        item.performanceCodes = [{ code: entry.performanceCode, date: entry.performanceDate }];
+      }
+      return { item };
+    }
+
+    // Authentification B2C réalisée APRÈS le premier checkCart (parcours e-commerce).
+    // (createAccount si demandé → signin). Exécutée UNE SEULE FOIS par run : l'accountCode
+    // obtenu est mémorisé dans collected et réutilisé pour les ventes suivantes.
+    // Renvoie { ok } ou { ok:false, error }.
+    async function ensureAuthB2C(collected, scRun) {
+      if (collected.accountCode) return { ok: true };     // déjà authentifié ce run
+
+      // Création de compte (données générées) si le scénario le demande
+      if (scRun && scRun.scenario && scRun.scenario.withCreateAccount) {
+        const body = JSON.stringify({ accountData: { fields: [
+          { fieldCode: 1, value: scRun.fake.firstName },
+          { fieldCode: 3, value: scRun.fake.lastName },
+          { fieldCode: 21, value: scRun.fake.email },
+          { fieldCode: 548, value: scRun.fake.email },
+          { fieldCode: 549, value: scRun.fake.password },
+        ] } });
+        const cr = await callRoutePost({ method: 'POST', path: '/api/v1/account/createAccount' }, collected, body);
+        if (!(cr?.accountCode ?? cr?.data?.accountCode)) return { ok: false, error: 'createAccount' };
+        collected.username = scRun.fake.email;
+        collected.password = scRun.fake.password;
+      }
+
+      // Signin
+      const sBody = JSON.stringify({ username: collected.username, password: collected.password });
+      const sr = await callRoutePost({ method: 'POST', path: '/api/v1/auth/signin' }, collected, sBody);
+      const acc = sr?.accountCode ?? sr?.data?.accountCode;
+      if (!acc) return { ok: false, error: 'signin' };
+      collected.accountCode = String(acc);
+      return { ok: true };
+    }
+
+    // Exécute UN cycle d'achat complet (checkCart → [B2C: auth] → beginOrderTrans → confirmOrderTrans)
+    // pour un ensemble d'items. En B2C, l'authentification est faite juste après le checkCart.
+    // Renvoie { ok, orderCode, total } ou { ok:false, error }.
+    async function runPurchaseCycle(collected, items, scRun) {
+      const route = (p) => ({ method: 'POST', path: p });
+      const shopCart = { cartItems: items };
+      // checkCart (ne requiert pas d'authentification)
+      const checkBody = JSON.stringify({ shopCart });
+      const cRes = await callRoutePost(route('/api/v1/cart/checkCart'), collected, checkBody);
+      const cartCode = cRes?.preOrder?.cartCode ?? cRes?.data?.preOrder?.cartCode;
+      if (!cartCode) return { ok: false, error: 'checkCart' };
+      // B2C : s'authentifier APRÈS le checkCart (une seule fois par run)
+      if ((collected.scope || scopeInput.value) === 'b2c') {
+        const auth = await ensureAuthB2C(collected, scRun);
+        if (!auth.ok) return { ok: false, error: auth.error };
+      }
+      // beginOrderTrans (shopCart complet + cartCode)
+      const beginBody = JSON.stringify({ shopCart: { cartCode, cartItems: items }, reservationOwnerCode: collected.accountCode });
+      const bRes = await callRoutePost(route('/api/v1/order/beginOrderTrans'), collected, beginBody);
+      const orderCode = bRes?.orderCode ?? bRes?.data?.orderCode;
+      const total = bRes?.preOrder?.cart?.total?.gross ?? bRes?.data?.preOrder?.cart?.total?.gross ?? 0;
+      if (!orderCode) return { ok: false, error: 'beginOrderTrans' };
+      // confirmOrderTrans (EMULATEPAY)
+      const now = new Date().toISOString();
+      const confirmBody = JSON.stringify({ orderCode, payments: [{ paymentCode: 'EMULATEPAY', amount: { value: total, currency: 'EUR' }, paymentDate: now }] });
+      const rRes = await callRoutePost(route('/api/v1/order/confirmOrderTrans'), collected, confirmBody);
+      const finalOrder = rRes?.orderCode ?? rRes?.data?.orderCode ?? orderCode;
+      return { ok: true, orderCode: finalOrder, total };
+    }
+
+    // Helper : POST d'une route avec un body JSON brut (réutilise /api/validate-batch via callRouteForPrefill)
+    async function callRoutePost(route, collected, bodyJson) {
+      return await callRouteForPrefill(route, collected, { [`${route.method} ${route.path}`]: bodyJson });
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // doPurchase : étape custom unique qui réalise l'achat selon offerType.
+    //  - open/dated/timed : 1 vente d'une offre du type ; ARRÊT si type absent.
+    //  - eachType : jusqu'à 3 ventes (1 par type présent) ; tolérant ; récap des manquants.
+    //  - complex : 1 seule vente, panier contenant 1 article de chaque type présent.
+    // Renvoie { ok, extracted?, error? } pour l'étape custom du moteur.
+    // ══════════════════════════════════════════════════════════════════
+    async function doPurchase(collected, scRun) {
+      const mode = (collected.offerType || 'open').toLowerCase();
+
+      // Lister les offres de la famille
+      const offersBody = await callRouteForPrefill({ method: 'GET', path: '/api/v1/offer/findOfferCodesByFamily' }, collected);
+      const offerCodes = offersBody ? flattenOfferCodes(offersBody) : [];
+      if (!offerCodes.length) return { ok: false, error: tr('scn.noOffer', "Aucune offre trouvée pour cette famille.") };
+
+      // Classer les offres par type jusqu'à trouver ce dont on a besoin.
+      // Pour open/dated/timed : on s'arrête à la 1ère du bon type.
+      // Pour eachType/complex : on cherche une offre de CHAQUE type.
+      const found = { open: null, dated: null, timed: null };
+      const needAll = (mode === 'eachtype' || mode === 'complex');
+      for (const oc of offerCodes) {
+        const cls = await classifyOffer(collected, oc);
+        if (!cls) continue;
+        if (!found[cls.type]) {
+          const productCode = await firstProductOf(collected, oc);
+          if (!productCode) continue;
+          found[cls.type] = { ...cls, productCode };
+        }
+        if (!needAll && found[mode]) break;             // type simple trouvé
+        if (needAll && found.open && found.dated && found.timed) break; // tous trouvés
+      }
+
+      const logSale = (type, res) => window._consoleLog?.({
+        type: res.ok ? 'BATCH' : 'ERROR',
+        route: { method: 'SALE', path: `${type} → ${res.ok ? res.orderCode : (res.error||'KO')}` },
+        status: res.ok ? 200 : 500,
+      });
+
+      // ── Modes à 1 type précis ──
+      if (mode === 'open' || mode === 'dated' || mode === 'timed') {
+        const entry = found[mode];
+        if (!entry) return { ok: false, error: tr('scn.typeNotFound', "Aucune offre de type « {type} » trouvée dans cette famille.", { type: mode }) };
+        const res = await runPurchaseCycle(collected, [buildCartItemObj(entry)], scRun);
+        logSale(mode, res);
+        if (!res.ok) return { ok: false, error: tr('scn.saleFailed', 'Échec de la vente ({type}).', { type: mode }) };
+        return { ok: true, extracted: { orderCode: res.orderCode, soldType: mode } };
+      }
+
+      // ── Mode "complex" : 1 vente, panier avec 1 article de chaque type présent ──
+      if (mode === 'complex') {
+        const entries = ['open', 'dated', 'timed'].map(t => found[t]).filter(Boolean);
+        if (!entries.length) return { ok: false, error: tr('scn.noOffer', "Aucune offre trouvée pour cette famille.") };
+        const items = entries.map(buildCartItemObj);
+        const res = await runPurchaseCycle(collected, items, scRun);
+        logSale('complex[' + entries.map(e => e.type).join('+') + ']', res);
+        if (!res.ok) return { ok: false, error: tr('scn.saleFailed', 'Échec de la vente ({type}).', { type: 'complex' }) };
+        const missing = ['open', 'dated', 'timed'].filter(t => !found[t]);
+        return { ok: true, extracted: { orderCode: res.orderCode, soldTypes: entries.map(e => e.type).join(', '), missingTypes: missing.join(', ') } };
+      }
+
+      // ── Mode "eachType" : jusqu'à 3 ventes (1 par type présent), tolérant ──
+      const sold = []; const missing = []; let lastOrder;
+      for (const t of ['open', 'dated', 'timed']) {
+        if (!found[t]) { missing.push(t); continue; }
+        const res = await runPurchaseCycle(collected, [buildCartItemObj(found[t])], scRun);
+        logSale(t, res);
+        if (res.ok) { sold.push(`${t}:${res.orderCode}`); lastOrder = res.orderCode; }
+        else missing.push(t); // échec de vente = compté comme non abouti
+      }
+      if (!sold.length) return { ok: false, error: tr('scn.noneSold', 'Aucune vente aboutie (types manquants : {missing}).', { missing: missing.join(', ') || '—' }) };
+      // Succès même partiel : on signale les types manquants à la fin
+      return { ok: true, extracted: { orderCode: lastOrder, soldTypes: sold.join(' | '), missingTypes: missing.join(', ') } };
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // FABRIQUE DES 4 SCÉNARIOS D'ACHAT (backoffice unified)
+    // Paramètres :
+    //  - withParentFamily : true  → part d'une famille de regroupement (findParentFamilies)
+    //                       false → part d'un familyCode fourni en champ de départ
+    //  - withCreateAccount: true  → crée un compte (données générées) avant le login
+    // L'achat lui-même est réalisé par une étape custom unique (doPurchase) selon la
+    // typologie choisie (open / dated / timed / eachType / complex).
+    // ══════════════════════════════════════════════════════════════════
+    function buildPurchaseScenario({ id, label, description, withParentFamily, withCreateAccount }) {
+      const startFields = [];
+      if (!withParentFamily) {
+        startFields.push({ name: 'familyCode', label: 'Code famille', type: 'text', default: '' });
+      } else {
+        startFields.push({ name: 'code', label: 'Code de regroupement', type: 'text', default: 'default' });
+      }
+      // Typologie d'offre / mode d'achat
+      startFields.push({ name: 'offerType', label: "Typologie d'offre", type: 'select', default: 'open', options: [
+        { value: 'open', label: 'Produit open' },
+        { value: 'dated', label: 'Produit daté' },
+        { value: 'timed', label: 'Produit horodaté' },
+        { value: 'eachType', label: 'Un de chaque type présent' },
+        { value: 'complex', label: 'Vente complexe (1 vente, les 3 types)' },
+      ] });
+      startFields.push({ name: 'username', label: 'Identifiant (si login direct)', type: 'text', default: '', autocomplete: 'username' });
+      startFields.push({ name: 'password', label: 'Mot de passe (si login direct)', type: 'password', default: '', autocomplete: 'current-password' });
+
+      const steps = [];
+
+      // En B2C, l'authentification (createAccount + signin) est faite APRÈS le premier
+      // checkCart, à l'intérieur de l'étape d'achat. On saute donc ici les étapes d'auth
+      // préalables. En B2B, elles s'exécutent avant l'achat (comportement inchangé).
+      const skipIfB2C = () => (scopeInput.value === 'b2c');
+
+      // ── Création de compte (données générées) — seulement si withCreateAccount ──
+      // fieldCode validés (masque B2C dev) : 1=prénom, 3=nom, 21=email, 548=username, 549=password.
+      if (withCreateAccount) {
+        steps.push({
+          label: 'Création de compte (données générées) → login',
+          route: { method: 'POST', path: '/api/v1/account/createAccount' },
+          skipIf: skipIfB2C,
+          // fieldCode validés en environnement de dev (masque B2C web) :
+          //   1=prénom, 3=nom, 21=email, 548=username(login), 549=password.
+          // Le login/password générés servent ensuite au signin. username = login = email généré.
+          body: JSON.stringify({
+            accountData: { fields: [
+              { fieldCode: 1, value: '{{@firstName}}' },
+              { fieldCode: 3, value: '{{@lastName}}' },
+              { fieldCode: 21, value: '{{@email}}' },
+              { fieldCode: 548, value: '{{@email}}' },
+              { fieldCode: 549, value: '{{@password}}' },
+            ] },
+          }, null, 2),
+          extract: [
+            // Le username du signin = l'email généré (fieldCode 548). Le password = généré.
+            { targetParam: 'username', pick: () => (scRun?.fake?.email), silent: true },
+            { targetParam: 'password', pick: () => (scRun?.fake?.password), silent: true },
+            { targetParam: 'accountCode', pick: b => b?.data?.accountCode ?? b?.accountCode, silent: true },
+          ],
+        });
+      }
+
+      // ── Connexion (B2B : avant l'achat ; B2C : sautée ici, faite après le checkCart) ──
+      steps.push({
+        label: 'Signin → accountCode',
+        route: { method: 'POST', path: '/api/v1/auth/signin' },
+        skipIf: skipIfB2C,
+        body: '{ "username": "{{username}}", "password": "{{password}}" }',
+        extract: [{ targetParam: 'accountCode', pick: b => b?.data?.accountCode ?? b?.accountCode }],
+      });
+      steps.push({
+        label: 'Lecture compte (validation)',
+        route: { method: 'GET', path: '/api/v1/account/readAccount' },
+        skipIf: skipIfB2C,
+        extract: [],
+      });
+
+      // ── Catalogue : (option) familles de regroupement → famille ──
+      if (withParentFamily) {
+        steps.push({
+          label: 'Familles parentes → parentFamilyCode',
+          route: { method: 'GET', path: '/api/v1/family/findParentFamilies' },
+          extract: [{
+            targetParam: 'parentFamilyCode',
+            list: b => { const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b; return (Array.isArray(l)?l:[l]).filter(Boolean).map(String); },
+            pick: b => { const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b; const f=Array.isArray(l)?l[0]:l; return (typeof f==='string')?f:(f?.parentFamilyCode??f?.code); },
+          }],
+        });
+        steps.push({
+          label: 'Famille parente → familyCode',
+          route: { method: 'GET', path: '/api/v1/family/readParentFamily' },
+          extract: [{
+            targetParam: 'familyCode',
+            list: b => { const l=b?.parentFamilies??b?.data?.parentFamilies??b?.data??b; const pf=Array.isArray(l)?l[0]:l; const c=pf?.childFamilyCodes??pf?.families??pf?.children??[]; return (Array.isArray(c)?c:[c]).map(x=>(typeof x==='string')?x:(x?.familyCode??x?.code)).filter(Boolean); },
+            pick: b => { const l=b?.parentFamilies??b?.data?.parentFamilies??b?.data??b; const pf=Array.isArray(l)?l[0]:l; const c=pf?.childFamilyCodes??pf?.families??pf?.children??[]; const x=Array.isArray(c)?c[0]:c; return (typeof x==='string')?x:(x?.familyCode??x?.code); },
+          }],
+        });
+      }
+
+      // ── Achat (étape custom unique) ──
+      // Sélection de l'offre selon la typologie + panier + checkout + confirmation (EMULATEPAY).
+      // Selon offerType : 1 vente typée (arrêt si type absent), 'eachType' (N ventes tolérant),
+      // ou 'complex' (1 vente panier multi-articles). Récap des types vendus/manquants.
+      steps.push({
+        label: "Achat selon la typologie → commande(s)",
+        route: { method: 'POST', path: '/api/v1/order/confirmOrderTrans' },
+        custom: (collected, scRun) => doPurchase(collected, scRun),
+      });
+
+      // withCreateAccount / withParentFamily exposés pour la logique d'auth B2C (dans doPurchase).
+      return { id, label, description, startFields, steps, withCreateAccount, withParentFamily };
+    }
+
     const TEST_SCENARIOS = [
+      // ════════════════════════════════════════════════════════════════
+      // 4 SCÉNARIOS D'ACHAT (backoffice unified). Gèrent open/fullday/horodaté.
+      // Paiement émulé EMULATEPAY. Données client générées via {{@champ}}.
+      // ════════════════════════════════════════════════════════════════
+      buildPurchaseScenario({
+        id: 'purchase-full-login',
+        label: "Achat complet (login)",
+        description: "Depuis une famille de regroupement : offre → produit → login (compte existant) → panier → checkout → paiement émulé → commande.",
+        withParentFamily: true, withCreateAccount: false,
+      }),
+      buildPurchaseScenario({
+        id: 'purchase-full-create',
+        label: "Achat complet (création de compte)",
+        description: "Depuis une famille de regroupement, avec création d'un compte (données générées) avant le login, jusqu'à la commande payée.",
+        withParentFamily: true, withCreateAccount: true,
+      }),
+      buildPurchaseScenario({
+        id: 'purchase-product-login',
+        label: "Achat produit (familyCode fourni, login)",
+        description: "À partir d'un code famille fourni : offre → produit → login (compte existant) → panier → checkout → paiement émulé → commande.",
+        withParentFamily: false, withCreateAccount: false,
+      }),
+      buildPurchaseScenario({
+        id: 'purchase-product-create',
+        label: "Achat produit (familyCode fourni, création de compte)",
+        description: "À partir d'un code famille fourni, avec création d'un compte (données générées) avant le login, jusqu'à la commande payée.",
+        withParentFamily: false, withCreateAccount: true,
+      }),
       {
         id: 'catalog-family-to-product',
         label: 'Catalogue : Famille parente → Produit',
@@ -2267,6 +2675,76 @@
       },
     ];
 
+    // ── i18n des scénarios : mapping libellé FR (dans TEST_SCENARIOS) → clé i18n ──
+    // Les définitions ci-dessus restent en FR (fallback) ; au rendu on résout via scnTr().
+    const SCN_LABEL_KEYS = {
+      // Scénario nominal d'achat
+      'Achat complet (login)': 'scn.sc.purchaseFullLogin.label',
+      "Depuis une famille de regroupement : offre → produit → login (compte existant) → panier → checkout → paiement émulé → commande.": 'scn.sc.purchaseFullLogin.desc',
+      'Achat complet (création de compte)': 'scn.sc.purchaseFullCreate.label',
+      "Depuis une famille de regroupement, avec création d'un compte (données générées) avant le login, jusqu'à la commande payée.": 'scn.sc.purchaseFullCreate.desc',
+      'Achat produit (familyCode fourni, login)': 'scn.sc.purchaseProductLogin.label',
+      "À partir d'un code famille fourni : offre → produit → login (compte existant) → panier → checkout → paiement émulé → commande.": 'scn.sc.purchaseProductLogin.desc',
+      'Achat produit (familyCode fourni, création de compte)': 'scn.sc.purchaseProductCreate.label',
+      "À partir d'un code famille fourni, avec création d'un compte (données générées) avant le login, jusqu'à la commande payée.": 'scn.sc.purchaseProductCreate.desc',
+      'Identifiant (si login direct)': 'scn.sf.usernameOpt',
+      'Mot de passe (si login direct)': 'scn.sf.passwordOpt',
+      'Création de compte': 'scn.br.createAccount.label',
+      'Créer un compte (données générées)': 'scn.br.createAccount.on',
+      'Login direct (id/mdp fournis)': 'scn.br.createAccount.off',
+      'Création de compte (données générées) → login': 'scn.st.createAccount',
+      'Vérification panier → cartCode': 'scn.st.checkCartCode',
+      'Début de transaction → orderCode': 'scn.st.beginOrder',
+      'Confirmation commande (paiement émulé)': 'scn.st.confirmOrder',
+      'Lecture commande (validation)': 'scn.st.readOrderDetails',
+      'Catalogue : Famille parente → Produit': 'scn.sc.catalogFamilyProduct.label',
+      "Part d'une famille parente et remonte jusqu'à un produit disponible.": 'scn.sc.catalogFamilyProduct.desc',
+      "Parcours d'achat catalogue": 'scn.sc.purchaseFlow.label',
+      "À partir d'une famille, trouve une offre, une date, une performance, un produit et son prix.": 'scn.sc.purchaseFlow.desc',
+      'Compte & commandes (login)': 'scn.sc.accountOrders.label',
+      'Se connecte, lit le compte, cherche une commande et lit un ticket.': 'scn.sc.accountOrders.desc',
+      // Champs de départ
+      'Code de regroupement': 'scn.sf.code',
+      "Typologie d'offre": 'scn.sf.offerType',
+      'Produit open': 'scn.opt.open',
+      'Produit daté': 'scn.opt.dated',
+      'Produit horodaté': 'scn.opt.timed',
+      'Un de chaque type présent': 'scn.opt.eachType',
+      'Vente complexe (1 vente, les 3 types)': 'scn.opt.complex',
+      'Achat selon la typologie → commande(s)': 'scn.st.doPurchase',
+      'Code famille': 'scn.sf.familyCode',
+      'Identifiant': 'scn.sf.username',
+      'Mot de passe': 'scn.sf.password',
+      // Branche
+      'Avec séance': 'scn.br.session.on',
+      'Sans séance': 'scn.br.session.off',
+      // Étapes
+      'Familles parentes → parentFamilyCode': 'scn.st.parentFamilies',
+      'Famille parente → familyCode': 'scn.st.parentFamily',
+      'Offres par famille → offerCode': 'scn.st.offersByFamily',
+      'Détails offre (validation)': 'scn.st.offerDetails',
+      '[Séance] Jours disponibles → date': 'scn.st.sessionDays',
+      '[Séance] Performances du jour → performanceCode': 'scn.st.sessionPerf',
+      'Codes produits → productCode': 'scn.st.productCodes',
+      'Lecture produit (validation)': 'scn.st.readProduct',
+      'Première date dispo → dateFrom / dateTo': 'scn.st.firstDate',
+      'Jours calendrier → date': 'scn.st.calendarDays',
+      'Performances du jour → performanceCode': 'scn.st.perfByDay',
+      'Codes produits → productCode / productCodes': 'scn.st.productCodes2',
+      'Prix (validation)': 'scn.st.prices',
+      'Signin → accountCode': 'scn.st.signin',
+      'Lecture compte (validation)': 'scn.st.readAccount',
+      'Recherche commandes → orderCode': 'scn.st.searchOrders',
+      'Détail commande (validation)': 'scn.st.orderDetails',
+      'Recherche tickets → mediaCode': 'scn.st.searchTickets',
+      'Lecture ticket (validation)': 'scn.st.readTicket',
+    };
+    // Résout un libellé FR de scénario vers sa traduction (fallback = le FR lui-même)
+    function scnTr(frText) {
+      const key = SCN_LABEL_KEYS[frText];
+      return key ? tr(key, frText) : frText;
+    }
+
     // Références DOM du mode scénarios
     const modeManualBtn = document.getElementById('modeManualBtn');
     const modeScenarioBtn = document.getElementById('modeScenarioBtn');
@@ -2277,6 +2755,7 @@
     const scenarioStartFields = document.getElementById('scenarioStartFields');
     const runScenarioBtn = document.getElementById('runScenarioBtn');
     const replayScenarioBtn = document.getElementById('replayScenarioBtn');
+    const retryStepBtn = document.getElementById('retryStepBtn');
     const scenarioSteps = document.getElementById('scenarioSteps');
     const execAutoBtn = document.getElementById('execAutoBtn');
     const execManualBtn = document.getElementById('execManualBtn');
@@ -2321,8 +2800,8 @@
     setMode('scenario');
 
     // Remplir le sélecteur de scénarios
-    scenarioSelect.innerHTML = '<option value="">-- Sélectionner un scénario --</option>' +
-      TEST_SCENARIOS.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
+    scenarioSelect.innerHTML = `<option value="">${tr('scn.choosePh', '-- Sélectionner un scénario --')}</option>` +
+      TEST_SCENARIOS.map(s => `<option value="${s.id}">${scnTr(s.label)}</option>`).join('');
 
     function getScenario(id) {
       return TEST_SCENARIOS.find(s => s.id === id);
@@ -2333,8 +2812,10 @@
       const sc = getScenario(scenarioSelect.value);
       scenarioSteps.classList.add('hidden');
       scenarioSteps.innerHTML = '';
-      // Effacer le bloc de synthèse précédent
+      // Effacer le bloc de synthèse précédent + masquer le retry (contexte d'un autre scénario)
       document.getElementById('scenarioSummary')?.remove();
+      retryStepBtn.classList.add('hidden');
+      lastFailedRun = null;
 
       if (!sc) {
         scenarioDescription.classList.add('hidden');
@@ -2343,7 +2824,7 @@
         return;
       }
 
-      scenarioDescription.textContent = sc.description;
+      scenarioDescription.textContent = scnTr(sc.description);
       scenarioDescription.classList.remove('hidden');
 
       // Valeurs de champs de départ sauvegardées pour cette URL + ce scénario
@@ -2353,9 +2834,22 @@
         // Priorité : valeur sauvegardée > valeur par défaut. Les mots de passe ne sont pas restaurés.
         const val = (f.type !== 'password' && savedStart[f.name] !== undefined)
           ? savedStart[f.name] : (f.default || '');
+        // Champ de type select (ex: typologie d'offre) : rendu en menu déroulant
+        if (f.type === 'select' && Array.isArray(f.options)) {
+          const opts = f.options.map(o =>
+            `<option value="${o.value}" ${o.value === val ? 'selected' : ''}>${scnTr(o.label)}</option>`).join('');
+          return `
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-mono font-semibold text-slate-300" for="sf-${f.name}">${scnTr(f.label)}</label>
+            <select id="sf-${f.name}" name="${f.name}"
+              class="scenario-start-input bg-slate-900/80 border border-slate-700 rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+              ${opts}
+            </select>
+          </div>`;
+        }
         return `
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-mono font-semibold text-slate-300" for="sf-${f.name}">${f.label}</label>
+          <label class="text-xs font-mono font-semibold text-slate-300" for="sf-${f.name}">${scnTr(f.label)}</label>
           <input type="${f.type}" id="sf-${f.name}" name="${f.name}"
             ${f.autocomplete ? `autocomplete="${f.autocomplete}"` : ''}
             value="${val}"
@@ -2451,7 +2945,7 @@
         if (!sc) return;
         const st = getScenarioStatus(sc.id);
         const mark = st ? (st.status === 'ok' ? ' ✔' : st.status === 'warn' ? ' ⚠' : ' ✖') : '';
-        opt.textContent = sc.label + mark;
+        opt.textContent = scnTr(sc.label) + mark;
       });
     }
 
@@ -2475,23 +2969,23 @@
         }
         return `<div class="flex items-center gap-2 text-xs">
           <i class="fa-solid ${icon} ${color}"></i>
-          <span class="text-slate-300">${i + 1}. ${step.label}</span>
+          <span class="text-slate-300">${i + 1}. ${scnTr(step.label)}</span>
         </div>`;
       }).join('');
 
       let globalBadge;
       if (statusEntry.status === 'ok') {
-        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i>Scénario validé</span>';
+        globalBadge = `<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i>${tr('scn.statusOk', 'Scénario validé')}</span>`;
       } else if (statusEntry.status === 'warn') {
-        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-950 border border-amber-700 text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Validé avec avertissements</span>';
+        globalBadge = `<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-950 border border-amber-700 text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${tr('scn.statusWarn', 'Validé avec avertissements')}</span>`;
       } else if (statusEntry.status === 'nullable') {
-        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 border border-cyan-700 text-cyan-400"><i class="fa-solid fa-slash mr-1"></i>Validé avec champs null</span>';
+        globalBadge = `<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-950 border border-cyan-700 text-cyan-400"><i class="fa-solid fa-slash mr-1"></i>${tr('scn.statusNullable', 'Validé avec champs null')}</span>`;
       } else if (statusEntry.status === 'undocumented') {
-        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-violet-950 border border-violet-700 text-violet-400"><i class="fa-solid fa-circle-plus mr-1"></i>Validé avec champs non documentés</span>';
+        globalBadge = `<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-violet-950 border border-violet-700 text-violet-400"><i class="fa-solid fa-circle-plus mr-1"></i>${tr('scn.statusUndoc', 'Validé avec champs non documentés')}</span>`;
       } else if (statusEntry.status === 'notImplemented') {
-        globalBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-slate-300"><i class="fa-solid fa-eye-slash mr-1"></i>Validé avec champs non implémentés</span>';
+        globalBadge = `<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-slate-300"><i class="fa-solid fa-eye-slash mr-1"></i>${tr('scn.statusNotImpl', 'Validé avec champs non implémentés')}</span>`;
       } else {
-        globalBadge = `<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-rose-950 border border-rose-700 text-rose-400"><i class="fa-solid fa-circle-xmark mr-1"></i>Échec à l'étape ${(statusEntry.failedStep ?? 0) + 1}</span>`;
+        globalBadge = `<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-rose-950 border border-rose-700 text-rose-400"><i class="fa-solid fa-circle-xmark mr-1"></i>${tr('scn.statusFail', "Échec à l'étape {n}", { n: (statusEntry.failedStep ?? 0) + 1 })}</span>`;
       }
 
       scenarioSteps.innerHTML = `<div class="mb-2">${globalBadge}</div>` + rows;
@@ -2500,6 +2994,8 @@
     // ── Exécution d'un scénario (machine à étapes : auto ou manuel) ───
     // État courant du scénario en cours d'exécution
     let scRun = null;
+    // État du dernier run terminé en échec (pour rejouer uniquement l'étape fautive)
+    let lastFailedRun = null;
 
     function renderScenarioProgress(currentIdx) {
       if (!scRun) return;
@@ -2514,10 +3010,10 @@
         else if (scRun.results[i] === 'skip') { icon = 'fa-circle-minus'; color = 'text-slate-500'; }
         else if (i === currentIdx) { icon = 'fa-spinner fa-spin'; color = 'text-indigo-400'; }
         else { icon = 'fa-circle'; color = 'text-slate-600'; }
-        const skipLabel = scRun.results[i] === 'skip' ? ' <span class="text-slate-500 italic">(ignorée)</span>' : '';
+        const skipLabel = scRun.results[i] === 'skip' ? ` <span class="text-slate-500 italic">${tr('scn.skipped', '(ignorée)')}</span>` : '';
         return `<div class="flex items-center gap-2 text-xs">
           <i class="fa-solid ${icon} ${color}"></i>
-          <span class="text-slate-300">${i + 1}. ${step.label}${skipLabel}</span>
+          <span class="text-slate-300">${i + 1}. ${scnTr(step.label)}${skipLabel}</span>
         </div>`;
       }).join('');
     }
@@ -2525,15 +3021,16 @@
     async function runScenario(replay) {
       const sc = getScenario(scenarioSelect.value);
       if (!sc) return;
-      if (!cachedYamlContent) { alert('Chargez d\'abord une spec YAML.'); return; }
-      if (!targetUrlInput.value.trim()) { alert('Renseignez l\'URL de l\'API cible.'); return; }
+      if (!cachedYamlContent) { alert(tr('scn.needYaml', 'Chargez d\'abord une spec YAML.')); return; }
+      if (!targetUrlInput.value.trim()) { alert(tr('scn.needUrl', 'Renseignez l\'URL de l\'API cible.')); return; }
 
-      let startParams, enabledBranches;
+      let startParams, enabledBranches, fake;
 
       if (replay) {
-        // Rejouer : réutiliser les choix mémorisés du dernier test
+        // Rejouer : réutiliser les choix mémorisés du dernier test (y compris les données générées)
         startParams = { ...replay.collected };
         enabledBranches = new Set(replay.enabledBranches || []);
+        fake = replay.fake || generateFakeCustomer();
       } else {
         // Champs de départ saisis
         startParams = {};
@@ -2546,12 +3043,15 @@
         // Le choix des branches se fait pendant l'exécution (au point de bifurcation),
         // donc on démarre avec aucune branche décidée.
         enabledBranches = new Set();
+        // Jeu de données client factices, stable pour tout le run
+        fake = generateFakeCustomer();
       }
 
       // Réinitialiser l'état de run
       scRun = {
         scenario: sc,
         collected: { ...startParams },
+        fake,                     // données client générées, résolues dans les bodies via {{@champ}}
         results: new Array(sc.steps.length).fill(null),
         summary: [],
         failedStep: null,
@@ -2564,8 +3064,10 @@
 
       document.getElementById('scenarioSummary')?.remove();
       scenarioStepConfig.classList.add('hidden');
+      retryStepBtn.classList.add('hidden');  // masquer tant qu'un run tourne
+      lastFailedRun = null;
       runScenarioBtn.disabled = true;
-      runScenarioBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exécution...';
+      runScenarioBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${tr('scn.running', 'Exécution...')}`;
       scenarioSteps.classList.remove('hidden');
 
       await executeScenarioStep();
@@ -2600,6 +3102,48 @@
         return executeScenarioStep();
       }
 
+      // ── Saut AUTOMATIQUE conditionnel (sans choix utilisateur) ──
+      // step.skipIf(collected, scRun) → true : l'étape est ignorée. Sert par ex. à sauter
+      // calendrier/performance pour une offre "open" (sans date ni performance).
+      if (typeof step.skipIf === 'function' && step.skipIf(collected, scRun)) {
+        results[i] = 'skip';
+        summary[i] = { label: step.label, route: step.route, outcome: 'skip', statusCode: null, warnings: [], errors: [] };
+        const isLast = i >= sc.steps.length - 1;
+        if (isLast) return finalizeScenario();
+        scRun.index++;
+        return executeScenarioStep();
+      }
+
+      // ── Étape CUSTOM : logique côté client faisant ses propres appels ──
+      // step.custom(collected, scRun) → { ok, extracted?, error? }.
+      // Sert à des traitements multi-appels (ex: classer les offres par typologie et
+      // sélectionner la première du type demandé). Un échec (ok=false) stoppe le flow.
+      if (typeof step.custom === 'function') {
+        renderScenarioProgress(i);
+        let out;
+        try { out = await step.custom(collected, scRun); }
+        catch (e) { out = { ok: false, error: e.message }; }
+        if (out && out.ok) {
+          if (out.extracted) Object.entries(out.extracted).forEach(([k, v]) => {
+            if (v !== undefined && v !== null && v !== '') { collected[k] = String(v); setParamValue(k, String(v)); }
+          });
+          results[i] = 'ok';
+          summary[i] = { label: step.label, route: step.route || { method: '-', path: step.label }, outcome: 'ok', statusCode: null, warnings: [], errors: [] };
+          window._consoleLog?.({ type: 'BATCH', route: step.route || { method: 'CUSTOM', path: step.label }, status: 200 });
+          const isLast = i >= sc.steps.length - 1;
+          if (isLast) return finalizeScenario();
+          scRun.index++;
+          return executeScenarioStep();
+        } else {
+          results[i] = 'fail';
+          const errMsg = (out && out.error) || tr('scn.stepFailedConsole', 'Étape "{label}" échouée', { label: scnTr(step.label) });
+          summary[i] = { label: step.label, route: step.route || { method: '-', path: step.label }, outcome: 'fail', statusCode: null, warnings: [], errors: [errMsg] };
+          window._consoleLog?.({ type: 'ERROR', route: step.route || { method: 'CUSTOM', path: step.label }, error: errMsg });
+          scRun.failedStep = i;
+          return finalizeScenario();
+        }
+      }
+
       // ── Injecter les valeurs par défaut de l'étape (ex: plage de dates) ──
       // S'applique en auto ET manuel, sans écraser une valeur déjà renseignée.
       if (typeof step.defaultParams === 'function') {
@@ -2612,7 +3156,14 @@
       renderScenarioProgress(i);
 
       const bodies = {};
-      if (step.body) bodies[`${step.route.method} ${step.route.path}`] = step.body;
+      if (step.body) {
+        // body peut être une chaîne figée OU une fonction (collected) => string,
+        // utile pour adapter le corps selon le contexte (ex: offre avec/sans performance).
+        const rawBody = (typeof step.body === 'function') ? step.body(collected) : step.body;
+        // Résout les placeholders {{@champ}} (données client générées) côté client,
+        // avant envoi. Les {{var}} normaux restent résolus par le serveur via userParams.
+        bodies[`${step.route.method} ${step.route.path}`] = resolveFakePlaceholders(rawBody, scRun.fake);
+      }
 
       const fd = new FormData();
       fd.set('spec', new Blob([cachedYamlContent], { type: 'application/x-yaml' }), 'spec.yaml');
@@ -2658,11 +3209,11 @@
           type: outcome === 'fail' ? 'ERROR' : (outcome === 'ok' ? 'BATCH' : 'JS_ERROR'),
           route: step.route, status: statusCode, responseBody: body, requestUrl: reqUrl,
           error: outcome === 'fail'
-            ? (errors[0] || `Étape "${step.label}" échouée`)
-            : (outcome === 'warn' ? `${warnings.length} avertissement(s) de schéma`
-            : (outcome === 'nullable' ? `${nullables.length} champ(s) null`
-            : (outcome === 'undocumented' ? `${undocumented.length} champ(s) non documenté(s)`
-            : (outcome === 'notImplemented' ? `${notImplemented.length} champ(s) non implémenté(s)` : null)))),
+            ? (errors[0] || tr('scn.stepFailedConsole', 'Étape "{label}" échouée', { label: scnTr(step.label) }))
+            : (outcome === 'warn' ? tr('scn.warnSchema', '{n} avertissement(s) de schéma', { n: warnings.length })
+            : (outcome === 'nullable' ? tr('scn.nullFields', '{n} champ(s) null', { n: nullables.length })
+            : (outcome === 'undocumented' ? tr('scn.undocFields', '{n} champ(s) non documenté(s)', { n: undocumented.length })
+            : (outcome === 'notImplemented' ? tr('scn.notImplFields', '{n} champ(s) non implémenté(s)', { n: notImplemented.length }) : null)))),
         });
       } catch (e) {
         window._consoleLog?.({ type: 'ERROR', route: step.route, error: e.message });
@@ -2675,10 +3226,22 @@
 
       // ── ÉCHEC ──
       if (outcome === 'fail') {
+        // Étape TOLÉRANTE : un échec ne stoppe pas le scénario (ex: offre "open" sans
+        // performance → findPerformanceByDay renvoie 404). On marque "skip", on exécute
+        // l'éventuel onFail(collected) (pour poser un flag), puis on continue.
+        if (step.tolerant) {
+          if (typeof step.onFail === 'function') step.onFail(collected, scRun);
+          results[i] = 'skip';
+          summary[i] = { label: step.label, route: step.route, outcome: 'skip', statusCode, warnings: [], errors: [] };
+          const isLast = i >= sc.steps.length - 1;
+          if (isLast) return finalizeScenario();
+          scRun.index++;
+          return executeScenarioStep();
+        }
         // En mode manuel : ne pas terminer, permettre de réessayer avec d'autres paramètres
         if (scenarioExecMode === 'manual') {
           renderScenarioProgress(-1);
-          scenarioStepConfigError.textContent = `L'étape a échoué. Ajustez les paramètres et réessayez.`;
+          scenarioStepConfigError.textContent = tr('scn.stepFailedRetry', "L'étape a échoué. Ajustez les paramètres et réessayez.");
           renderStepConfig({ retry: true });
           scenarioStepConfigError.classList.remove('hidden');
           return;
@@ -2687,6 +3250,9 @@
         scRun.failedStep = i;
         return finalizeScenario();
       }
+
+      // Succès : hook optionnel pour poser un flag selon la réponse (ex: offre a une performance)
+      if (typeof step.onSuccess === 'function') step.onSuccess(collected, body, scRun);
 
       // ── SUCCÈS/WARNING : mémoriser les candidats extraits pour l'étape suivante ──
       const candForNext = {};
@@ -2770,12 +3336,12 @@
       const candidatesByParam = scRun.candidatesByStep?.[targetIdx] || {};
 
       scenarioStepConfigTitle.textContent = isRetry
-        ? `Réessayer : paramètres pour ${targetStep.route.path}`
-        : `Paramètres pour la route ${targetStep.route.path}`;
+        ? tr('scn.cfgRetryTitle', 'Réessayer : paramètres pour {path}', { path: targetStep.route.path })
+        : tr('scn.cfgTitle', 'Paramètres pour la route {path}', { path: targetStep.route.path });
       scenarioStepConfigError.classList.add('hidden');
       scenarioNextStepBtn.innerHTML = isRetry
-        ? '<i class="fa-solid fa-rotate-right"></i> Réessayer cette étape'
-        : '<i class="fa-solid fa-forward-step"></i> Étape suivante';
+        ? `<i class="fa-solid fa-rotate-right"></i> ${tr('scn.retryStep', 'Réessayer cette étape')}`
+        : `<i class="fa-solid fa-forward-step"></i> ${tr('scn.nextStep', 'Étape suivante')}`;
 
       // Paramètres de la route cible (path + query) issus du YAML
       const routeDef = detectedRoutes.find(r =>
@@ -2801,7 +3367,7 @@
         // Détecte une contrainte conditionnelle dans la description (ex: "mandatory if ... is null")
         const isConditional = p.description && /(obligatoire|mandatory|required|requis)/i.test(p.description) && /(si|if|null|vide|empty|nul)/i.test(p.description);
         const condMark = isConditional
-          ? ' <span class="text-amber-400" title="Obligatoire sous condition">⚠</span>'
+          ? ` <span class="text-amber-400" title="${tr('scn.condMark', 'Obligatoire sous condition')}">⚠</span>`
           : '';
         const descHtml = p.description
           ? `<span class="text-[10px] ${isConditional ? 'text-amber-300' : 'text-slate-500'} italic leading-tight">${p.description}</span>`
@@ -2855,7 +3421,7 @@
             <label class="text-[11px] font-mono font-semibold text-slate-300">${p.name}${reqMark}${condMark}</label>
             ${descHtml}
             <input type="text" data-sc-param="${p.name}" value="${current}"
-              placeholder="${p.required ? 'requis' : 'optionnel'}"
+              placeholder="${p.required ? tr('scn.required', 'requis') : tr('scn.optional', 'optionnel')}"
               class="sc-param-input bg-slate-800 border border-slate-600 rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
           </div>`;
       }).join('');
@@ -2865,7 +3431,7 @@
         const from = scenarioStepConfigFields.querySelector('[data-sc-param="dateFrom"]')?.value;
         const to = scenarioStepConfigFields.querySelector('[data-sc-param="dateTo"]')?.value;
         if (from && to && from > to) {
-          scenarioStepConfigError.textContent = 'La date de début doit être antérieure ou égale à la date de fin.';
+          scenarioStepConfigError.textContent = tr('scn.dateOrder', 'La date de début doit être antérieure ou égale à la date de fin.');
           scenarioStepConfigError.classList.remove('hidden');
           scenarioNextStepBtn.disabled = true;
           return false;
@@ -2913,17 +3479,17 @@
       // Icône embranchement + libellé explicite
       const titleIcon = scenarioStepConfigTitle.previousElementSibling;
       if (titleIcon) { titleIcon.className = 'fa-solid fa-code-branch'; }
-      scenarioStepConfigTitle.textContent = `Choix de parcours : ${br.label}`;
+      scenarioStepConfigTitle.textContent = tr('scn.branchChoice', 'Choix de parcours : {label}', { label: scnTr(br.label) });
       scenarioStepConfigError.classList.add('hidden');
       scenarioStepConfigFields.innerHTML = `
         <div class="col-span-full flex flex-col sm:flex-row gap-2">
           <button type="button" id="branchYesBtn"
             class="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 border border-amber-400 text-slate-900 text-xs font-bold rounded-lg transition flex justify-center items-center gap-2">
-            <i class="fa-solid fa-check"></i> ${br.onLabel}
+            <i class="fa-solid fa-check"></i> ${scnTr(br.onLabel)}
           </button>
           <button type="button" id="branchNoBtn"
             class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 border border-amber-700/50 text-amber-200 text-xs font-bold rounded-lg transition flex justify-center items-center gap-2">
-            <i class="fa-solid fa-xmark"></i> ${br.offLabel}
+            <i class="fa-solid fa-xmark"></i> ${scnTr(br.offLabel)}
           </button>
         </div>`;
 
@@ -3011,15 +3577,25 @@
       renderScenarioStatus(sc.id, { status: finalStatus, failedStep });
       renderScenarioSummary(sc, summary);
 
-      // Mémoriser les choix de ce run (valeurs + branches) pour "Rejouer le dernier test"
+      // Mémoriser les choix de ce run (valeurs + branches + données générées) pour "Rejouer le dernier test"
       saveScenarioLastRun(sc.id, {
         collected: scRun.collected,
         enabledBranches: Array.from(scRun.enabledBranches),
+        fake: scRun.fake,
       });
       updateReplayButton();
 
+      // En cas d'échec : conserver l'état complet du run pour pouvoir rejouer l'étape fautive.
+      if (failedStep !== null) {
+        lastFailedRun = scRun;
+        retryStepBtn.classList.remove('hidden');
+      } else {
+        lastFailedRun = null;
+        retryStepBtn.classList.add('hidden');
+      }
+
       runScenarioBtn.disabled = false;
-      runScenarioBtn.innerHTML = '<i class="fa-solid fa-play"></i> Exécuter le scénario';
+      runScenarioBtn.innerHTML = `<i class="fa-solid fa-play"></i> ${tr('scn.run', 'Exécuter le scénario')}`;
       scRun = null;
     }
 
@@ -3066,13 +3642,13 @@
 
       const rows = summary.filter(Boolean).map((s, idx) => {
         const conf = {
-          ok:       { icon: 'fa-circle-check', color: 'text-emerald-400', label: 'Conforme' },
-          warn:     { icon: 'fa-triangle-exclamation', color: 'text-amber-400', label: 'Avertissements' },
-          nullable:       { icon: 'fa-slash', color: 'text-cyan-400', label: 'Champs null' },
-          undocumented:   { icon: 'fa-circle-plus', color: 'text-violet-400', label: 'Champs non documentés' },
-          notImplemented: { icon: 'fa-eye-slash', color: 'text-slate-400', label: 'Champs non implémentés' },
-          fail:     { icon: 'fa-circle-xmark', color: 'text-rose-400', label: 'Échec' },
-          skip:     { icon: 'fa-circle-minus', color: 'text-slate-500', label: 'Ignorée' },
+          ok:       { icon: 'fa-circle-check', color: 'text-emerald-400', label: tr('scn.confOk', 'Conforme') },
+          warn:     { icon: 'fa-triangle-exclamation', color: 'text-amber-400', label: tr('scn.confWarn', 'Avertissements') },
+          nullable:       { icon: 'fa-slash', color: 'text-cyan-400', label: tr('scn.confNullable', 'Champs null') },
+          undocumented:   { icon: 'fa-circle-plus', color: 'text-violet-400', label: tr('scn.confUndoc', 'Champs non documentés') },
+          notImplemented: { icon: 'fa-eye-slash', color: 'text-slate-400', label: tr('scn.confNotImpl', 'Champs non implémentés') },
+          fail:     { icon: 'fa-circle-xmark', color: 'text-rose-400', label: tr('scn.confFail', 'Échec') },
+          skip:     { icon: 'fa-circle-minus', color: 'text-slate-500', label: tr('scn.confSkip', 'Ignorée') },
         }[s.outcome] || { icon: 'fa-circle', color: 'text-slate-500', label: s.outcome };
 
         const nbErr = (s.errors || []).length;
@@ -3097,41 +3673,42 @@
           return Array.from(counts.entries()); // [ [messageNormalisé, n], ... ]
         };
 
+        const occ = (n) => tr('scn.occurrences', '{n} occurrences', { n });
         const details = [
           ...groupMsgs(s.errors).map(([e, n]) =>
             `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
                <span class="text-rose-300 flex-1">✖ ${e}</span>
-               ${n > 1 ? `<span class="text-rose-400 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+               ${n > 1 ? `<span class="text-rose-400 font-bold flex-shrink-0" title="${occ(n)}">×${n}</span>` : ''}
              </div>`),
           ...groupMsgs(s.warnings).map(([w, n]) =>
             `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
                <span class="text-amber-300 flex-1">⚠ ${w}</span>
-               ${n > 1 ? `<span class="text-amber-400 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+               ${n > 1 ? `<span class="text-amber-400 font-bold flex-shrink-0" title="${occ(n)}">×${n}</span>` : ''}
              </div>`),
           ...groupMsgs(s.nullables).map(([nu, n]) =>
             `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
                <span class="text-cyan-300 flex-1"><i class="fa-solid fa-slash mr-1"></i>${nu}</span>
-               ${n > 1 ? `<span class="text-cyan-400 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+               ${n > 1 ? `<span class="text-cyan-400 font-bold flex-shrink-0" title="${occ(n)}">×${n}</span>` : ''}
              </div>`),
           ...groupMsgs(s.undocumented).map(([u, n]) =>
             `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
                <span class="text-violet-300 flex-1"><i class="fa-solid fa-circle-plus mr-1"></i>${u}</span>
-               ${n > 1 ? `<span class="text-violet-400 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+               ${n > 1 ? `<span class="text-violet-400 font-bold flex-shrink-0" title="${occ(n)}">×${n}</span>` : ''}
              </div>`),
           ...groupMsgs(s.notImplemented).map(([ni, n]) =>
             `<div class="flex items-start gap-2 text-[10px] font-mono pl-5">
                <span class="text-slate-400 flex-1"><i class="fa-solid fa-eye-slash mr-1"></i>${ni}</span>
-               ${n > 1 ? `<span class="text-slate-300 font-bold flex-shrink-0" title="${n} occurrences">×${n}</span>` : ''}
+               ${n > 1 ? `<span class="text-slate-300 font-bold flex-shrink-0" title="${occ(n)}">×${n}</span>` : ''}
              </div>`),
         ].join('');
 
         // Compteurs erreurs / warnings / null affichés sur la ligne
         const counters = [
-          nbErr > 0 ? `<span class="text-rose-400 text-[10px] font-bold" title="${nbErr} erreur(s)"><i class="fa-solid fa-circle-xmark mr-0.5"></i>${nbErr}</span>` : '',
-          nbWarn > 0 ? `<span class="text-amber-400 text-[10px] font-bold" title="${nbWarn} avertissement(s)"><i class="fa-solid fa-triangle-exclamation mr-0.5"></i>${nbWarn}</span>` : '',
-          nbNull > 0 ? `<span class="text-cyan-400 text-[10px] font-bold" title="${nbNull} champ(s) null"><i class="fa-solid fa-slash mr-0.5"></i>${nbNull}</span>` : '',
-          nbUndoc > 0 ? `<span class="text-violet-400 text-[10px] font-bold" title="${nbUndoc} champ(s) non documenté(s)"><i class="fa-solid fa-circle-plus mr-0.5"></i>${nbUndoc}</span>` : '',
-          nbNotImpl > 0 ? `<span class="text-slate-400 text-[10px] font-bold" title="${nbNotImpl} champ(s) non implémenté(s)"><i class="fa-solid fa-eye-slash mr-0.5"></i>${nbNotImpl}</span>` : '',
+          nbErr > 0 ? `<span class="text-rose-400 text-[10px] font-bold" title="${tr('res.colErrors','Synthèse Erreurs')}"><i class="fa-solid fa-circle-xmark mr-0.5"></i>${nbErr}</span>` : '',
+          nbWarn > 0 ? `<span class="text-amber-400 text-[10px] font-bold" title="${tr('scn.cntWarn','{n} avertissement(s)',{n:nbWarn})}"><i class="fa-solid fa-triangle-exclamation mr-0.5"></i>${nbWarn}</span>` : '',
+          nbNull > 0 ? `<span class="text-cyan-400 text-[10px] font-bold" title="${tr('scn.cntNull','{n} champ(s) null',{n:nbNull})}"><i class="fa-solid fa-slash mr-0.5"></i>${nbNull}</span>` : '',
+          nbUndoc > 0 ? `<span class="text-violet-400 text-[10px] font-bold" title="${tr('scn.cntUndoc','{n} non documenté(s)',{n:nbUndoc})}"><i class="fa-solid fa-circle-plus mr-0.5"></i>${nbUndoc}</span>` : '',
+          nbNotImpl > 0 ? `<span class="text-slate-400 text-[10px] font-bold" title="${tr('scn.cntNotImpl','{n} non implémenté(s)',{n:nbNotImpl})}"><i class="fa-solid fa-eye-slash mr-0.5"></i>${nbNotImpl}</span>` : '',
         ].filter(Boolean).join(' ');
 
         return `
@@ -3161,14 +3738,14 @@
         <div class="border-t border-slate-700/80 pt-3">
           <div class="flex items-center justify-between mb-2 gap-2">
             <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-              <i class="fa-solid fa-clipboard-list text-indigo-400"></i> Synthèse du scénario
+              <i class="fa-solid fa-clipboard-list text-indigo-400"></i> ${tr('scn.summaryTitle', 'Synthèse du scénario')}
               <span class="text-[10px] font-normal text-slate-400">
-                (${okCount} conforme(s), ${warnCount} avertissement(s)${nullCount ? `, ${nullCount} champ(s) null` : ''}${undocCount ? `, ${undocCount} non documenté(s)` : ''}${notImplCount ? `, ${notImplCount} non implémenté(s)` : ''}, ${failCount} échec(s)${skipCount ? `, ${skipCount} ignorée(s)` : ''})
+                (${tr('scn.cntConform', '{n} conforme(s)', { n: okCount })}, ${tr('scn.cntWarn', '{n} avertissement(s)', { n: warnCount })}${nullCount ? `, ${tr('scn.cntNull', '{n} champ(s) null', { n: nullCount })}` : ''}${undocCount ? `, ${tr('scn.cntUndoc', '{n} non documenté(s)', { n: undocCount })}` : ''}${notImplCount ? `, ${tr('scn.cntNotImpl', '{n} non implémenté(s)', { n: notImplCount })}` : ''}, ${tr('scn.cntFail', '{n} échec(s)', { n: failCount })}${skipCount ? `, ${tr('scn.cntSkip', '{n} ignorée(s)', { n: skipCount })}` : ''})
               </span>
             </h3>
             <button type="button" id="exportSummaryBtn"
               class="text-[10px] font-semibold px-2.5 py-1 rounded-md border border-slate-600 bg-slate-800 hover:bg-indigo-600 hover:border-indigo-500 text-slate-300 hover:text-white transition flex items-center gap-1.5 flex-shrink-0">
-              <i class="fa-solid fa-download"></i> Exporter JSON
+              <i class="fa-solid fa-download"></i> ${tr('scn.export', 'Exporter JSON')}
             </button>
           </div>
           ${rows}
@@ -3233,13 +3810,32 @@
       const sc = getScenario(scenarioSelect.value);
       if (!sc) return;
       const last = getScenarioLastRun(sc.id);
-      if (!last) { alert('Aucun test précédent mémorisé pour ce scénario et cette URL.'); return; }
+      if (!last) { alert(tr('scn.noLastRun', 'Aucun test précédent mémorisé pour ce scénario et cette URL.')); return; }
       runScenario(last);
+    });
+
+    // Rejouer UNIQUEMENT l'étape qui a échoué, en conservant tout le contexte du run
+    // (collected, fake, branches, résultats des étapes précédentes). Reprend à failedStep.
+    retryStepBtn.addEventListener('click', async () => {
+      if (!lastFailedRun || lastFailedRun.failedStep == null) return;
+      scRun = lastFailedRun;              // restaurer l'état complet du run échoué
+      lastFailedRun = null;
+      const idx = scRun.failedStep;
+      scRun.index = idx;
+      scRun.failedStep = null;
+      scRun.results[idx] = null;          // réinitialiser le statut de l'étape à rejouer
+      scRun.summary[idx] = undefined;
+      document.getElementById('scenarioSummary')?.remove();
+      retryStepBtn.classList.add('hidden');
+      runScenarioBtn.disabled = true;
+      runScenarioBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${tr('scn.running', 'Exécution...')}`;
+      scenarioSteps.classList.remove('hidden');
+      await executeScenarioStep();
     });
 
     function renderRoutesList(routes, tagOrder = []) {
       if (routes.length === 0) {
-        routesContainer.innerHTML = '<div class="col-span-full text-slate-500 italic text-center py-6">Aucune route valide trouvée dans ce YAML.</div>';
+        routesContainer.innerHTML = `<div class="col-span-full text-slate-500 italic text-center py-6">${tr('idx.noValidRoutes', 'Aucune route valide trouvée dans ce YAML.')}</div>`;
         return;
       }
 
@@ -3296,9 +3892,9 @@
               <input type="checkbox" class="tag-checkbox accent-indigo-500 h-3.5 w-3.5 rounded flex-shrink-0"
                      data-tag-id="${tagId}"
                      onclick="event.stopPropagation(); toggleTagCheckboxes('${tagId}', this.checked)"
-                     checked title="Tout cocher / décocher cette section">
+                     checked title="${tr('idx.toggleSection', 'Tout cocher / décocher cette section')}">
               <span class="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide">${tag}</span>
-              <span class="text-[10px] text-slate-500 ml-auto">${items.length} route${items.length > 1 ? 's' : ''}</span>
+              <span class="text-[10px] text-slate-500 ml-auto">${items.length > 1 ? tr('idx.routeCountMany', '{n} routes', { n: items.length }) : tr('idx.routeCountOne', '{n} route', { n: items.length })}</span>
             </div>
             <div id="${tagId}" class="divide-y divide-slate-800/40">
               ${rows}
@@ -3342,7 +3938,7 @@
         .map(cb => parseInt(cb.value));
 
       if (selectedIndices.length === 0) {
-        alert('Veuillez cocher au moins une route à tester.');
+        alert(tr('idx.checkOneRoute', 'Veuillez cocher au moins une route à tester.'));
         return;
       }
 
@@ -3357,7 +3953,7 @@
       // Si pas de fichier sélectionné, utiliser le contenu YAML mis en cache (historique)
       if (!specFile.files[0]) {
         if (!cachedYamlContent) {
-          alert('Aucun fichier YAML disponible. Veuillez re-sélectionner le fichier YAML.');
+          alert(tr('idx.noYamlAvailable', 'Aucun fichier YAML disponible. Veuillez re-sélectionner le fichier YAML.'));
           return;
         }
         const yamlBlob = new Blob([cachedYamlContent], { type: 'application/x-yaml' });
@@ -3365,7 +3961,7 @@
       }
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exécution des requêtes & Validation...';
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${tr('idx.running', 'Exécution des requêtes & Validation...')}`;
       resultsContainer.classList.add('hidden');
 
       try {
@@ -3376,10 +3972,10 @@
         try {
           data = JSON.parse(responseText);
         } catch (e) {
-          throw new Error(`Erreur serveur (${res.status}). Voir les logs dans /logs.`);
+          throw new Error(tr('idx.serverErrorLogs', 'Erreur serveur ({status}). Voir les logs dans /logs.', { status: res.status }));
         }
 
-        if (!res.ok) throw new Error(data.error || data.details || 'Erreur serveur');
+        if (!res.ok) throw new Error(data.error || data.details || tr('idx.serverError', 'Erreur serveur'));
 
         currentBatchResults = data.results;
 
@@ -3397,15 +3993,15 @@
 
         updateCounters(data.results);
         renderResults(data.results);
-        resultsCount.innerText = `${data.results.length} route(s) testée(s)`;
+        resultsCount.innerText = tr('idx.routesTested', '{n} route(s) testée(s)', { n: data.results.length });
         resultsContainer.classList.remove('hidden');
 
         resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       } catch (err) {
-        alert('Erreur : ' + err.message);
+        alert(tr('common.error', 'Erreur') + ' : ' + err.message);
       } finally {
-        submitBtn.innerHTML = '<i class="fa-solid fa-play"></i> Lancer la validation';
+        submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> ${tr('btn.runValidation', 'Lancer la validation')}`;
         updateSubmitState();
       }
     });
@@ -3771,6 +4367,32 @@
         localStorage.setItem('validator_console_height', String(parseInt(panel.style.height, 10)));
       });
     })();
+
+    // Rafraîchir les éléments générés en JS (selects, listes, boutons) :
+    // appelé à l'init de i18n (i18n:ready) ET à chaque changement de langue (i18n:changed).
+    function refreshDynamicI18n() {
+      // Reconstruire le sélecteur de scénarios (labels + badges de statut)
+      const selected = scenarioSelect.value;
+      scenarioSelect.innerHTML = `<option value="">${tr('scn.choosePh', '-- Sélectionner un scénario --')}</option>` +
+        TEST_SCENARIOS.map(s => `<option value="${s.id}">${scnTr(s.label)}</option>`).join('');
+      scenarioSelect.value = selected;
+      if (typeof loadScenarioBadges === 'function') loadScenarioBadges();
+      // Mettre à jour la description affichée du scénario courant
+      const sc = getScenario(selected);
+      if (sc) { scenarioDescription.textContent = scnTr(sc.description); }
+      // Réévaluer l'infobulle du bouton de validation
+      if (typeof updateSubmitState === 'function') updateSubmitState();
+      // Rafraîchir le select des versions (option "choisir") et l'historique des cibles
+      if (typeof loadSpecVersions === 'function') loadSpecVersions();
+      if (typeof loadTargetHistory === 'function') loadTargetHistory();
+      // Re-rendre la liste des routes et les résultats déjà affichés (labels dynamiques)
+      if (Array.isArray(detectedRoutes) && detectedRoutes.length && typeof renderRoutesList === 'function') {
+        renderRoutesList(detectedRoutes, detectedTagOrder);
+      }
+    }
+    document.addEventListener('i18n:ready', refreshDynamicI18n);
+    document.addEventListener('i18n:changed', refreshDynamicI18n);
   </script>
+  <script src="/i18n.js"></script>
 </body>
 </html>
