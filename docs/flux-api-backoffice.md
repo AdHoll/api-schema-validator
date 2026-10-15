@@ -314,6 +314,25 @@ flowchart TD
     classDef doc fill:#e0f2f1,stroke:#00897b;
 ```
 
+> **Attention — position de l'authentification selon le scope.** Le diagramme ci-dessus
+> correspond au scope **B2B** (connexion AVANT le parcours). En **B2C**, l'authentification
+> (`signin`, et éventuellement `createAccount`) a lieu **APRÈS le premier `checkCart`** :
+> le panier est constitué de façon anonyme (le token OAuth2 suffit), puis on s'identifie.
+> L'ordre B2C est donc : `token → catalogue → checkCart → (createAccount +) signin → beginOrderTrans → confirmOrderTrans`.
+> Détails et schéma dédié : [`scenarios-achat.md`](./scenarios-achat.md) et `scenario-auth-order.svg`.
+
+```mermaid
+flowchart LR
+    subgraph B2C["Ordre B2C (login APRÈS checkCart)"]
+      direction LR
+      c1["catalogue<br/>offre → produit"]:::cat --> c2["POST /cart/checkCart"]:::cart --> c3["POST /auth/signin<br/>(+ createAccount éventuel)"]:::auth --> c4["POST /order/beginOrderTrans"]:::order --> c5["POST /order/confirmOrderTrans"]:::order
+    end
+    classDef auth fill:#e3f2fd,stroke:#1976d2;
+    classDef cat fill:#f3e5f5,stroke:#8e24aa;
+    classDef cart fill:#e8f5e9,stroke:#43a047;
+    classDef order fill:#fce4ec,stroke:#d81b60;
+```
+
 ---
 
 ## Tableau récapitulatif des chaînages de données inter-routes
