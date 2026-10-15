@@ -7,6 +7,8 @@ Chaîne d'appel interne pour chaque opération :
 `Front → *ApiController → <Action>.exec() → CallXxx → GateXxx → <Api généré> → route backoffice`
 
 > **Vue d'ensemble visuelle** : voir [`flux-api-backoffice.svg`](./flux-api-backoffice.svg) (carte unique de tous les parcours et du chaînage de données).
+>
+> **Scénarios de test automatisés** : voir [`scenarios-achat.md`](./scenarios-achat.md) (parcours d'achat, typologies d'offre, ordre B2B/B2C, paiement émulé) + schémas en anglais.
 
 > **Convention des diagrammes** : chaque flèche vers « BO » est une route backoffice réelle (méthode + chemin).
 > Les annotations `⮑ data` indiquent **la donnée d'une réponse réinjectée dans l'appel suivant**.

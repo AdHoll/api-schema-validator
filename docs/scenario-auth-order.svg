@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#455a64"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1200" height="560" fill="#fafafa"/>
+  <text x="30" y="40" font-size="24" font-weight="700" fill="#263238">Authentication order — B2B vs B2C</text>
+  <text x="30" y="66" font-size="14" fill="#607d8b">The scope selected for the OAuth2 token decides when sign-in happens. checkCart needs no authenticated user.</text>
+
+  <!-- B2B lane -->
+  <rect x="30" y="95" width="1140" height="190" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+  <text x="48" y="124" font-size="17" font-weight="700" fill="#0d47a1">B2B — sign in BEFORE the purchase (unchanged)</text>
+
+  <g font-size="12.5">
+    <rect x="48"  y="150" width="150" height="46" rx="6" fill="#fff" stroke="#1976d2"/><text x="60" y="178" fill="#0d47a1">POST /auth/signin</text>
+    <rect x="238" y="150" width="150" height="46" rx="6" fill="#fff" stroke="#1976d2"/><text x="250" y="170" fill="#0d47a1">GET /account/</text><text x="250" y="186" fill="#0d47a1">readAccount</text>
+    <rect x="428" y="150" width="160" height="46" rx="6" fill="#fff" stroke="#8e24aa"/><text x="440" y="170" fill="#6a1b9a">catalogue:</text><text x="440" y="186" fill="#6a1b9a">offer → product</text>
+    <rect x="628" y="150" width="150" height="46" rx="6" fill="#fff" stroke="#43a047"/><text x="640" y="178" fill="#2e7d32">POST /cart/checkCart</text>
+    <rect x="818" y="150" width="160" height="46" rx="6" fill="#fff" stroke="#d81b60"/><text x="830" y="170" fill="#ad1457">POST /order/</text><text x="830" y="186" fill="#ad1457">beginOrderTrans</text>
+    <rect x="1008" y="150" width="150" height="46" rx="6" fill="#fff" stroke="#d81b60"/><text x="1020" y="170" fill="#ad1457">POST /order/</text><text x="1020" y="186" fill="#ad1457">confirmOrderTrans</text>
+    <line x1="198" y1="173" x2="238" y2="173" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="388" y1="173" x2="428" y2="173" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="588" y1="173" x2="628" y2="173" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="778" y1="173" x2="818" y2="173" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="978" y1="173" x2="1008" y2="173" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+  </g>
+  <text x="48" y="232" font-size="12.5" fill="#1565c0">Sign-in produces accountCode, reused as reservationOwnerCode in beginOrderTrans.</text>
+  <text x="48" y="256" font-size="12.5" fill="#1565c0">Payment is emulated with EMULATEPAY.</text>
+
+  <!-- B2C lane -->
+  <rect x="30" y="315" width="1140" height="210" rx="10" fill="#e8f5e9" stroke="#43a047" stroke-width="1.5"/>
+  <text x="48" y="344" font-size="17" font-weight="700" fill="#2e7d32">B2C — sign in AFTER the first checkCart (e-commerce order)</text>
+
+  <g font-size="12.5">
+    <rect x="48"  y="370" width="160" height="46" rx="6" fill="#fff" stroke="#8e24aa"/><text x="60" y="390" fill="#6a1b9a">catalogue:</text><text x="60" y="406" fill="#6a1b9a">offer → product</text>
+    <rect x="248" y="370" width="150" height="46" rx="6" fill="#fff" stroke="#43a047"/><text x="260" y="398" fill="#2e7d32">POST /cart/checkCart</text>
+    <rect x="438" y="370" width="190" height="46" rx="6" fill="#fff" stroke="#1976d2" stroke-width="2"/><text x="450" y="390" fill="#0d47a1" font-weight="600">(createAccount) + </text><text x="450" y="406" fill="#0d47a1" font-weight="600">POST /auth/signin</text>
+    <rect x="668" y="370" width="160" height="46" rx="6" fill="#fff" stroke="#d81b60"/><text x="680" y="390" fill="#ad1457">POST /order/</text><text x="680" y="406" fill="#ad1457">beginOrderTrans</text>
+    <rect x="868" y="370" width="160" height="46" rx="6" fill="#fff" stroke="#d81b60"/><text x="880" y="390" fill="#ad1457">POST /order/</text><text x="880" y="406" fill="#ad1457">confirmOrderTrans</text>
+    <line x1="208" y1="393" x2="248" y2="393" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="398" y1="393" x2="438" y2="393" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="628" y1="393" x2="668" y2="393" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="828" y1="393" x2="868" y2="393" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+  </g>
+  <text x="48" y="452" font-size="12.5" fill="#2e7d32">checkCart runs anonymously (OAuth2 token only). Sign-in happens once, right after it.</text>
+  <text x="48" y="476" font-size="12.5" fill="#2e7d32">The accountCode obtained is reused for the following sales (multi-sale modes).</text>
+  <text x="48" y="500" font-size="12.5" fill="#2e7d32">If "create account" is enabled, the account is created with generated data, then signed in.</text>
+</svg>

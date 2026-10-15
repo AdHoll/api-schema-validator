@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#455a64"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1200" height="640" fill="#fafafa"/>
+  <text x="30" y="40" font-size="24" font-weight="700" fill="#263238">Offer type modes (5 options)</text>
+  <text x="30" y="66" font-size="14" fill="#607d8b">Each offer of the family is auto-classified, then the chosen mode drives how many sales are made.</text>
+
+  <!-- Classification box -->
+  <rect x="30" y="95" width="1140" height="110" rx="10" fill="#eceff1" stroke="#607d8b" stroke-width="1.5"/>
+  <text x="48" y="122" font-size="16" font-weight="700" fill="#37474f">Classification of each offer</text>
+  <g font-size="13">
+    <rect x="48" y="140" width="300" height="46" rx="6" fill="#fff" stroke="#43a047"/><text x="60" y="160" fill="#2e7d32" font-weight="600">open</text><text x="60" y="177" fill="#607d8b">no performance (findPerformanceByDay 404)</text>
+    <rect x="388" y="140" width="320" height="46" rx="6" fill="#fff" stroke="#fb8c00"/><text x="400" y="160" fill="#e65100" font-weight="600">dated</text><text x="400" y="177" fill="#607d8b">full-day performance (isFullDay = true)</text>
+    <rect x="748" y="140" width="400" height="46" rx="6" fill="#fff" stroke="#d81b60"/><text x="760" y="160" fill="#ad1457" font-weight="600">timed</text><text x="760" y="177" fill="#607d8b">time-slot performance (isFullDay = false)</text>
+  </g>
+
+  <!-- Modes -->
+  <text x="30" y="245" font-size="16" font-weight="700" fill="#263238">Modes</text>
+
+  <g font-size="13">
+    <!-- open/dated/timed -->
+    <rect x="30" y="265" width="560" height="110" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
+    <text x="48" y="291" font-size="15" font-weight="700" fill="#0d47a1">Open / Dated / Timed — 1 sale of that exact type</text>
+    <text x="48" y="316" fill="#1565c0">Picks the first offer of the requested type and completes one sale.</text>
+    <text x="48" y="340" fill="#c62828" font-weight="600">If no offer of that type exists → the flow STOPS with a clear message.</text>
+    <text x="48" y="362" fill="#607d8b">Use case: validate one precise product typology.</text>
+
+    <!-- eachType -->
+    <rect x="610" y="265" width="560" height="110" rx="10" fill="#fff3e0" stroke="#fb8c00" stroke-width="1.5"/>
+    <text x="628" y="291" font-size="15" font-weight="700" fill="#e65100">One of each type present — up to 3 separate sales</text>
+    <text x="628" y="316" fill="#9e5a00">One sale per type found (open, dated, timed).</text>
+    <text x="628" y="340" fill="#9e5a00" font-weight="600">Tolerant: if a type is missing, it CONTINUES and reports it at the end.</text>
+    <text x="628" y="362" fill="#607d8b">Fails only if zero sale could be completed.</text>
+
+    <!-- complex -->
+    <rect x="30" y="395" width="560" height="120" rx="10" fill="#f3e5f5" stroke="#8e24aa" stroke-width="1.5"/>
+    <text x="48" y="421" font-size="15" font-weight="700" fill="#6a1b9a">Complex sale — 1 single sale, all 3 types</text>
+    <text x="48" y="446" fill="#7b1fa2">One cart containing one item of each available type (open + dated + timed).</text>
+    <text x="48" y="470" fill="#7b1fa2">A single checkout / payment for the whole basket.</text>
+    <text x="48" y="494" fill="#607d8b">Reports which types were included and which were missing.</text>
+  </g>
+
+  <!-- sale cycle reminder -->
+  <rect x="610" y="395" width="560" height="120" rx="10" fill="#ffffff" stroke="#90a4ae" stroke-width="1.5"/>
+  <text x="628" y="421" font-size="15" font-weight="700" fill="#37474f">Each sale = one purchase cycle</text>
+  <g font-size="12.5">
+    <rect x="628" y="440" width="120" height="40" rx="6" fill="#e8f5e9" stroke="#43a047"/><text x="640" y="464" fill="#2e7d32">checkCart</text>
+    <rect x="770" y="440" width="150" height="40" rx="6" fill="#fce4ec" stroke="#d81b60"/><text x="782" y="464" fill="#ad1457">beginOrderTrans</text>
+    <rect x="940" y="440" width="160" height="40" rx="6" fill="#fce4ec" stroke="#d81b60"/><text x="952" y="464" fill="#ad1457">confirmOrderTrans</text>
+    <line x1="748" y1="460" x2="770" y2="460" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="920" y1="460" x2="940" y2="460" stroke="#455a64" stroke-width="2" marker-end="url(#a)"/>
+  </g>
+  <text x="628" y="500" font-size="12" fill="#607d8b">Payment uses EMULATEPAY (test environment).</text>
+
+  <text x="30" y="560" font-size="13" fill="#607d8b">Cart item shape — open: { item: { productCode, quantity } }</text>
+  <text x="30" y="582" font-size="13" fill="#607d8b">Cart item shape — dated / timed: { item: { productCode, quantity, performanceCodes: [{ code, date }] } }</text>
+  <text x="30" y="604" font-size="13" fill="#607d8b">A single cart may mix several item typologies (validated on the dev environment).</text>
+</svg>
