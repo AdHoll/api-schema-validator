@@ -13,24 +13,32 @@
   <div class="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow flex flex-col gap-6">
 
     <!-- Header + onglets -->
-    <header class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-      <div class="flex items-center gap-4">
+    <header class="border-b-2 border-slate-700 pb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div class="flex items-center gap-4 flex-shrink-0">
         <img src="/logo.svg" alt="VivAPI Unified Validator" class="h-12 sm:h-14 w-auto flex-shrink-0">
+        <p class="text-slate-400 text-xs sm:text-sm hidden xl:block max-w-xs" data-i18n="header.tagline">
+          Vérification automatique de conformité OpenAPI/YAML sécurisée par OAuth2 (b2b / b2c)
+        </p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center justify-end gap-2">
         <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
-          <a href="/index.html" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+          <a href="/index.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
             <i class="fa-solid fa-list-check mr-1.5"></i> <span data-i18n="nav.validator">Validateur</span>
           </a>
-          <a href="/status.html" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+          <a href="/status.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
             <i class="fa-solid fa-heart-pulse mr-1.5"></i> <span data-i18n="nav.status">Statut des APIs</span>
           </a>
-          <a href="/docs.html" class="px-4 py-1.5 rounded-md transition bg-indigo-600 text-white">
+          <a href="/docs.html" class="px-3.5 py-1.5 rounded-md transition bg-indigo-600 text-white">
             <i class="fa-solid fa-book mr-1.5"></i> <span data-i18n="nav.docs">Documentation</span>
           </a>
         </div>
+        <span class="hidden sm:inline-block w-px h-6 bg-slate-700"></span>
         <!-- Sélecteur de langue (rempli par i18n.js) -->
         <div class="lang-switcher"></div>
+        <span class="hidden sm:inline-block w-px h-6 bg-slate-700"></span>
+        <div class="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-400 flex items-center gap-2 whitespace-nowrap">
+          <i class="fa-solid fa-folder-open text-indigo-400"></i> <span data-i18n="logs.in">Logs dans</span> <code class="text-indigo-300">/logs</code>
+        </div>
       </div>
     </header>
 

@@ -67,6 +67,11 @@
     'sec2.clientId':      { fr: 'Client ID',         en: 'Client ID',        it: 'Client ID',        es: 'Client ID' },
     'sec2.clientSecret':  { fr: 'Client Secret',     en: 'Client Secret',    it: 'Client Secret',    es: 'Client Secret' },
     'sec2.scope':         { fr: 'Scope',             en: 'Scope',            it: 'Scope',            es: 'Scope' },
+    'sec2.env':           { fr: 'Environnement',     en: 'Environment',      it: 'Ambiente',         es: 'Entorno' },
+    'sec2.rememberSecret': { fr: 'Mémoriser le secret (chiffré, hors prod)', en: 'Remember secret (encrypted, non-prod)', it: 'Memorizza il segreto (cifrato, non prod)', es: 'Recordar el secreto (cifrado, no prod)' },
+    'sec2.envDev':        { fr: 'Développement',     en: 'Development',      it: 'Sviluppo',         es: 'Desarrollo' },
+    'sec2.envPreprod':    { fr: 'Pré-production',    en: 'Pre-production',   it: 'Pre-produzione',   es: 'Preproducción' },
+    'sec2.envProd':       { fr: 'Production',        en: 'Production',       it: 'Produzione',       es: 'Producción' },
     'sec2.tokenNote':     { fr: 'Les identifiants seront transmis via Query Parameters sur', en: 'Credentials will be sent via query parameters to', it: 'Le credenziali saranno inviate tramite query parameter su', es: 'Las credenciales se enviarán mediante parámetros de consulta a' },
 
     // ── Mode Scénarios ─────────────────────────────────────────────
@@ -76,6 +81,7 @@
     'scn.choosePh':       { fr: '-- Sélectionner un scénario --', en: '-- Select a scenario --', it: '-- Seleziona uno scenario --', es: '-- Seleccionar un escenario --' },
     'scn.execMode':       { fr: "Mode d'exécution",  en: 'Execution mode',   it: 'Modalità di esecuzione', es: 'Modo de ejecución' },
     'scn.auto':           { fr: 'Auto',              en: 'Auto',             it: 'Auto',             es: 'Auto' },
+    'scn.semi':           { fr: 'Semi-auto',         en: 'Semi-auto',        it: 'Semi-auto',        es: 'Semi-auto' },
     'scn.manual':         { fr: 'Manuel',            en: 'Manual',           it: 'Manuale',          es: 'Manual' },
     'scn.run':            { fr: 'Exécuter le scénario', en: 'Run scenario',  it: 'Esegui lo scenario', es: 'Ejecutar el escenario' },
     'scn.replay':         { fr: 'Rejouer le dernier test', en: 'Replay last test', it: "Riesegui l'ultimo test", es: 'Repetir la última prueba' },
@@ -105,6 +111,8 @@
 
     // ── Section Résultats ───────────────────────────────────────────
     'res.title':          { fr: 'Résultats de la validation', en: 'Validation results', it: 'Risultati della validazione', es: 'Resultados de la validación' },
+    'res.catWarning':     { fr: 'CONFORME AVEC AVERTISSEMENTS', en: 'COMPLIANT WITH WARNINGS', it: 'CONFORME CON AVVISI', es: 'CONFORME CON ADVERTENCIAS' },
+    'res.warnCount':      { fr: '{n} avertissement(s)', en: '{n} warning(s)', it: '{n} avvisi', es: '{n} advertencia(s)' },
     'res.filter':         { fr: 'Filtrer :',         en: 'Filter:',          it: 'Filtra:',          es: 'Filtrar:' },
     'res.all':            { fr: 'Tous',              en: 'All',              it: 'Tutti',            es: 'Todos' },
     'res.conform':        { fr: 'Conformes',         en: 'Compliant',        it: 'Conformi',         es: 'Conformes' },
@@ -121,6 +129,8 @@
 
     // ── Console API ─────────────────────────────────────────────────
     'console.title':      { fr: 'Console API',        en: 'API Console',      it: 'Console API',      es: 'Consola API' },
+    'console.reqBody':    { fr: 'Corps de la requête', en: 'Request body',    it: 'Corpo della richiesta', es: 'Cuerpo de la solicitud' },
+    'console.resBody':    { fr: 'Réponse',            en: 'Response',         it: 'Risposta',         es: 'Respuesta' },
     'console.clear':      { fr: 'Vider',              en: 'Clear',            it: 'Svuota',           es: 'Vaciar' },
     'console.all':        { fr: 'Tous',               en: 'All',              it: 'Tutti',            es: 'Todos' },
     'console.prefill':    { fr: 'Pré-remplissage',    en: 'Prefill',          it: 'Precompilazione',  es: 'Relleno' },
@@ -186,6 +196,15 @@
 
     // ── Interactions communes ───────────────────────────────────────
     'common.error':       { fr: 'Erreur',             en: 'Error',            it: 'Errore',           es: 'Error' },
+    'common.confirm':     { fr: 'Confirmation',       en: 'Confirmation',     it: 'Conferma',         es: 'Confirmación' },
+    'common.yes':         { fr: 'Oui',                en: 'Yes',              it: 'Sì',               es: 'Sí' },
+    'common.no':          { fr: 'Non',                en: 'No',               it: 'No',               es: 'No' },
+    'common.yesContinue': { fr: 'Oui, continuer',     en: 'Yes, continue',    it: 'Sì, continua',     es: 'Sí, continuar' },
+    'common.cancel':      { fr: 'Non, annuler',       en: 'No, cancel',       it: 'No, annulla',      es: 'No, cancelar' },
+    'env.mismatchTitle':  { fr: "Vérification de l'environnement", en: 'Environment check', it: "Verifica dell'ambiente", es: 'Verificación del entorno' },
+    'env.mismatchMsg':    { fr: "L'URL ne semble pas correspondre à la typologie. Confirmez-vous que l'URL « {url} » est bien de type « {env} » ?", en: 'The URL does not seem to match the type. Do you confirm that the URL "{url}" is indeed of type "{env}"?', it: "L'URL non sembra corrispondere alla tipologia. Confermi che l'URL «{url}» sia di tipo «{env}»?", es: 'La URL no parece corresponder a la tipología. ¿Confirma que la URL «{url}» es del tipo «{env}»?' },
+    'env.saleWarnTitle':  { fr: 'Création de vente',  en: 'Sale creation',    it: 'Creazione vendita', es: 'Creación de venta' },
+    'env.saleWarnMsg':    { fr: 'Attention, ce scénario va créer une vente en base de données. Êtes-vous sûr de vouloir continuer ?', en: 'Warning, this scenario will create a sale in the database. Are you sure you want to continue?', it: 'Attenzione, questo scenario creerà una vendita nel database. Sei sicuro di voler continuare?', es: 'Atención, este escenario creará una venta en la base de datos. ¿Seguro que desea continuar?' },
 
     // ── status.js : interactions ────────────────────────────────────
     'bw.unlocking':       { fr: 'Déverrouillage...',  en: 'Unlocking...',     it: 'Sblocco in corso...', es: 'Desbloqueando...' },
@@ -288,6 +307,27 @@
     'scn.st.doPurchase':  { fr: 'Achat selon la typologie → commande(s)', en: 'Purchase by type → order(s)', it: 'Acquisto per tipologia → ordine/i', es: 'Compra por tipo → pedido(s)' },
     'scn.noOffer':        { fr: 'Aucune offre trouvée pour cette famille.', en: 'No offer found for this family.', it: 'Nessuna offerta trovata per questa famiglia.', es: 'Ninguna oferta encontrada para esta familia.' },
     'scn.typeNotFound':   { fr: 'Aucune offre de type « {type} » trouvée dans cette famille.', en: 'No offer of type "{type}" found in this family.', it: 'Nessuna offerta di tipo «{type}» trovata in questa famiglia.', es: 'Ninguna oferta de tipo «{type}» encontrada en esta familia.' },
+    'scn.noFamily':       { fr: 'Aucune famille trouvée.', en: 'No family found.', it: 'Nessuna famiglia trovata.', es: 'Ninguna familia encontrada.' },
+    'scn.resolveCalls':   { fr: 'Résolution ({n} appel(s))', en: 'Resolution ({n} call(s))', it: 'Risoluzione ({n} chiamate)', es: 'Resolución ({n} llamada(s))' },
+    'scn.httpCalls':      { fr: 'requêtes HTTP', en: 'HTTP requests', it: 'richieste HTTP', es: 'solicitudes HTTP' },
+    'hist.title':         { fr: 'Derniers tests', en: 'Recent tests', it: 'Ultimi test', es: 'Últimas pruebas' },
+    'hist.exportAll':     { fr: 'Tout exporter', en: 'Export all', it: 'Esporta tutto', es: 'Exportar todo' },
+    'hist.import':        { fr: 'Importer', en: 'Import', it: 'Importa', es: 'Importar' },
+    'hist.clear':         { fr: 'Effacer', en: 'Clear', it: 'Cancella', es: 'Borrar' },
+    'hist.load':          { fr: 'Recharger ce test', en: 'Reload this test', it: 'Ricarica questo test', es: 'Recargar esta prueba' },
+    'hist.exportOne':     { fr: 'Exporter ce test', en: 'Export this test', it: 'Esporta questo test', es: 'Exportar esta prueba' },
+    'hist.empty':         { fr: 'Aucun test à exporter.', en: 'No test to export.', it: 'Nessun test da esportare.', es: 'Ninguna prueba para exportar.' },
+    'hist.importNone':    { fr: 'Aucun test valide trouvé dans le fichier.', en: 'No valid test found in the file.', it: 'Nessun test valido nel file.', es: 'Ninguna prueba válida en el archivo.' },
+    'hist.importOk':      { fr: '{n} test(s) importé(s).', en: '{n} test(s) imported.', it: '{n} test importati.', es: '{n} prueba(s) importada(s).' },
+    'hist.importErr':     { fr: 'Fichier JSON invalide.', en: 'Invalid JSON file.', it: 'File JSON non valido.', es: 'Archivo JSON no válido.' },
+    'hist.none':          { fr: 'Aucun test pour cette cible. Lancez un scénario ou importez des tests.', en: 'No test for this target. Run a scenario or import tests.', it: 'Nessun test per questa destinazione. Esegui uno scenario o importa test.', es: 'Ninguna prueba para este destino. Ejecute un escenario o importe pruebas.' },
+    'fav.title':          { fr: 'Favoris', en: 'Favorites', it: 'Preferiti', es: 'Favoritos' },
+    'fav.toggle':         { fr: 'Ajouter / retirer des favoris', en: 'Add / remove from favorites', it: 'Aggiungi / rimuovi dai preferiti', es: 'Añadir / quitar de favoritos' },
+    'fav.load':           { fr: 'Charger ce favori', en: 'Load this favorite', it: 'Carica questo preferito', es: 'Cargar este favorito' },
+    'fav.remove':         { fr: 'Retirer des favoris', en: 'Remove from favorites', it: 'Rimuovi dai preferiti', es: 'Quitar de favoritos' },
+    'fav.max':            { fr: 'Maximum {n} favoris. Retirez-en un d’abord.', en: 'Maximum {n} favorites. Remove one first.', it: 'Massimo {n} preferiti. Rimuovine uno prima.', es: 'Máximo {n} favoritos. Quite uno primero.' },
+    'scn.noOfferAny':     { fr: 'Aucune offre trouvée dans les familles explorées.', en: 'No offer found in the explored families.', it: 'Nessuna offerta trovata nelle famiglie esplorate.', es: 'Ninguna oferta encontrada en las familias exploradas.' },
+    'scn.typeNotFoundAny':{ fr: 'Aucune offre de type « {type} » trouvée dans les familles explorées.', en: 'No offer of type "{type}" found in the explored families.', it: 'Nessuna offerta di tipo «{type}» trovata nelle famiglie esplorate.', es: 'Ninguna oferta de tipo «{type}» encontrada en las familias exploradas.' },
     'scn.saleFailed':     { fr: 'Échec de la vente ({type}).', en: 'Sale failed ({type}).', it: 'Vendita non riuscita ({type}).', es: 'Venta fallida ({type}).' },
     'scn.noneSold':       { fr: 'Aucune vente aboutie (types manquants : {missing}).', en: 'No completed sale (missing types: {missing}).', it: 'Nessuna vendita completata (tipi mancanti: {missing}).', es: 'Ninguna venta completada (tipos faltantes: {missing}).' },
     'scn.sf.familyCode':  { fr: 'Code famille',        en: 'Family code',      it: 'Codice famiglia',  es: 'Código de familia' },

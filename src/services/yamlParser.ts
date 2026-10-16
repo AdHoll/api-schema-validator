@@ -369,28 +369,66 @@ export function validateResponseWithSpec(
     const warnings: string[] = [];
     const nullables: string[] = [];
 
+    // Résout la valeur reçue pour un instancePath donné (ex: "/orders/0/performanceTime").
+    const resolveReceived = (instancePath: string): { found: boolean; value: any } => {
+      if (!instancePath) return { found: true, value: responseData };
+      const parts = instancePath.split('/').filter(Boolean);
+      let cur: any = responseData;
+      for (const p of parts) {
+        if (cur == null || typeof cur !== 'object') return { found: false, value: undefined };
+        cur = cur[/^\d+$/.test(p) ? Number(p) : p];
+      }
+      return { found: true, value: cur };
+    };
+
+    // Formate une valeur reçue de façon lisible et compacte pour le message.
+    const formatReceived = (v: any): string => {
+      if (v === null) return 'null';
+      if (v === undefined) return 'absent';
+      if (typeof v === 'string') return `"${v.length > 80 ? v.slice(0, 80) + '…' : v}"`;
+      if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+      if (Array.isArray(v)) return `tableau(${v.length})`;
+      if (typeof v === 'object') return 'objet';
+      return String(v);
+    };
+
     for (const err of validate.errors || []) {
-      const msg = `Champ '${err.instancePath || '/'}': ${err.message}`;
+      // Valeur réellement reçue : via err.data (verbose:true), sinon résolue par instancePath.
+      const received = ('data' in err) ? { found: true, value: (err as any).data } : resolveReceived(err.instancePath);
+      const receivedStr = received.found ? ` (reçu : ${formatReceived(received.value)})` : '';
+      const msg = `Champ '${err.instancePath || '/'}': ${err.message}${receivedStr}`;
+
+      const required = isFieldRequired(err, schema);
+
+      const isPatternOrFormat = (err.keyword === 'pattern' || err.keyword === 'format');
+
+      // Cas dédié : chaîne VIDE qui viole uniquement un pattern/format.
+      // Une valeur "" signifie ici "non applicable" : on la TOLÈRE sur un champ optionnel
+      // (ni erreur ni avertissement). Si le champ est REQUIS, on la rétrograde en avertissement
+      // (voir ci-dessous), jamais en erreur bloquante.
+      const emptyStringPatternViolation = isPatternOrFormat && received.found && received.value === '';
+      if (emptyStringPatternViolation && !required) {
+        continue; // toléré
+      }
+
+      // Violation de PATTERN/FORMAT avec une valeur PRÉSENTE (non vide) : la donnée existe et
+      // est bien une chaîne, seul son format diverge de la spec (ex: creationDate avec des
+      // millisecondes non prévues par le pattern). On la traite en AVERTISSEMENT, jamais en
+      // erreur bloquante — même si le champ est requis (la réponse HTTP est un 2xx valide).
+      if (isPatternOrFormat && received.found && typeof received.value === 'string' && received.value !== '') {
+        warnings.push(msg);
+        continue;
+      }
 
       // Cas dédié : la valeur reçue est `null` alors qu'un type précis est attendu
       // (ex: "must be string" sur une valeur nulle). Catégorie séparée, non bloquante.
-      // 1) via err.data (dispo grâce à verbose:true) ; 2) fallback en résolvant instancePath.
-      let receivedIsNull = err.keyword === 'type' && (err as any).data === null;
-      if (err.keyword === 'type' && !receivedIsNull && err.instancePath) {
-        const parts = err.instancePath.split('/').filter(Boolean);
-        let cur: any = responseData;
-        for (const p of parts) {
-          if (cur == null) break;
-          cur = cur[/^\d+$/.test(p) ? Number(p) : p];
-        }
-        receivedIsNull = cur === null;
-      }
+      let receivedIsNull = err.keyword === 'type' && received.found && received.value === null;
       if (receivedIsNull) {
         nullables.push(msg);
         continue;
       }
 
-      if (isFieldRequired(err, schema)) {
+      if (required) {
         errors.push(msg);      // champ requis → bloquant
       } else {
         warnings.push(msg);    // champ optionnel → warning non bloquant

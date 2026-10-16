@@ -23,6 +23,11 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #475569;
     }
+    /* Champ d'authentification renseigné : contour vert + léger halo */
+    .auth-filled {
+      border-color: #10b981 !important;        /* emerald-500 */
+      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.45);
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
@@ -31,47 +36,50 @@
   <div class="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow flex flex-col gap-6">
     
     <!-- Header -->
-    <header class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-      <div class="flex items-center gap-4">
+    <header id="appHeader" class="border-b-2 border-indigo-500/70 pb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 transition-colors">
+      <div class="flex items-center gap-4 flex-shrink-0">
         <img src="/logo.svg" alt="VivAPI Unified Validator" class="h-12 sm:h-14 w-auto flex-shrink-0">
-        <p class="text-slate-400 text-xs sm:text-sm hidden md:block max-w-xs" data-i18n="header.tagline">
-          Vérification automatique de conformité OpenAPI/YAML sécurisée par OAuth2 (b2b / b2c)
-        </p>
+        <div class="hidden xl:block max-w-xs">
+          <p class="text-slate-400 text-xs sm:text-sm" data-i18n="header.tagline">
+            Vérification automatique de conformité OpenAPI/YAML sécurisée par OAuth2 (b2b / b2c)
+          </p>
+          <span id="appVersion" class="text-[10px] text-slate-600 font-mono"></span>
+        </div>
       </div>
-      <div class="flex items-center gap-3">
+      <!-- Barre de contrôles : alignée à droite, repliable proprement -->
+      <div class="flex flex-wrap items-center justify-end gap-2">
         <!-- Onglets de page : Validateur / Statut des APIs / Documentation -->
         <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
-          <a href="/index.html" class="px-4 py-1.5 rounded-md transition bg-indigo-600 text-white">
+          <a href="/index.html" class="px-3.5 py-1.5 rounded-md transition bg-indigo-600 text-white">
             <i class="fa-solid fa-list-check mr-1.5"></i> <span data-i18n="nav.validator">Validateur</span>
           </a>
-          <a href="/status.html" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+          <a href="/status.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
             <i class="fa-solid fa-heart-pulse mr-1.5"></i> <span data-i18n="nav.status">Statut des APIs</span>
           </a>
-          <a href="/docs.html" class="px-4 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+          <a href="/docs.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
             <i class="fa-solid fa-book mr-1.5"></i> <span data-i18n="nav.docs">Documentation</span>
           </a>
         </div>
-        <!-- Sélecteur de langue (rempli par i18n.js) -->
-        <div class="lang-switcher"></div>
-        <!-- Switch de mode compact -->
+        <!-- Séparateur visuel -->
+        <span class="hidden sm:inline-block w-px h-6 bg-slate-700"></span>
+        <!-- Switch de mode compact (couleur selon le mode actif) -->
         <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
           <button type="button" id="modeManualBtn"
-            class="mode-btn px-3 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
-            <i class="fa-solid fa-sliders mr-1"></i> <span data-i18n="mode.manual">Manuel</span>
+            class="mode-btn px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-sliders mr-1.5"></i> <span data-i18n="mode.manual">Manuel</span>
           </button>
           <button type="button" id="modeScenarioBtn"
-            class="mode-btn px-3 py-1.5 rounded-md transition bg-indigo-600 text-white">
-            <i class="fa-solid fa-diagram-project mr-1"></i> <span data-i18n="mode.scenario">Scénarios</span>
+            class="mode-btn px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-diagram-project mr-1.5"></i> <span data-i18n="mode.scenario">Scénarios</span>
           </button>
         </div>
-        <div class="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-400 flex items-center gap-2">
+        <!-- Sélecteur de langue (rempli par i18n.js) -->
+        <div class="lang-switcher"></div>
+        <!-- Séparateur visuel -->
+        <span class="hidden sm:inline-block w-px h-6 bg-slate-700"></span>
+        <div class="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-400 flex items-center gap-2 whitespace-nowrap">
           <i class="fa-solid fa-folder-open text-indigo-400"></i> <span data-i18n="logs.in">Logs dans</span> <code class="text-indigo-300">/logs</code>
         </div>
-        <button type="submit" form="validatorForm" id="submitBtn" disabled
-          class="py-2.5 px-5 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border disabled:border-slate-700 border-indigo-500 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm whitespace-nowrap"
-          title="">
-          <i class="fa-solid fa-play"></i> <span data-i18n="btn.runValidation">Lancer la validation</span>
-        </button>
       </div>
     </header>
 
@@ -98,11 +106,14 @@
               </select>
             </div>
 
-            <div class="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-wide">
+            <!-- TEMPORAIREMENT MASQUÉ : import YAML manuel + historique.
+                 Pour réactiver, retirer les attributs `hidden` ci-dessous et remettre
+                 data-feature-import-manual à "on" (voir le flag JS FEATURE_MANUAL_IMPORT). -->
+            <div class="hidden items-center gap-2 text-[10px] text-slate-500 uppercase tracking-wide">
               <span class="flex-1 h-px bg-slate-700/60"></span> <span data-i18n="sec1.or">ou</span> <span class="flex-1 h-px bg-slate-700/60"></span>
             </div>
 
-            <div>
+            <div class="hidden">
               <label class="block text-xs font-medium text-slate-400 mb-1.5" data-i18n="sec1.fileLabel">Fichier OpenAPI (.yaml / .yml)</label>
               <input type="file" id="specFile" name="spec" accept=".yaml,.yml"
                 class="block w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer bg-slate-900/80 rounded-lg border border-slate-700/80">
@@ -155,6 +166,11 @@
               <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.clientSecret">Client Secret</label>
               <input type="password" id="clientSecret" name="clientSecret" required
                 class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+              <!-- Mémorisation chiffrée du secret (dev/préprod uniquement, masquée en prod) -->
+              <label id="rememberSecretWrap" class="mt-1.5 flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer">
+                <input type="checkbox" id="rememberSecret" class="accent-indigo-500 h-3 w-3 rounded">
+                <span data-i18n="sec2.rememberSecret">Mémoriser le secret (chiffré, hors prod)</span>
+              </label>
             </div>
           </div>
 
@@ -166,7 +182,15 @@
                 <option value="b2b">b2b</option>
               </select>
             </div>
-            <div class="md:col-span-8 text-xs text-slate-400 italic pt-3 sm:pt-0">
+            <div class="md:col-span-4">
+              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.env">Environnement</label>
+              <select id="envType" name="envType" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-semibold">
+                <option value="dev" data-i18n="sec2.envDev">Développement</option>
+                <option value="preprod" data-i18n="sec2.envPreprod">Pré-production</option>
+                <option value="prod" data-i18n="sec2.envProd">Production</option>
+              </select>
+            </div>
+            <div class="md:col-span-4 text-[11px] text-slate-400 italic pt-3 sm:pt-0">
               * <span data-i18n="sec2.tokenNote">Les identifiants seront transmis via Query Parameters sur</span> <code class="text-indigo-300">/api/v1/security/token</code>.
             </div>
           </div>
@@ -199,6 +223,10 @@
                 class="exec-mode-btn px-3 py-1.5 rounded-md transition bg-indigo-600 text-white">
                 <i class="fa-solid fa-bolt mr-1"></i> <span data-i18n="scn.auto">Auto</span>
               </button>
+              <button type="button" id="execSemiBtn"
+                class="exec-mode-btn px-3 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> <span data-i18n="scn.semi">Semi-auto</span>
+              </button>
               <button type="button" id="execManualBtn"
                 class="exec-mode-btn px-3 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
                 <i class="fa-solid fa-hand-pointer mr-1"></i> <span data-i18n="scn.manual">Manuel</span>
@@ -227,6 +255,32 @@
             title="Rejouer uniquement l'étape qui a échoué, en conservant le contexte">
             <i class="fa-solid fa-arrow-rotate-left"></i> <span data-i18n="scn.retryFailed">Rejouer l'étape échouée</span>
           </button>
+        </div>
+
+        <!-- Raccourcis favoris (max 5, non écrasés par la rotation de l'historique) -->
+        <div id="favoritesSection" class="hidden pt-3 border-t border-slate-700/60">
+          <span class="text-[11px] font-medium text-slate-400 flex items-center gap-1.5 mb-1.5">
+            <i class="fa-solid fa-star text-amber-400"></i> <span data-i18n="fav.title">Favoris</span>
+          </span>
+          <div id="favoritesList" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- Historique des derniers tests (toujours visible) -->
+        <div id="testHistorySection" class="pt-3 border-t border-slate-700/60">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> <span data-i18n="hist.title">Derniers tests</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <button type="button" id="exportAllTestsBtn" class="text-[10px] text-slate-400 hover:text-indigo-300 transition" title="" data-i18n="hist.exportAll">Tout exporter</button>
+              <span class="text-slate-600">|</span>
+              <button type="button" id="importTestsBtn" class="text-[10px] text-slate-400 hover:text-indigo-300 transition" data-i18n="hist.import">Importer</button>
+              <input type="file" id="importTestsInput" accept="application/json,.json" class="hidden">
+              <span class="text-slate-600">|</span>
+              <button type="button" id="clearTestsBtn" class="text-[10px] text-slate-500 hover:text-rose-400 transition" data-i18n="hist.clear">Effacer</button>
+            </div>
+          </div>
+          <div id="testHistoryList" class="space-y-1.5"></div>
         </div>
 
         <!-- Zone de statut des étapes -->
@@ -288,21 +342,6 @@
             </h2>
             <span class="text-xs text-slate-400 italic hidden sm:inline" data-i18n="sec4.subtitle">Mutualisés entre toutes les routes qui les utilisent.</span>
           </div>
-          <button type="button" id="prefillBtn"
-            class="flex items-center gap-2 px-3 py-1.5 bg-violet-700 hover:bg-violet-600 disabled:bg-slate-700 disabled:text-slate-500 disabled:border-slate-600 text-white text-xs font-semibold rounded-lg border border-violet-600 transition shadow-sm flex-shrink-0">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="sec4.prefill">Pré-remplissage automatique</span>
-          </button>
-        </div>
-        <!-- Barre de progression du pré-remplissage -->
-        <div id="prefillProgress" class="hidden rounded-lg bg-slate-900/80 border border-slate-700 p-3 space-y-1.5 text-xs font-mono">
-          <div class="flex items-center justify-between text-slate-400">
-            <span id="prefillProgressLabel"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Initialisation...</span>
-            <span id="prefillProgressCount" class="text-indigo-300"></span>
-          </div>
-          <div class="w-full bg-slate-700 rounded-full h-1.5">
-            <div id="prefillProgressBar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style="width:0%"></div>
-          </div>
-          <div id="prefillProgressLog" class="max-h-24 overflow-y-auto space-y-0.5 text-[10px] text-slate-400"></div>
         </div>
         <!-- Champ global locale (appliqué à toutes les routes qui l'exigent) -->
         <div class="flex items-center gap-2 bg-indigo-950/40 border border-indigo-800/60 rounded-lg px-3 py-2">
@@ -332,6 +371,15 @@
           </span>
         </div>
         <div id="bodiesContainer" class="space-y-3"></div>
+      </div>
+
+      <!-- Bouton Lancer la validation (mode manuel uniquement) -->
+      <div class="flex justify-end">
+        <button type="submit" form="validatorForm" id="submitBtn" disabled
+          class="py-2.5 px-5 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed border disabled:border-slate-700 border-indigo-500 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm whitespace-nowrap"
+          title="">
+          <i class="fa-solid fa-play"></i> <span data-i18n="btn.runValidation">Lancer la validation</span>
+        </button>
       </div>
 
       </div><!-- fin #manualModeWrap -->
@@ -453,7 +501,7 @@
           <h4 class="font-semibold text-rose-400 flex items-center gap-2 text-sm">
             <i class="fa-solid fa-circle-exclamation"></i> <span data-i18n="modal.errorsTitle">Écarts détectés par rapport au schéma :</span>
           </h4>
-          <div id="modalErrorsList" class="bg-rose-950/30 border border-rose-900/50 rounded-lg p-3 space-y-1 text-rose-300 font-mono text-[11px]"></div>
+          <div id="modalErrorsList" class="bg-slate-900/60 border border-slate-700/60 rounded-lg p-3 space-y-1 font-mono text-[11px]"></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -493,6 +541,21 @@
     </div>
   </div>
 
+  <!-- MODALE DE CONFIRMATION GÉNÉRIQUE (vérif environnement, avertissement vente, etc.) -->
+  <div id="confirmModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-700 flex items-center gap-3">
+        <i id="confirmModalIcon" class="fa-solid fa-triangle-exclamation text-amber-400 text-lg"></i>
+        <h3 id="confirmModalTitle" class="text-sm font-semibold text-slate-100">Confirmation</h3>
+      </div>
+      <div id="confirmModalMessage" class="px-6 py-5 text-sm text-slate-300 leading-relaxed"></div>
+      <div class="bg-slate-800/50 px-6 py-3 border-t border-slate-700/80 flex justify-end gap-2">
+        <button type="button" id="confirmModalCancel" class="px-4 py-1.5 text-xs font-semibold rounded-lg transition"></button>
+        <button type="button" id="confirmModalOk" class="px-4 py-1.5 text-xs font-semibold rounded-lg transition"></button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Helper i18n local : I18n.t si dispo (avec interpolation {var}), sinon fallback FR.
     function tr(key, fallback, vars) {
@@ -529,6 +592,52 @@
     const clientIdInput = document.getElementById('clientId');
     const clientSecretInput = document.getElementById('clientSecret');
     const scopeInput = document.getElementById('scope');
+    const envTypeInput = document.getElementById('envType');
+
+    // Surligne le contour des champs d'authentification quand ils contiennent une valeur,
+    // pour voir d'un coup d'œil si une API est bien renseignée.
+    function highlightAuthFields() {
+      [targetUrlInput, clientIdInput, clientSecretInput].forEach(inp => {
+        if (!inp) return;
+        inp.classList.toggle('auth-filled', inp.value.trim() !== '');
+      });
+    }
+    [targetUrlInput, clientIdInput, clientSecretInput].forEach(inp => {
+      inp?.addEventListener('input', highlightAuthFields);
+    });
+
+    // ── Environnement (dev / préprod / prod) ──────────────────────────
+    // Déduit le marqueur attendu dans l'URL selon la typologie choisie.
+    function urlMatchesEnv(url, env) {
+      const u = (url || '').toLowerCase();
+      if (env === 'dev') return /\bdev\b|-dev-|\.dev\.|dev\./.test(u);
+      if (env === 'preprod') return /preprod|pre-prod|pprod|recette|staging|uat/.test(u);
+      if (env === 'prod') return true;   // la prod n'a pas de marqueur spécifique → pas de contrôle
+      return true;
+    }
+
+    function currentEnv() { return envTypeInput?.value || 'dev'; }
+
+    envTypeInput?.addEventListener('change', async () => {
+      const env = currentEnv();
+      const url = targetUrlInput.value.trim();
+      // Vérif souple : si l'URL ne porte pas le marqueur de la typologie choisie (dev/préprod),
+      // on demande confirmation (sans bloquer).
+      if (url && (env === 'dev' || env === 'preprod') && !urlMatchesEnv(url, env)) {
+        const envLabel = { dev: tr('sec2.envDev', 'Développement'), preprod: tr('sec2.envPreprod', 'Pré-production'), prod: tr('sec2.envProd', 'Production') }[env];
+        const ok = await showConfirmModal({
+          title: tr('env.mismatchTitle', 'Vérification de l’environnement'),
+          message: tr('env.mismatchMsg', "L’URL ne semble pas correspondre à la typologie. Confirmez-vous que l’URL « {url} » est bien de type « {env} » ?", { url, env: envLabel }),
+          icon: 'fa-solid fa-circle-question', iconClass: 'text-amber-400',
+          okLabel: tr('common.yes', 'Oui'), cancelLabel: tr('common.no', 'Non'),
+          okStyle: 'bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-500',
+          cancelStyle: 'bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600',
+        });
+        if (!ok) { envTypeInput.value = 'dev'; }   // annulation → retour à dev (sûr)
+      }
+      if (typeof refreshScenarioList === 'function') refreshScenarioList();
+      if (typeof updateRememberSecretVisibility === 'function') updateRememberSecretVisibility();
+    });
 
     /**
      * Active le bouton "Lancer la validation" uniquement si :
@@ -591,6 +700,11 @@
     const STORAGE_KEY_PARAMS = 'validator_params_by_url';
     const STORAGE_KEY_SCENARIO_FIELDS = 'validator_scenario_startfields_by_url';
     const STORAGE_KEY_SCENARIO_RUNS = 'validator_scenario_last_run_by_url';
+    const STORAGE_KEY_TEST_HISTORY = 'validator_test_history_by_url';   // 5 derniers runs par URL
+    const TEST_HISTORY_MAX = 5;
+    const STORAGE_KEY_ROUTE_SELECTION = 'validator_route_selection_by_url'; // routes cochées (mode manuel)
+    const STORAGE_KEY_FAVORITES = 'validator_test_favorites_by_url';   // favoris de tests par URL
+    const FAVORITES_MAX = 5;
 
     // ----------------------------------------------------
     // INDEXEDDB — Stockage du contenu YAML (pas de limite de taille)
@@ -669,6 +783,15 @@
       loadTargetHistory();
       loadYamlHistory();
       initFilterButtons();
+      highlightAuthFields();   // surligner les champs d'auth déjà pré-remplis
+      renderTestHistory();     // afficher l'historique des derniers tests (par URL)
+      renderFavorites();       // afficher les raccourcis favoris (par URL)
+      updateRememberSecretVisibility();   // masquer "mémoriser le secret" en prod
+      // Afficher la version de l'application (traçabilité).
+      fetch('/api/version').then(r => r.json()).then(d => {
+        const el = document.getElementById('appVersion');
+        if (el && d?.version) el.textContent = 'v' + d.version;
+      }).catch(() => {});
 
       // Filtre de recherche des paramètres
       document.getElementById('paramSearch').addEventListener('input', (e) => {
@@ -693,10 +816,18 @@
       const isValidSchema = r.valid;
       const isUnhandledCode = r.isUnhandled || (statusCode > 0 && !HANDLED_HTTP_CODES.includes(statusCode));
 
+      // Présence de non-conformités NON bloquantes (ex: pattern/format sur une valeur présente,
+      // champ null, champ non documenté/non implémenté) alors que la réponse reste valide.
+      const hasWarnings = (r.warnings && r.warnings.length)
+        || (r.nullables && r.nullables.length)
+        || (r.undocumented && r.undocumented.length)
+        || (r.notImplemented && r.notImplemented.length);
+
       if (isUnhandledCode) return 'UNHANDLED_ERROR';
       if (!isValidSchema) return 'SCHEMA_ERROR';
       if (isErrorHttp && !isDeclaredInYaml) return 'UNDECLARED_ERROR';
       if (isErrorHttp && isDeclaredInYaml) return 'DECLARED_ERROR';
+      if (hasWarnings) return 'SCHEMA_WARNING';
       return 'SUCCESS';
     }
 
@@ -726,7 +857,9 @@
       };
 
       results.forEach(r => {
-        const cat = getResultCategory(r);
+        let cat = getResultCategory(r);
+        // Les avertissements de schéma (non bloquants) sont comptés avec la catégorie "schéma".
+        if (cat === 'SCHEMA_WARNING') cat = 'SCHEMA_ERROR';
         counts[cat] = (counts[cat] || 0) + 1;
       });
 
@@ -749,11 +882,62 @@
       }
     }
 
-    function saveTargetConfig(targetUrl, clientId, scope) {
+    // ── Chiffrement local du Client Secret (WebCrypto AES-GCM) ─────────────────
+    // ATTENTION : la clé est dérivée d'une phrase fixe embarquée dans l'application. Il s'agit
+    // donc d'une OBFUSCATION locale (le secret n'apparaît pas en clair dans le localStorage),
+    // PAS d'une protection forte : quelqu'un ayant accès au poste peut théoriquement le déchiffrer.
+    // Le secret n'est JAMAIS mémorisé en environnement de production (re-saisie obligatoire).
+    const rememberSecretInput = document.getElementById('rememberSecret');
+    const rememberSecretWrap = document.getElementById('rememberSecretWrap');
+    const SECRET_PASSPHRASE = 'vivapi-validator-local-v1';   // sel/obfuscation locale
+
+    async function deriveKey() {
+      const enc = new TextEncoder();
+      const baseKey = await crypto.subtle.importKey('raw', enc.encode(SECRET_PASSPHRASE), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: enc.encode('vivapi-salt'), iterations: 100000, hash: 'SHA-256' },
+        baseKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+      );
+    }
+    const b64 = {
+      enc: (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))),
+      dec: (str) => Uint8Array.from(atob(str), c => c.charCodeAt(0)),
+    };
+    async function encryptSecret(plain) {
+      try {
+        const key = await deriveKey();
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(plain));
+        return `${b64.enc(iv)}:${b64.enc(ct)}`;
+      } catch { return null; }
+    }
+    async function decryptSecret(payload) {
+      try {
+        const [ivB64, ctB64] = String(payload).split(':');
+        const key = await deriveKey();
+        const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64.dec(ivB64) }, key, b64.dec(ctB64));
+        return new TextDecoder().decode(pt);
+      } catch { return null; }
+    }
+
+    // Affiche/masque la case "mémoriser le secret" selon l'environnement (jamais en prod).
+    function updateRememberSecretVisibility() {
+      const isProd = currentEnv() === 'prod';
+      rememberSecretWrap.classList.toggle('hidden', isProd);
+      if (isProd && rememberSecretInput) rememberSecretInput.checked = false;
+    }
+
+    async function saveTargetConfig(targetUrl, clientId, scope) {
       if (!targetUrl) return;
       let history = getSavedTargets();
       history = history.filter(item => item.targetUrl !== targetUrl);
-      history.unshift({ targetUrl, clientId, scope, timestamp: new Date().toISOString() });
+      const entry = { targetUrl, clientId, scope, timestamp: new Date().toISOString() };
+      // Secret mémorisé (chiffré) UNIQUEMENT hors prod et si la case est cochée.
+      if (currentEnv() !== 'prod' && rememberSecretInput?.checked && clientSecretInput.value) {
+        const enc = await encryptSecret(clientSecretInput.value);
+        if (enc) { entry.encSecret = enc; entry.encEnv = currentEnv(); }
+      }
+      history.unshift(entry);
       if (history.length > 10) history = history.slice(0, 10);
       localStorage.setItem(STORAGE_KEY_URLS, JSON.stringify(history));
       loadTargetHistory();
@@ -772,7 +956,7 @@
         ).join('');
     }
 
-    targetHistorySelect.addEventListener('change', (e) => {
+    targetHistorySelect.addEventListener('change', async (e) => {
       const idx = e.target.value;
       if (idx === "") return;
       const history = getSavedTargets();
@@ -781,10 +965,20 @@
         targetUrlInput.value = selected.targetUrl;
         clientIdInput.value = selected.clientId;
         scopeInput.value = selected.scope;
+        // Restaurer le secret chiffré si présent ET hors production (jamais de secret en prod).
+        clientSecretInput.value = '';
+        if (selected.encSecret && currentEnv() !== 'prod') {
+          const dec = await decryptSecret(selected.encSecret);
+          if (dec) { clientSecretInput.value = dec; if (rememberSecretInput) rememberSecretInput.checked = true; }
+        }
         // Restaurer les params + bodies sauvegardés pour cette URL
         loadParamValues();
         loadBodyValues();
         updateSubmitState();
+        highlightAuthFields();
+        renderTestHistory();
+        renderFavorites();
+        if (Array.isArray(detectedRoutes) && detectedRoutes.length) applySavedRouteSelection();
       }
     });
 
@@ -792,6 +986,9 @@
     targetUrlInput.addEventListener('change', () => {
       loadParamValues();
       loadBodyValues();
+      renderTestHistory();   // l'historique est par URL
+      renderFavorites();     // les favoris aussi
+      if (Array.isArray(detectedRoutes) && detectedRoutes.length) applySavedRouteSelection();  // restaurer la sélection pour cette URL
     });
 
     /**
@@ -843,7 +1040,12 @@
       loadYamlHistory();
     }
 
+    // Flag d'activation de l'import YAML manuel (fichier + historique). Mettre à true pour
+    // réactiver la fonctionnalité (et retirer les attributs `hidden` dans le HTML de la section 1).
+    const FEATURE_MANUAL_IMPORT = false;
+
     function loadYamlHistory() {
+      if (!FEATURE_MANUAL_IMPORT) { yamlHistorySection.classList.add('hidden'); return; }
       const history = getSavedYamls();
       if (history.length === 0) {
         yamlHistorySection.classList.add('hidden');
@@ -1054,6 +1256,9 @@
 
       if (paramMap.size === 0) {
         paramsSection.classList.add('hidden');
+        // Même sans paramètre, les routes sélectionnées peuvent avoir un corps de requête :
+        // on met quand même à jour (ou masque) la section 5.
+        renderBodiesSection(routes);
         return;
       }
 
@@ -1684,12 +1889,16 @@
 
     ];
 
+    // Détail de validation du DERNIER appel callRouteForPrefill (statut + warnings/errors/…),
+    // afin que la résolution d'achat puisse remonter la validité des appels réellement utiles.
+    let lastPrefillDetail = null;
+
     /**
      * Helper : construit et envoie un mini-batch pour une seule route.
      * Renvoie le responseBody du premier résultat, ou null en cas d'échec.
      */
     async function callRouteForPrefill(route, userParams, requestBodies) {
-      if (!cachedYamlContent) return null;
+      if (!cachedYamlContent) { lastPrefillDetail = null; return null; }
 
       const fd = new FormData();
       fd.set('spec', new Blob([cachedYamlContent], { type: 'application/x-yaml' }), 'spec.yaml');
@@ -1703,21 +1912,61 @@
       fd.set('requestBodies', JSON.stringify(requestBodies || collectRequestBodies()));
 
       const t0 = Date.now();
+      lastPrefillDetail = null;
       try {
         const res = await fetch('/api/validate-batch', { method: 'POST', body: fd });
         const duration = Date.now() - t0;
         if (!res.ok) {
           window._consoleLog?.({ type: 'ERROR', route, status: res.status, error: `HTTP ${res.status}`, duration });
+          lastPrefillDetail = { method: route.method, path: route.path, statusCode: res.status, valid: false, errors: [`HTTP ${res.status}`], warnings: [], nullables: [], undocumented: [], notImplemented: [] };
           return null;
         }
         const data = await res.json();
         const result = data?.results?.[0];
-        window._consoleLog?.({ type: 'PREFILL', route, status: result?.statusCode, responseBody: result?.responseBody, requestUrl: result?.requestUrl, duration });
+        const reqBodyKey = `${route.method} ${route.path}`;
+        const reqBodySent = (requestBodies && requestBodies[reqBodyKey]) || undefined;
+        window._consoleLog?.({ type: 'PREFILL', route, status: result?.statusCode, responseBody: result?.responseBody, requestUrl: result?.requestUrl, duration, requestBody: reqBodySent });
+        // Mémorise le détail de validation du dernier appel (pour les lignes "appels utiles"
+        // du résumé d'achat). On capture statut + toutes les catégories de non-conformité.
+        lastPrefillDetail = {
+          method: route.method, path: route.path,
+          statusCode: result?.statusCode,
+          valid: result?.valid,
+          requestUrl: result?.requestUrl,
+          warnings: result?.warnings || [], errors: result?.errors || [],
+          nullables: result?.nullables || [], undocumented: result?.undocumented || [],
+          notImplemented: result?.notImplemented || [],
+        };
         return result?.responseBody ?? null;
       } catch (e) {
         window._consoleLog?.({ type: 'ERROR', route, error: e.message, duration: Date.now() - t0 });
+        lastPrefillDetail = { method: route.method, path: route.path, statusCode: null, valid: false, errors: [e.message], warnings: [], nullables: [], undocumented: [], notImplemented: [] };
         return null;
       }
+    }
+
+    // Transforme un détail d'appel (lastPrefillDetail) en entrée de résumé (outcome + compteurs),
+    // selon la même logique que les étapes normales (fail > warn > nullable > undoc > notImpl > ok).
+    function prefillDetailToOutcome(d) {
+      if (!d) return null;
+      const httpOk = d.statusCode && d.statusCode < 400;
+      let outcome;
+      if (httpOk && d.valid !== false) {
+        if ((d.warnings || []).length) outcome = 'warn';
+        else if ((d.nullables || []).length) outcome = 'nullable';
+        else if ((d.undocumented || []).length) outcome = 'undocumented';
+        else if ((d.notImplemented || []).length) outcome = 'notImplemented';
+        else outcome = 'ok';
+      } else {
+        outcome = 'fail';
+      }
+      return {
+        label: `${d.method} ${String(d.path).replace(/^\/api\/v1\//, '')}`,
+        route: { method: d.method, path: d.path },
+        outcome, statusCode: d.statusCode,
+        warnings: d.warnings || [], errors: d.errors || [],
+        nullables: d.nullables || [], undocumented: d.undocumented || [], notImplemented: d.notImplemented || [],
+      };
     }
 
     /**
@@ -1779,6 +2028,12 @@
       let filled = 0;
       let skipped = 0;
 
+      // Dictionnaire de travail en MÉMOIRE : le pré-remplissage chaîne des valeurs via le
+      // graphe PREFILL_GRAPH, dont certaines routes peuvent ne PAS être affichées en section 4
+      // (routes décochées → champ absent du DOM). On accumule donc les valeurs ici, sans
+      // dépendre du DOM, et on met à jour les champs visibles quand ils existent.
+      const memParams = collectUserParams();
+
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
         const pct = Math.round((i / steps.length) * 100);
@@ -1786,28 +2041,25 @@
         label.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> ${step.label}`;
         count.textContent = `${i + 1} / ${steps.length}`;
 
-        // Collecter les params courants (peut avoir été enrichi par les étapes précédentes)
-        const currentParams = collectUserParams();
-
         // Injecter les valeurs par défaut définies dans le graphe (sans écraser ce qui est déjà renseigné)
         if (step.injectBefore) {
           for (const [paramName, defaultVal] of Object.entries(step.injectBefore)) {
-            if (!currentParams[paramName]) {
-              setParamValue(paramName, defaultVal);
-              currentParams[paramName] = String(defaultVal);
+            if (!memParams[paramName]) {
+              memParams[paramName] = String(defaultVal);
+              setParamValue(paramName, defaultVal);   // met à jour le champ s'il est affiché
             }
           }
         }
 
-        // Vérifier que les params requis sont disponibles
-        const missingRequired = step.requiredParams.filter(p => !currentParams[p]);
+        // Vérifier que les params requis sont disponibles (en mémoire)
+        const missingRequired = step.requiredParams.filter(p => !memParams[p]);
         if (missingRequired.length > 0) {
           log.innerHTML += `<div class="text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ${tr('idx.prefillSkipped', 'Ignoré :')} <span class="text-slate-300">${step.label}</span> (${tr('idx.prefillMissing', 'manque')} : ${missingRequired.join(', ')})</div>`;
           skipped++;
           continue;
         }
 
-        const body = await callRouteForPrefill(step.sourceRoute, currentParams);
+        const body = await callRouteForPrefill(step.sourceRoute, memParams);
 
         if (!body) {
           log.innerHTML += `<div class="text-rose-400"><i class="fa-solid fa-xmark mr-1"></i> ${tr('idx.prefillFail', 'Échec :')} <span class="text-slate-300">${step.label}</span></div>`;
@@ -1820,14 +2072,14 @@
           const value = mapping.pick(body);
           if (value === undefined || value === null || value === '') continue;
 
-          // Si silent=true, ne pas écraser un champ déjà renseigné manuellement
-          const existing = document.querySelector(`[data-param-name="${mapping.targetParam}"]`);
-          if (mapping.silent && existing?.value?.trim()) continue;
+          // Si silent=true, ne pas écraser une valeur déjà présente (saisie manuelle ou étape antérieure)
+          if (mapping.silent && memParams[mapping.targetParam]) continue;
 
-          if (setParamValue(mapping.targetParam, value)) {
-            stepFilled++;
-            filled++;
-          }
+          // Toujours mémoriser la valeur (pour le chaînage), même si le champ n'est pas affiché.
+          memParams[mapping.targetParam] = String(value);
+          setParamValue(mapping.targetParam, value);   // met à jour le champ visible s'il existe
+          stepFilled++;
+          filled++;
         }
 
         const icon = stepFilled > 0 ? 'fa-check text-emerald-400' : 'fa-minus text-slate-500';
@@ -1851,7 +2103,9 @@
       saveParamValues();
     }
 
-    document.getElementById('prefillBtn').addEventListener('click', autoPrefill);
+    // Pré-remplissage automatique retiré de l'UI (bouton supprimé). Listener conservé mais
+    // conditionnel au cas où l'élément existerait.
+    document.getElementById('prefillBtn')?.addEventListener('click', autoPrefill);
 
     // ----------------------------------------------------
     // PARSER YAML
@@ -1914,6 +2168,7 @@
       renderRoutesList(data.routes, data.tagOrder || []);
       renderParamsSection(data.routes);
       updateSubmitState();
+      applySavedRouteSelection();   // restaurer les routes cochées précédemment (par URL)
 
       activeSourceBadge.classList.remove('hidden');
       activeSourceBadge.innerHTML = `<i class="fa-solid fa-file-code mr-1"></i> ${tr('idx.specActive', 'Spec active : {name}', { name: sourceName })}`;
@@ -1929,6 +2184,9 @@
      */
     async function loadSpecVersions() {
       try {
+        // On retient la sélection courante pour ne pas l'écraser (ex: rechargement après
+        // changement de langue).
+        const previous = specVersionSelect.value;
         const res = await fetch('/api/spec-versions');
         const data = await res.json();
         const versions = data.versions || [];
@@ -1936,8 +2194,18 @@
           specVersionSelect.innerHTML = `<option value="">${tr('idx.versionNone', 'Aucune version dans la bibliothèque')}</option>`;
           return;
         }
+        // Les versions sont triées de la plus récente à la plus ancienne côté serveur.
         specVersionSelect.innerHTML = `<option value="">${tr('idx.versionChoose', '-- Choisir une version --')}</option>` +
           versions.map(v => `<option value="${v.filename}">${v.label}</option>`).join('');
+
+        if (previous) {
+          // Conserver la sélection existante (pas de ré-analyse).
+          specVersionSelect.value = previous;
+        } else {
+          // Première initialisation : présélectionner la DERNIÈRE version et lancer l'analyse.
+          specVersionSelect.value = versions[0].filename;
+          analyzeSpec();
+        }
       } catch (e) {
         specVersionSelect.innerHTML = `<option value="">${tr('idx.versionLoadErr', 'Erreur de chargement des versions')}</option>`;
       }
@@ -2104,26 +2372,37 @@
     // ──────────────────────────────────────────────────────────────────
     async function classifyOffer(collected, offerCode) {
       const params = { ...collected, offerCode };
+      const calls = [];   // détails des appels UTILES de la classification (pour le résumé)
       let date;
       const fda = await callRouteForPrefill({ method: 'GET', path: '/api/v1/offer/findFirstAvailableDate' }, params);
+      if (lastPrefillDetail) calls.push(lastPrefillDetail);
       const d0 = fda?.data?.date ?? fda?.date;
       if (d0 && !String(d0).startsWith('0001')) date = String(d0).substring(0, 10);
       if (!date) {
-        const t = new Date(); const to = new Date(); to.setMonth(to.getMonth() + 3);
+        // findCalendarDays limite la plage à 31 jours → on borne à 30 jours.
+        const t = new Date(); const to = new Date(); to.setDate(to.getDate() + 30);
         const cal = await callRouteForPrefill({ method: 'GET', path: '/api/v1/performance/findCalendarDays' },
           { ...params, dateFrom: t.toISOString().substring(0,10), dateTo: to.toISOString().substring(0,10) });
         const days = cal?.data?.days ?? cal?.days ?? cal?.data ?? cal;
         const first = Array.isArray(days) ? days[0] : days;
-        if (first?.date) date = String(first.date).substring(0, 10);
+        if (first?.date) { date = String(first.date).substring(0, 10); if (lastPrefillDetail) calls.push(lastPrefillDetail); }
       }
       let perf = null;
       if (date) {
         const pd = await callRouteForPrefill({ method: 'GET', path: '/api/v1/performance/findPerformanceByDay' }, { ...params, date });
         const list = pd?.performances ?? pd?.data?.performances ?? pd?.data ?? pd;
         perf = Array.isArray(list) ? list[0] : (list && list.performanceCode ? list : null);
+        if (perf && lastPrefillDetail) calls.push(lastPrefillDetail);
       }
-      let type = !perf ? 'open' : (perf.isFullDay === true ? 'dated' : 'timed');
-      const out = { type, offerCode };
+      // Classification :
+      //  - pas de séance           → open
+      //  - séance + journée entière → dated  (isFullDay vrai)
+      //  - séance + créneau horaire → timed  (isFullDay faux)
+      // isFullDay peut arriver en booléen OU en chaîne ("true"/"1"), et sous divers noms.
+      const isFullDay = perf ? (perf.isFullDay ?? perf.fullDay ?? perf.isAllDay ?? perf.allDay) : undefined;
+      const fullDayTrue = (isFullDay === true || isFullDay === 'true' || isFullDay === 1 || isFullDay === '1');
+      let type = !perf ? 'open' : (fullDayTrue ? 'dated' : 'timed');
+      const out = { type, offerCode, calls };
       if (perf) {
         out.performanceCode = (typeof perf.performanceCode === 'string') ? perf.performanceCode : (perf.performanceCode?.code ?? perf.code);
         out.performanceDate = (perf.date ? String(perf.date).substring(0,10) : date);
@@ -2131,9 +2410,17 @@
       return out;
     }
 
-    // Récupère le 1er productCode d'une offre
-    async function firstProductOf(collected, offerCode) {
-      const pb = await callRouteForPrefill({ method: 'GET', path: '/api/v1/product/findProductCodes' }, { ...collected, offerCode });
+    // Récupère le 1er productCode d'une offre. Si l'offre est datée/horodatée (classification
+    // `cls` avec une performance), on passe performanceCode + date à findProductCodes, car les
+    // produits/tarifs peuvent dépendre de la séance. Le détail de l'appel est ajouté à cls.calls.
+    async function firstProductOf(collected, offerCode, cls) {
+      const params = { ...collected, offerCode };
+      if (cls && cls.type !== 'open' && cls.performanceCode) {
+        params.performanceCode = cls.performanceCode;
+        if (cls.performanceDate) params.date = cls.performanceDate;
+      }
+      const pb = await callRouteForPrefill({ method: 'GET', path: '/api/v1/product/findProductCodes' }, params);
+      if (cls && Array.isArray(cls.calls) && lastPrefillDetail) cls.calls.push(lastPrefillDetail);
       const list = flattenProductCodes(pb || {});
       return list[0];
     }
@@ -2147,192 +2434,528 @@
       return { item };
     }
 
-    // Authentification B2C réalisée APRÈS le premier checkCart (parcours e-commerce).
-    // (createAccount si demandé → signin). Exécutée UNE SEULE FOIS par run : l'accountCode
-    // obtenu est mémorisé dans collected et réutilisé pour les ventes suivantes.
-    // Renvoie { ok } ou { ok:false, error }.
-    async function ensureAuthB2C(collected, scRun) {
-      if (collected.accountCode) return { ok: true };     // déjà authentifié ce run
-
-      // Création de compte (données générées) si le scénario le demande
-      if (scRun && scRun.scenario && scRun.scenario.withCreateAccount) {
-        const body = JSON.stringify({ accountData: { fields: [
+    // ══════════════════════════════════════════════════════════════════
+    // FABRIQUES D'ÉTAPES CONCRÈTES (achat détaillé, une étape = un appel réel)
+    // Chaque vente produit la suite : checkCart → beginOrderTrans → confirmOrderTrans →
+    // readOrderDetails. Les étapes d'authentification (createAccount / signin) sont des
+    // étapes à part, insérées par prepareSteps au bon endroit selon le scope :
+    //   - B2B : avant toutes les ventes ;
+    //   - B2C : après le 1er checkCart (parcours e-commerce).
+    // Le suffixe (ex. " (open)") distingue les ventes dans les modes multi-ventes.
+    // ──────────────────────────────────────────────────────────────────
+    // Étape de création de compte (données générées). Pose username/password/accountCode.
+    function createAccountStep() {
+      return {
+        label: 'Création de compte (données générées) → login',
+        route: { method: 'POST', path: '/api/v1/account/createAccount' },
+        body: (collected) => JSON.stringify({ accountData: { fields: [
           { fieldCode: 1, value: scRun.fake.firstName },
           { fieldCode: 3, value: scRun.fake.lastName },
           { fieldCode: 21, value: scRun.fake.email },
           { fieldCode: 548, value: scRun.fake.email },
           { fieldCode: 549, value: scRun.fake.password },
-        ] } });
-        const cr = await callRoutePost({ method: 'POST', path: '/api/v1/account/createAccount' }, collected, body);
-        if (!(cr?.accountCode ?? cr?.data?.accountCode)) return { ok: false, error: 'createAccount' };
-        collected.username = scRun.fake.email;
-        collected.password = scRun.fake.password;
-      }
-
-      // Signin
-      const sBody = JSON.stringify({ username: collected.username, password: collected.password });
-      const sr = await callRoutePost({ method: 'POST', path: '/api/v1/auth/signin' }, collected, sBody);
-      const acc = sr?.accountCode ?? sr?.data?.accountCode;
-      if (!acc) return { ok: false, error: 'signin' };
-      collected.accountCode = String(acc);
-      return { ok: true };
-    }
-
-    // Exécute UN cycle d'achat complet (checkCart → [B2C: auth] → beginOrderTrans → confirmOrderTrans)
-    // pour un ensemble d'items. En B2C, l'authentification est faite juste après le checkCart.
-    // Renvoie { ok, orderCode, total } ou { ok:false, error }.
-    async function runPurchaseCycle(collected, items, scRun) {
-      const route = (p) => ({ method: 'POST', path: p });
-      const shopCart = { cartItems: items };
-      // checkCart (ne requiert pas d'authentification)
-      const checkBody = JSON.stringify({ shopCart });
-      const cRes = await callRoutePost(route('/api/v1/cart/checkCart'), collected, checkBody);
-      const cartCode = cRes?.preOrder?.cartCode ?? cRes?.data?.preOrder?.cartCode;
-      if (!cartCode) return { ok: false, error: 'checkCart' };
-      // B2C : s'authentifier APRÈS le checkCart (une seule fois par run)
-      if ((collected.scope || scopeInput.value) === 'b2c') {
-        const auth = await ensureAuthB2C(collected, scRun);
-        if (!auth.ok) return { ok: false, error: auth.error };
-      }
-      // beginOrderTrans (shopCart complet + cartCode)
-      const beginBody = JSON.stringify({ shopCart: { cartCode, cartItems: items }, reservationOwnerCode: collected.accountCode });
-      const bRes = await callRoutePost(route('/api/v1/order/beginOrderTrans'), collected, beginBody);
-      const orderCode = bRes?.orderCode ?? bRes?.data?.orderCode;
-      const total = bRes?.preOrder?.cart?.total?.gross ?? bRes?.data?.preOrder?.cart?.total?.gross ?? 0;
-      if (!orderCode) return { ok: false, error: 'beginOrderTrans' };
-      // confirmOrderTrans (EMULATEPAY)
-      const now = new Date().toISOString();
-      const confirmBody = JSON.stringify({ orderCode, payments: [{ paymentCode: 'EMULATEPAY', amount: { value: total, currency: 'EUR' }, paymentDate: now }] });
-      const rRes = await callRoutePost(route('/api/v1/order/confirmOrderTrans'), collected, confirmBody);
-      const finalOrder = rRes?.orderCode ?? rRes?.data?.orderCode ?? orderCode;
-      return { ok: true, orderCode: finalOrder, total };
-    }
-
-    // Helper : POST d'une route avec un body JSON brut (réutilise /api/validate-batch via callRouteForPrefill)
-    async function callRoutePost(route, collected, bodyJson) {
-      return await callRouteForPrefill(route, collected, { [`${route.method} ${route.path}`]: bodyJson });
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // Construction d'ÉTAPES CONCRÈTES détaillées pour une vente (un panier donné).
-    // Chaque vente produit la suite : checkCart → [B2C: signin] → beginOrderTrans →
-    // confirmOrderTrans → readOrderDetails. En B2B, le signin a lieu avant (étapes globales
-    // du scénario), donc on ne l'insère pas ici. Le suffixe (ex. " (open)") distingue les
-    // ventes dans les modes multi-ventes.
-    //  - items   : tableau d'objets cartItem (buildCartItemObj)
-    //  - suffix  : libellé ajouté à chaque étape (ex. " (horodaté)")
-    //  - withSignin : true → insérer l'étape signin après checkCart (B2C, 1re vente)
-    //  - idx     : index unique pour nommer les clés de body par vente
-    // ──────────────────────────────────────────────────────────────────
-    function buildSaleSteps(items, suffix, withSignin, idx) {
-      const ccKey = `cartCode${idx}`, ocKey = `orderCode${idx}`, totKey = `orderTotal${idx}`;
-      const itemsJson = JSON.stringify(items);
-      const steps = [];
-
-      // checkCart
-      steps.push({
-        label: `Vérification panier${suffix} → cartCode`,
-        route: { method: 'POST', path: '/api/v1/cart/checkCart' },
-        body: () => JSON.stringify({ shopCart: { cartItems: items } }),
-        extract: [{ targetParam: ccKey, pick: b => b?.preOrder?.cartCode ?? b?.data?.preOrder?.cartCode ?? b?.cartCode }],
-      });
-
-      // signin (B2C uniquement, une seule fois) — inséré juste après le 1er checkCart
-      if (withSignin) {
-        steps.push({
-          label: 'Connexion (B2C) → accountCode',
-          route: { method: 'POST', path: '/api/v1/auth/signin' },
-          custom: (collected, scRun) => (async () => {
-            const auth = await ensureAuthB2C(collected, scRun);
-            return auth.ok ? { ok: true, extracted: { accountCode: collected.accountCode } } : { ok: false, error: tr('scn.saleFailed', 'Échec de la vente ({type}).', { type: 'signin' }) };
-          })(),
-        });
-      }
-
-      // beginOrderTrans
-      steps.push({
-        label: `Début de transaction${suffix} → orderCode`,
-        route: { method: 'POST', path: '/api/v1/order/beginOrderTrans' },
-        body: (collected) => JSON.stringify({ shopCart: { cartCode: collected[ccKey], cartItems: items }, reservationOwnerCode: collected.accountCode }),
+        ] } }),
         extract: [
-          { targetParam: ocKey, pick: b => b?.orderCode ?? b?.data?.orderCode },
-          { targetParam: totKey, pick: b => { const g = b?.preOrder?.cart?.total?.gross ?? b?.data?.preOrder?.cart?.total?.gross; return (g !== undefined && g !== null) ? String(g) : undefined; }, silent: true },
+          { targetParam: 'username', pick: () => (scRun?.fake?.email), silent: true },
+          { targetParam: 'password', pick: () => (scRun?.fake?.password), silent: true },
+          { targetParam: 'accountCode', pick: b => b?.data?.accountCode ?? b?.accountCode, silent: true },
         ],
-      });
+      };
+    }
 
-      // confirmOrderTrans (EMULATEPAY)
-      steps.push({
-        label: `Confirmation commande${suffix} (paiement émulé)`,
-        route: { method: 'POST', path: '/api/v1/order/confirmOrderTrans' },
-        defaultParams: () => ({ [`payDate${idx}`]: new Date().toISOString() }),
-        body: (collected) => JSON.stringify({ orderCode: collected[ocKey], payments: [{ paymentCode: 'EMULATEPAY', amount: { value: Number(collected[totKey] || 0), currency: 'EUR' }, paymentDate: collected[`payDate${idx}`] }] }),
-        extract: [{ targetParam: 'orderCode', pick: b => b?.orderCode ?? b?.data?.orderCode, silent: true }],
-      });
+    // Étape de connexion. Pose username/password depuis le compte généré (si createAccount),
+    // sinon utilise ceux saisis. Extrait accountCode.
+    function signinStep() {
+      return {
+        label: 'Connexion → accountCode',
+        route: { method: 'POST', path: '/api/v1/auth/signin' },
+        body: (collected) => JSON.stringify({ username: collected.username, password: collected.password }),
+        extract: [{ targetParam: 'accountCode', pick: b => b?.data?.accountCode ?? b?.accountCode }],
+      };
+    }
 
-      // readOrderDetails — lit collected.orderCode (code de vente posé par confirmOrderTrans)
-      steps.push({
-        label: `Lecture commande${suffix} (validation)`,
-        route: { method: 'GET', path: '/api/v1/order/readOrderDetails' },
+    // Étapes concrètes d'UNE vente (un panier). checkCart → beginOrderTrans → confirm → readOrder.
+    // Les cartItems sont résolus par l'étape "resolveCodes" et lus depuis collected[`items${idx}`]
+    // (JSON). Si cette vente n'a pas d'items (ex. type absent en mode eachType), toutes les
+    // étapes de la vente sont ignorées via skipIf.
+    function buildSaleSteps(suffix, idx) {
+      const itemsKey = `items${idx}`, ccKey = `cartCode${idx}`, ocKey = `orderCode${idx}`, totKey = `orderTotal${idx}`, confKey = `confirmedOrderCode${idx}`;
+      const items = (collected) => { try { return JSON.parse(collected[itemsKey] || '[]'); } catch { return []; } };
+      const absent = (collected) => !collected[itemsKey];
+      return [
+        {
+          label: `Vérification panier${suffix} → cartCode`,
+          route: { method: 'POST', path: '/api/v1/cart/checkCart' },
+          skipIf: absent,
+          body: (collected) => JSON.stringify({ shopCart: { cartItems: items(collected) } }),
+          extract: [{ targetParam: ccKey, pick: b => b?.preOrder?.cartCode ?? b?.data?.preOrder?.cartCode ?? b?.cartCode }],
+        },
+        {
+          label: `Début de transaction${suffix} → orderCode`,
+          route: { method: 'POST', path: '/api/v1/order/beginOrderTrans' },
+          skipIf: absent,
+          body: (collected) => JSON.stringify({ shopCart: { cartCode: collected[ccKey], cartItems: items(collected) }, reservationOwnerCode: collected.accountCode }),
+          extract: [
+            { targetParam: ocKey, pick: b => b?.orderCode ?? b?.data?.orderCode },
+            { targetParam: totKey, pick: b => { const g = b?.preOrder?.cart?.total?.gross ?? b?.data?.preOrder?.cart?.total?.gross; return (g !== undefined && g !== null) ? String(g) : undefined; }, silent: true },
+          ],
+        },
+        {
+          label: `Confirmation commande${suffix} (paiement émulé)`,
+          route: { method: 'POST', path: '/api/v1/order/confirmOrderTrans' },
+          skipIf: absent,
+          defaultParams: () => ({ [`payDate${idx}`]: new Date().toISOString() }),
+          body: (collected) => JSON.stringify({ orderCode: collected[ocKey], payments: [{ paymentCode: 'EMULATEPAY', amount: { value: Number(collected[totKey] || 0), currency: 'EUR' }, paymentDate: collected[`payDate${idx}`] }] }),
+          // Le code de commande confirmé est mémorisé par vente (confirmedOrderCodeN) et sert
+          // de paramètre à readOrderDetails ci-dessous.
+          extract: [{ targetParam: confKey, pick: b => b?.orderCode ?? b?.data?.orderCode, silent: true }],
+        },
+        {
+          label: `Lecture commande${suffix} (validation)`,
+          route: { method: 'GET', path: '/api/v1/order/readOrderDetails' },
+          skipIf: absent,
+          // orderCode = retour du confirmOrderTrans (repli sur celui du beginOrderTrans).
+          defaultParams: (collected) => ({ orderCode: collected[confKey] || collected[ocKey] }),
+          forceParams: ['orderCode'],
+          // L'appel sert à confirmer l'existence de la commande. Les non-conformités de schéma
+          // de la réponse (ex. creationDate sans fuseau) sont signalées en warning, non bloquantes.
+          schemaNonBlocking: true,
+          extract: [],
+        },
+      ];
+    }
+
+    // Étape de SUPPRESSION du panier (removeCart) pour une vente donnée.
+    // DELETE /api/v1/cart/removeCart?cartCode=... — répond 204. Utilisée en fin de scénario
+    // "checkCart only" pour nettoyer le panier créé (option demandée par l'utilisateur).
+    function removeCartStep(idx, suffix) {
+      const ccKey = `cartCode${idx}`;
+      return {
+        label: `Suppression du panier${suffix || ''}`,
+        route: { method: 'DELETE', path: '/api/v1/cart/removeCart' },
+        skipIf: (collected) => !collected[ccKey],   // pas de panier → rien à supprimer
+        defaultParams: (collected) => ({ cartCode: collected[ccKey] }),
+        forceParams: ['cartCode'],
         extract: [],
-      });
+      };
+    }
 
-      return steps;
+    // Variante semi-auto : le cartCode est dans collected.cartCode0.
+    function removeCartStepSemi() {
+      return {
+        label: 'Suppression du panier',
+        route: { method: 'DELETE', path: '/api/v1/cart/removeCart' },
+        skipIf: (collected) => !collected.cartCode0,
+        defaultParams: (collected) => ({ cartCode: collected.cartCode0 }),
+        forceParams: ['cartCode'],
+        extract: [],
+      };
+    }
+
+    // Re-vérification du panier APRÈS connexion (scénarios "Panier seul" B2C) : on refait un
+    // checkCart en RÉUTILISANT le cartCode du 1er checkCart, pour confirmer le rattachement du
+    // panier au compte connecté. Variante auto (items/cartCode indexés par vente).
+    function recheckCartStep(idx, suffix) {
+      const itemsKey = `items${idx}`, ccKey = `cartCode${idx}`;
+      const items = (collected) => { try { return JSON.parse(collected[itemsKey] || '[]'); } catch { return []; } };
+      return {
+        label: `Re-vérification panier${suffix || ''} (connecté) → cartCode`,
+        route: { method: 'POST', path: '/api/v1/cart/checkCart' },
+        skipIf: (collected) => !collected[itemsKey] || !collected[ccKey],
+        body: (collected) => JSON.stringify({ shopCart: { cartCode: collected[ccKey], cartItems: items(collected) } }),
+        extract: [{ targetParam: ccKey, pick: b => b?.preOrder?.cartCode ?? b?.data?.preOrder?.cartCode ?? b?.cartCode }],
+      };
+    }
+
+    // Variante semi-auto : cartCode dans collected.cartCode0, items construits depuis les choix.
+    function recheckCartStepSemi(itemsFromChoices) {
+      return {
+        label: 'Re-vérification panier (connecté) → cartCode',
+        route: { method: 'POST', path: '/api/v1/cart/checkCart' },
+        skipIf: (collected) => !collected.cartCode0,
+        body: (collected) => JSON.stringify({ shopCart: { cartCode: collected.cartCode0, cartItems: itemsFromChoices(collected) } }),
+        extract: [{ targetParam: 'cartCode0', pick: b => b?.preOrder?.cartCode ?? b?.data?.preOrder?.cartCode ?? b?.cartCode }],
+      };
     }
 
     // ══════════════════════════════════════════════════════════════════
     // prepareSteps : étape "prepare" (cachée) exécutée au bon endroit du scénario.
-    // Classe les offres de la famille puis GÉNÈRE les étapes concrètes détaillées
-    // (une suite par vente) selon le mode choisi, et les insère dans le run.
+    // Classe les offres de la famille et RÉSOUT les items (produit + éventuelle
+    // performance) pour chaque vente, selon le mode choisi. NE CONSTRUIT PAS d'étapes :
+    // la structure d'étapes est créée statiquement par expandPurchaseSteps (affichage
+    // immédiat). Cette fonction (étape cachée "resolveCodes") pose dans collected, par
+    // index de vente, la clé `itemsN` = JSON des cartItems à acheter.
     //  - open/dated/timed : 1 vente du type ; ARRÊT si type absent.
     //  - complex          : 1 vente, panier multi-articles (1 par type présent).
-    //  - eachType         : 1 vente par type présent (plusieurs suites d'étapes).
-    // Le signin B2C est inséré comme une étape, après le 1er checkCart seulement.
+    //  - eachType         : 1 vente par type présent (les ventes absentes sont ignorées).
+    // Renvoie { ok, extracted } ou { ok:false, error }.
     // ══════════════════════════════════════════════════════════════════
-    async function prepareSteps(collected, scRun) {
+    // Énumère les familles (familyCode) à explorer pour trouver des offres, en PROFONDEUR.
+    //  - Si un familyCode est déjà fixé (scénario "produit, familyCode fourni") → cette seule famille.
+    //  - Sinon : pour CHAQUE famille parente, on descend dans TOUTES ses familles enfants
+    //    (et leurs sous-enfants, récursivement). On épuise ainsi tout un arbre parent avant de
+    //    passer à la parente suivante. L'ordre permet au parcours de "remonter d'un niveau"
+    //    naturellement : enfant → enfant suivant → parente suivante.
+    async function enumerateFamilyCodes(collected, scRun) {
+      if (collected.familyCode) return [collected.familyCode];
+
+      const codes = [];
+      const seen = new Set();
+      const add = (c) => { if (c && !seen.has(c)) { seen.add(c); codes.push(c); return true; } return false; };
+
+      // Extrait les codes des familles enfants d'une réponse readParentFamily.
+      const childrenOf = (rpBody) => {
+        const l = rpBody?.parentFamilies ?? rpBody?.data?.parentFamilies ?? rpBody?.data ?? rpBody;
+        const pf = Array.isArray(l) ? l[0] : l;
+        const c = pf?.childFamilyCodes ?? pf?.families ?? pf?.children ?? pf?.childFamilies ?? [];
+        return (Array.isArray(c) ? c : [c])
+          .map(x => (typeof x === 'string') ? x : (x?.familyCode ?? x?.code ?? x?.parentFamilyCode))
+          .filter(Boolean);
+      };
+
+      // Descente récursive à partir d'un code de famille (traité comme parent potentiel).
+      // Limitée en profondeur pour éviter toute boucle sur des données cycliques.
+      const explore = async (famCode, depth) => {
+        if (depth > 6) return;
+        const rpBody = await callRouteForPrefill({ method: 'GET', path: '/api/v1/family/readParentFamily' }, { ...collected, parentFamilyCode: famCode });
+        const children = childrenOf(rpBody);
+        for (const child of children) {
+          if (add(child)) {
+            // La famille enfant peut elle-même être parente d'autres familles → on descend.
+            await explore(child, depth + 1);
+          }
+        }
+      };
+
+      // Toutes les familles parentes de premier niveau.
+      const pfBody = await callRouteForPrefill({ method: 'GET', path: '/api/v1/family/findParentFamilies' }, collected);
+      const pfList = pfBody?.parentFamilies ?? pfBody?.data?.parentFamilies ?? pfBody?.data ?? pfBody;
+      const parents = (Array.isArray(pfList) ? pfList : [pfList])
+        .map(f => (typeof f === 'string') ? f : (f?.parentFamilyCode ?? f?.code))
+        .filter(Boolean);
+
+      // Pour chaque parente : l'ajouter comme candidate (elle peut porter des offres),
+      // puis explorer tout son arbre d'enfants avant de passer à la parente suivante.
+      for (const pfc of parents) {
+        add(pfc);
+        await explore(pfc, 0);
+      }
+      return codes;
+    }
+
+    async function resolveSaleItems(collected, scRun) {
       const mode = (collected.offerType || 'open').toLowerCase();
-      const isB2C = (collected.scope || scopeInput.value) === 'b2c';
 
-      const offersBody = await callRouteForPrefill({ method: 'GET', path: '/api/v1/offer/findOfferCodesByFamily' }, collected);
-      const offerCodes = offersBody ? flattenOfferCodes(offersBody) : [];
-      if (!offerCodes.length) return { ok: false, error: tr('scn.noOffer', "Aucune offre trouvée pour cette famille.") };
-
-      // Classer les offres par type (1 offre + 1 produit par type)
-      const found = { open: null, dated: null, timed: null };
-      for (const oc of offerCodes) {
-        const cls = await classifyOffer(collected, oc);
-        if (!cls || found[cls.type]) continue;
-        const productCode = await firstProductOf(collected, oc);
-        if (!productCode) continue;
-        found[cls.type] = { ...cls, productCode };
-        if (found.open && found.dated && found.timed) break;
+      // Plusieurs routes catalogue (readParentFamily, findOfferCodesByFamily, …) exigent un
+      // paramètre `locale`. S'il n'est pas défini, on applique un repli pour que la résolution
+      // automatique (parcours des familles) ne tombe pas en 400. On enrichit collected une fois.
+      if (!collected.locale) {
+        collected.locale = (document.getElementById('globalLocale')?.value.trim()) || 'fr-FR';
       }
 
-      const typeLabel = { open: 'open', dated: 'daté', timed: 'horodaté' };
-      let saleGroups = [];   // chaque groupe = { items:[...], suffix:'' }
+      // Types encore recherchés selon le mode (pour s'arrêter dès qu'on a le nécessaire).
+      const neededTypes = (mode === 'open' || mode === 'dated' || mode === 'timed')
+        ? [mode] : ['open', 'dated', 'timed'];
 
+      // Parcourir toutes les familles candidates, classer les offres par type, jusqu'à avoir
+      // trouvé un produit pour chaque type requis.
+      const families = await enumerateFamilyCodes(collected, scRun);
+      if (!families.length) return { ok: false, error: tr('scn.noFamily', "Aucune famille trouvée.") };
+
+      const found = { open: null, dated: null, timed: null };
+      const haveAllNeeded = () => neededTypes.every(t => found[t]);
+
+      // Clôture la résolution : agrège les appels UTILES (ceux des types réellement retenus),
+      // transformés en entrées de résumé (outcome + warnings/erreurs), et les attache au résultat.
+      const finishResolve = (result) => {
+        const usefulDetails = [];
+        for (const t of ['open', 'dated', 'timed']) {
+          const entry = found[t];
+          if (entry && Array.isArray(entry.usefulCalls)) usefulDetails.push(...entry.usefulCalls);
+        }
+        const resolveCalls = usefulDetails.map(prefillDetailToOutcome).filter(Boolean);
+        return { ...result, resolveCalls };
+      };
+
+      for (const familyCode of families) {
+        if (haveAllNeeded()) break;
+        const famCollected = { ...collected, familyCode };
+        const offersBody = await callRouteForPrefill({ method: 'GET', path: '/api/v1/offer/findOfferCodesByFamily' }, famCollected);
+        const offersCallDetail = lastPrefillDetail;   // appel ayant donné les offres de cette famille
+        const offerCodes = offersBody ? flattenOfferCodes(offersBody) : [];
+        for (const oc of offerCodes) {
+          if (haveAllNeeded()) break;
+          const cls = await classifyOffer(famCollected, oc);
+          if (!cls || found[cls.type]) continue;
+          if (!neededTypes.includes(cls.type) && mode !== 'complex' && mode !== 'eachType') continue;
+          const productCode = await firstProductOf(famCollected, oc, cls);
+          if (!productCode) continue;
+          // Appels UTILES retenus pour ce type : findOfferCodesByFamily (bonne famille) +
+          // la chaîne de classification (findFirstAvailableDate / findPerformanceByDay) +
+          // findProductCodes (dans cls.calls). C'est ce qui a réellement servi.
+          const usefulCalls = [offersCallDetail, ...(cls.calls || [])].filter(Boolean);
+          found[cls.type] = { ...cls, productCode, familyCode, usefulCalls };
+        }
+      }
+
+      // Détermine les groupes de ventes (chaque groupe = tableau de cartItems)
+      let saleGroups = [];   // [{ items:[...] }]
       if (mode === 'open' || mode === 'dated' || mode === 'timed') {
         const entry = found[mode];
-        if (!entry) return { ok: false, error: tr('scn.typeNotFound', "Aucune offre de type « {type} » trouvée dans cette famille.", { type: mode }) };
-        saleGroups.push({ items: [buildCartItemObj(entry)], suffix: '' });
+        if (!entry) return finishResolve({ ok: false, error: tr('scn.typeNotFoundAny', "Aucune offre de type « {type} » trouvée dans les familles explorées.", { type: mode }) });
+        saleGroups.push([buildCartItemObj(entry)]);
       } else if (mode === 'complex') {
         const entries = ['open', 'dated', 'timed'].map(t => found[t]).filter(Boolean);
-        if (!entries.length) return { ok: false, error: tr('scn.noOffer', "Aucune offre trouvée pour cette famille.") };
-        saleGroups.push({ items: entries.map(buildCartItemObj), suffix: ' (complexe)' });
-      } else { // eachType
-        for (const t of ['open', 'dated', 'timed']) {
-          if (found[t]) saleGroups.push({ items: [buildCartItemObj(found[t])], suffix: ` (${typeLabel[t]})` });
-        }
-        if (!saleGroups.length) return { ok: false, error: tr('scn.typeNotFound', "Aucune offre de type « {type} » trouvée dans cette famille.", { type: 'open/daté/horodaté' }) };
+        if (!entries.length) return finishResolve({ ok: false, error: tr('scn.noOfferAny', "Aucune offre trouvée dans les familles explorées.") });
+        saleGroups.push(entries.map(buildCartItemObj));
+      } else { // eachType : un emplacement de vente par type (open=0, daté=1, horodaté=2)
+        const slots = ['open', 'dated', 'timed'];
+        saleGroups = slots.map(t => found[t] ? [buildCartItemObj(found[t])] : null);
+        if (!saleGroups.some(Boolean)) return finishResolve({ ok: false, error: tr('scn.typeNotFoundAny', "Aucune offre de type « {type} » trouvée dans les familles explorées.", { type: 'open/daté/horodaté' }) });
       }
 
-      // Générer toutes les étapes concrètes. signin B2C inséré après le 1er checkCart seulement.
-      const insertSteps = [];
-      saleGroups.forEach((g, gi) => {
-        const withSignin = isB2C && gi === 0;   // auth une seule fois, à la 1re vente
-        insertSteps.push(...buildSaleSteps(g.items, g.suffix, withSignin, gi));
+      // Poser les items par vente dans collected : itemsN = JSON (ou '' si vente absente).
+      const extracted = {};
+      saleGroups.forEach((items, idx) => {
+        extracted[`items${idx}`] = items ? JSON.stringify(items) : '';
       });
+      return finishResolve({ ok: true, extracted });
+    }
 
-      return { ok: true, insertSteps };
+    // ══════════════════════════════════════════════════════════════════
+    // expandPurchaseSteps : construit STATIQUEMENT (sans réseau) la liste complète des
+    // étapes d'un scénario d'achat, afin qu'elles soient toutes visibles dès le lancement.
+    // Remplace l'étape "prepare" (placeholder) par :
+    //   [resolveCodes (caché)] + auth + ventes, ordonnés selon le scope.
+    // Le nombre de ventes dépend du mode (statique) :
+    //   open/dated/timed/complex → 1 vente ; eachType → 3 emplacements (open/daté/horodaté).
+    // Les emplacements de vente eachType absents seront ignorés à l'exécution (skipIf sur
+    // l'absence de collected.itemsN, renseigné par resolveCodes).
+    // ══════════════════════════════════════════════════════════════════
+    // ──────────────────────────────────────────────────────────────────
+    // MODE SEMI-AUTO : étapes d'achat "détaillées avec choix".
+    // L'utilisateur choisit lui-même famille → offre → (date → performance) → produit à
+    // chaque étape. On ne présélectionne pas la typologie : on classe l'offre CHOISIE pour
+    // savoir s'il faut afficher le calendrier/la performance (sauté si l'offre est "open").
+    // Puis checkCart → [auth] → begin → confirm → readOrder, panier construit depuis les choix.
+    // ──────────────────────────────────────────────────────────────────
+
+    // Étape cachée : classe l'offre CHOISIE (collected.offerCode) → pose collected.selectedType
+    // ('open' | 'dated' | 'timed'). Sert aux skipIf du calendrier/performance.
+    function classifySelectedOfferStep() {
+      return {
+        label: "Analyse de l'offre choisie",
+        hidden: true,
+        custom: async (collected) => {
+          if (!collected.offerCode) return { ok: true, extracted: { selectedType: '' } };
+          const cls = await classifyOffer(collected, collected.offerCode);
+          return { ok: true, extracted: { selectedType: (cls?.type || 'open') } };
+        },
+      };
+    }
+
+    // Étapes catalogue à choix pour le mode semi-auto.
+    function semiCatalogSteps(withParentFamily) {
+      const steps = [];
+      if (withParentFamily) {
+        steps.push({
+          label: 'Familles parentes → parentFamilyCode',
+          route: { method: 'GET', path: '/api/v1/family/findParentFamilies' },
+          extract: [{
+            targetParam: 'parentFamilyCode',
+            list: b => { const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b; return (Array.isArray(l)?l:[l]).map(f => (typeof f==='string')?f:(f?.parentFamilyCode??f?.code)).filter(Boolean); },
+            pick: b => { const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b; const f=Array.isArray(l)?l[0]:l; return (typeof f==='string')?f:(f?.parentFamilyCode??f?.code); },
+          }],
+        });
+        steps.push({
+          label: 'Famille parente → familyCode',
+          route: { method: 'GET', path: '/api/v1/family/readParentFamily' },
+          extract: [{
+            targetParam: 'familyCode',
+            list: b => { const l=b?.parentFamilies??b?.data?.parentFamilies??b?.data??b; const pf=Array.isArray(l)?l[0]:l; const c=pf?.childFamilyCodes??pf?.families??pf?.children??[]; return (Array.isArray(c)?c:[c]).map(x=>(typeof x==='string')?x:(x?.familyCode??x?.code)).filter(Boolean); },
+            pick: b => { const l=b?.parentFamilies??b?.data?.parentFamilies??b?.data??b; const pf=Array.isArray(l)?l[0]:l; const c=pf?.childFamilyCodes??pf?.families??pf?.children??[]; const x=Array.isArray(c)?c[0]:c; return (typeof x==='string')?x:(x?.familyCode??x?.code); },
+          }],
+        });
+      }
+      steps.push({
+        label: 'Offres par famille → offerCode',
+        route: { method: 'GET', path: '/api/v1/offer/findOfferCodesByFamily' },
+        extract: [{ targetParam: 'offerCode', list: b => flattenOfferCodes(b), pick: b => flattenOfferCodes(b)[0] }],
+      });
+      // Classer l'offre choisie (caché) pour piloter l'affichage du calendrier/performance.
+      steps.push(classifySelectedOfferStep());
+      // Calendrier → date (sauté si l'offre choisie est "open").
+      steps.push({
+        label: 'Jours disponibles → date',
+        route: { method: 'GET', path: '/api/v1/performance/findCalendarDays' },
+        skipIf: (collected) => collected.selectedType === 'open',
+        defaultParams: () => { const t=new Date(); const to=new Date(); to.setDate(t.getDate()+30); return { dateFrom: t.toISOString().substring(0,10), dateTo: to.toISOString().substring(0,10) }; },
+        extract: [{
+          targetParam: 'date',
+          list: b => { const l=b?.days??b?.data?.days??b?.data??b; return (Array.isArray(l)?l:[l]).filter(d=>d&&(d.available!==false)).map(d=>d?.date?String(d.date).substring(0,10):undefined).filter(Boolean); },
+          pick: b => { const l=b?.days??b?.data?.days??b?.data??b; const f=(Array.isArray(l)?l:[l]).find(d=>d&&(d.available!==false))||(Array.isArray(l)?l[0]:l); return f?.date?String(f.date).substring(0,10):undefined; },
+        }],
+      });
+      // Performance → performanceCode (sauté si "open").
+      steps.push({
+        label: 'Performances du jour → performanceCode',
+        route: { method: 'GET', path: '/api/v1/performance/findPerformanceByDay' },
+        skipIf: (collected) => collected.selectedType === 'open',
+        extract: [{ targetParam: 'performanceCode', list: b => flattenPerformanceCodes(b), pick: b => flattenPerformanceCodes(b)[0] }],
+      });
+      // Produits → productCode (choix).
+      // En daté/horodaté, l'offre a une séance : on passe performanceCode + date à
+      // findProductCodes (le tarif/les produits peuvent dépendre de la séance). En open, on
+      // ne passe rien de plus (selectedType === 'open').
+      steps.push({
+        label: 'Codes produits → productCode',
+        route: { method: 'GET', path: '/api/v1/product/findProductCodes' },
+        defaultParams: (collected) => (collected.selectedType === 'open')
+          ? {}
+          : { performanceCode: collected.performanceCode, date: collected.date },
+        forceParams: ['performanceCode', 'date'],
+        extract: [{ targetParam: 'productCode', list: b => flattenProductCodes(b), pick: b => flattenProductCodes(b)[0] }],
+      });
+      return steps;
+    }
+
+    // Étapes de vente (une vente) pour le semi-auto : panier construit depuis les choix
+    // (collected.productCode + performanceCode/date si présents).
+    function semiSaleSteps(isB2C, authSteps) {
+      const itemsFromChoices = (collected) => {
+        const item = { productCode: collected.productCode, quantity: 1 };
+        if (collected.performanceCode && collected.selectedType !== 'open') {
+          item.performanceCodes = [{ code: collected.performanceCode, date: collected.date }];
+        }
+        return [{ item }];
+      };
+      const checkCart = {
+        label: 'Vérification panier → cartCode',
+        route: { method: 'POST', path: '/api/v1/cart/checkCart' },
+        body: (collected) => JSON.stringify({ shopCart: { cartItems: itemsFromChoices(collected) } }),
+        extract: [{ targetParam: 'cartCode0', pick: b => b?.preOrder?.cartCode ?? b?.data?.preOrder?.cartCode ?? b?.cartCode }],
+      };
+      const begin = {
+        label: 'Début de transaction → orderCode',
+        route: { method: 'POST', path: '/api/v1/order/beginOrderTrans' },
+        body: (collected) => JSON.stringify({ shopCart: { cartCode: collected.cartCode0, cartItems: itemsFromChoices(collected) }, reservationOwnerCode: collected.accountCode }),
+        extract: [
+          { targetParam: 'orderCode0', pick: b => b?.orderCode ?? b?.data?.orderCode },
+          { targetParam: 'orderTotal0', pick: b => { const g=b?.preOrder?.cart?.total?.gross ?? b?.data?.preOrder?.cart?.total?.gross; return (g!=null)?String(g):undefined; }, silent: true },
+        ],
+      };
+      const confirm = {
+        label: 'Confirmation commande (paiement émulé)',
+        route: { method: 'POST', path: '/api/v1/order/confirmOrderTrans' },
+        defaultParams: () => ({ payDate0: new Date().toISOString() }),
+        body: (collected) => JSON.stringify({ orderCode: collected.orderCode0, payments: [{ paymentCode: 'EMULATEPAY', amount: { value: Number(collected.orderTotal0 || 0), currency: 'EUR' }, paymentDate: collected.payDate0 }] }),
+        extract: [{ targetParam: 'confirmedOrderCode0', pick: b => b?.orderCode ?? b?.data?.orderCode, silent: true }],
+      };
+      const readOrder = {
+        label: 'Lecture commande (validation)',
+        route: { method: 'GET', path: '/api/v1/order/readOrderDetails' },
+        defaultParams: (collected) => ({ orderCode: collected.confirmedOrderCode0 || collected.orderCode0 }),
+        forceParams: ['orderCode'],
+        schemaNonBlocking: true,
+        extract: [],
+      };
+      // Assemblage selon le scope et les options du scénario.
+      //  - stopAfterCheckCart : on s'arrête après le checkCart (aucune vente créée) ;
+      //  - withRemoveCart     : on ajoute une suppression du panier à la fin.
+      // B2C : checkCart puis auth puis le reste. B2B : auth déjà placée avant (dans gen).
+      const sc = scRun.scenario;
+      const wantRemoveCart = sc.stopAfterCheckCart && scRun.collected.removeCart === 'true';
+      const tail = sc.stopAfterCheckCart ? [] : [begin, confirm, readOrder];
+      // En B2C "Panier seul", on re-vérifie le panier APRÈS le login (réutilise le cartCode).
+      const recheck = (isB2C && sc.stopAfterCheckCart) ? [recheckCartStepSemi(itemsFromChoices)] : [];
+      const assembled = isB2C ? [checkCart, ...authSteps, ...recheck, ...tail] : [checkCart, ...tail];
+      if (wantRemoveCart) assembled.push(removeCartStepSemi());
+      return assembled;
+    }
+
+    function expandPurchaseSteps(scRun) {
+      const sc = scRun.scenario;
+      const prepIdx = scRun.steps.findIndex(s => s.__purchasePlaceholder);
+      if (prepIdx < 0) return; // pas un scénario d'achat (déjà étendu)
+
+      const mode = (scRun.collected.offerType || 'open').toLowerCase();
+      const isB2C = (scRun.collected.scope || scopeInput.value) === 'b2c';
+      const typeLabel = { open: 'open', dated: 'daté', timed: 'horodaté' };
+
+      // ── MODE SEMI-AUTO : déroulé catalogue détaillé avec choix (pas de résolution auto) ──
+      if (scenarioExecMode === 'semi') {
+        const authSteps = [];
+        if (sc.withCreateAccount) authSteps.push(createAccountStep());
+        authSteps.push(signinStep());
+
+        const gen = [];
+        gen.push(...semiCatalogSteps(sc.withParentFamily));
+        if (!isB2C) gen.push(...authSteps);
+        gen.push(...semiSaleSteps(isB2C, authSteps));
+
+        // Les étapes catalogue de départ (findParentFamilies/readParentFamily) sont déjà
+        // incluses dans semiCatalogSteps → on remplace TOUTES les étapes du scénario
+        // (catalogue d'origine + placeholder) par la séquence semi-auto complète.
+        scRun.steps = gen;
+        scRun.results = new Array(scRun.steps.length).fill(null);
+        scRun.summary = [];
+        return;
+      }
+
+      // Emplacements de ventes (statiques) : { suffix }
+      let saleSlots = [];
+      if (mode === 'eachType') {
+        saleSlots = ['open', 'dated', 'timed'].map(t => ({ suffix: ` (${typeLabel[t]})` }));
+      } else if (mode === 'complex') {
+        saleSlots = [{ suffix: ' (complexe)' }];
+      } else {
+        saleSlots = [{ suffix: '' }];
+      }
+
+      // Étape cachée de résolution des codes (classification réseau).
+      const resolveStep = {
+        label: 'Résolution des offres et produits',
+        hidden: true,
+        custom: (collected, run) => resolveSaleItems(collected, run),
+      };
+
+      // Étapes d'authentification.
+      const authSteps = [];
+      if (sc.withCreateAccount) authSteps.push(createAccountStep());
+      authSteps.push(signinStep());
+
+      // Assemblage dans l'ordre voulu.
+      //  - stopAfterCheckCart : on ne garde que le checkCart de chaque vente (pas de
+      //    beginOrderTrans/confirm/readOrder → aucune vente créée en base).
+      //  - withRemoveCart     : une étape de suppression du panier est ajoutée par vente à la fin.
+      const wantRemoveCart = sc.stopAfterCheckCart && scRun.collected.removeCart === 'true';
+      const gen = [resolveStep];
+      if (!isB2C) gen.push(...authSteps);
+      const removeSteps = [];
+      saleSlots.forEach((slot, gi) => {
+        const saleSteps = buildSaleSteps(slot.suffix, gi);     // [checkCart, begin, confirm, readOrder]
+        const kept = sc.stopAfterCheckCart ? [saleSteps[0]] : saleSteps;
+        if (isB2C && gi === 0) {
+          // checkCart (1re vente) → auth → reste (sauf si on s'arrête au checkCart).
+          // En "Panier seul" B2C, on re-vérifie le panier après le login (réutilise le cartCode).
+          const recheck = sc.stopAfterCheckCart ? [recheckCartStep(gi, slot.suffix)] : [];
+          gen.push(kept[0], ...authSteps, ...recheck, ...kept.slice(1));
+        } else {
+          gen.push(...kept);
+        }
+        if (wantRemoveCart) removeSteps.push(removeCartStep(gi, slot.suffix));
+      });
+      // Les suppressions de panier sont ajoutées APRÈS toutes les ventes.
+      gen.push(...removeSteps);
+
+      // En mode AUTO, resolveSaleItems énumère LUI-MÊME toutes les familles (parentes ×
+      // enfants, en profondeur). Les étapes catalogue statiques (findParentFamilies /
+      // readParentFamily) placées avant le placeholder poseraient collected.familyCode sur la
+      // 1re famille et brideraient l'énumération à cette seule famille. On remplace donc TOUTES
+      // les étapes (catalogue d'origine + placeholder) par la séquence auto.
+      scRun.steps = gen;
+      scRun.results = new Array(scRun.steps.length).fill(null);
+      scRun.summary = [];
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -2344,7 +2967,7 @@
     // L'achat lui-même est réalisé par une étape custom unique (doPurchase) selon la
     // typologie choisie (open / dated / timed / eachType / complex).
     // ══════════════════════════════════════════════════════════════════
-    function buildPurchaseScenario({ id, label, description, withParentFamily, withCreateAccount }) {
+    function buildPurchaseScenario({ id, label, description, withParentFamily, withCreateAccount, stopAfterCheckCart }) {
       const startFields = [];
       if (!withParentFamily) {
         startFields.push({ name: 'familyCode', label: 'Code famille', type: 'text', default: '' });
@@ -2359,8 +2982,16 @@
         { value: 'eachType', label: 'Un de chaque type présent' },
         { value: 'complex', label: 'Vente complexe (1 vente, les 3 types)' },
       ] });
-      startFields.push({ name: 'username', label: 'Identifiant (si login direct)', type: 'text', default: '', autocomplete: 'username' });
-      startFields.push({ name: 'password', label: 'Mot de passe (si login direct)', type: 'password', default: '', autocomplete: 'current-password' });
+      // Identifiants de connexion : UNIQUEMENT pour les scénarios "login" (compte existant).
+      // En création de compte, les identifiants sont générés → on ne les demande pas.
+      if (!withCreateAccount) {
+        startFields.push({ name: 'username', label: 'Identifiant (compte existant)', type: 'text', default: '', autocomplete: 'username' });
+        startFields.push({ name: 'password', label: 'Mot de passe (compte existant)', type: 'password', default: '', autocomplete: 'current-password' });
+      }
+      // Scénarios "jusqu'au panier" : option de suppression du panier à la fin (removeCart).
+      if (stopAfterCheckCart) {
+        startFields.push({ name: 'removeCart', label: 'Supprimer le panier à la fin', type: 'checkbox', default: '' });
+      }
 
       const steps = [];
 
@@ -2369,50 +3000,9 @@
       // préalables. En B2B, elles s'exécutent avant l'achat (comportement inchangé).
       const skipIfB2C = () => (scopeInput.value === 'b2c');
 
-      // ── Création de compte (données générées) — seulement si withCreateAccount ──
-      // fieldCode validés (masque B2C dev) : 1=prénom, 3=nom, 21=email, 548=username, 549=password.
-      if (withCreateAccount) {
-        steps.push({
-          label: 'Création de compte (données générées) → login',
-          route: { method: 'POST', path: '/api/v1/account/createAccount' },
-          skipIf: skipIfB2C,
-          // fieldCode validés en environnement de dev (masque B2C web) :
-          //   1=prénom, 3=nom, 21=email, 548=username(login), 549=password.
-          // Le login/password générés servent ensuite au signin. username = login = email généré.
-          body: JSON.stringify({
-            accountData: { fields: [
-              { fieldCode: 1, value: '{{@firstName}}' },
-              { fieldCode: 3, value: '{{@lastName}}' },
-              { fieldCode: 21, value: '{{@email}}' },
-              { fieldCode: 548, value: '{{@email}}' },
-              { fieldCode: 549, value: '{{@password}}' },
-            ] },
-          }, null, 2),
-          extract: [
-            // Le username du signin = l'email généré (fieldCode 548). Le password = généré.
-            { targetParam: 'username', pick: () => (scRun?.fake?.email), silent: true },
-            { targetParam: 'password', pick: () => (scRun?.fake?.password), silent: true },
-            { targetParam: 'accountCode', pick: b => b?.data?.accountCode ?? b?.accountCode, silent: true },
-          ],
-        });
-      }
-
-      // ── Connexion (B2B : avant l'achat ; B2C : sautée ici, faite après le checkCart) ──
-      steps.push({
-        label: 'Signin → accountCode',
-        route: { method: 'POST', path: '/api/v1/auth/signin' },
-        skipIf: skipIfB2C,
-        body: '{ "username": "{{username}}", "password": "{{password}}" }',
-        extract: [{ targetParam: 'accountCode', pick: b => b?.data?.accountCode ?? b?.accountCode }],
-      });
-      steps.push({
-        label: 'Lecture compte (validation)',
-        route: { method: 'GET', path: '/api/v1/account/readAccount' },
-        skipIf: skipIfB2C,
-        extract: [],
-      });
-
       // ── Catalogue : (option) familles de regroupement → famille ──
+      // L'authentification et l'achat sont entièrement générés par l'étape "prepare"
+      // ci-dessous (ordre correct selon le scope), donc aucune étape d'auth statique ici.
       if (withParentFamily) {
         steps.push({
           label: 'Familles parentes → parentFamilyCode',
@@ -2434,20 +3024,29 @@
         });
       }
 
-      // ── Achat (étape custom unique) ──
-      // Sélection de l'offre selon la typologie + panier + checkout + confirmation (EMULATEPAY).
-      // Selon offerType : 1 vente typée (arrêt si type absent), 'eachType' (N ventes tolérant),
-      // ou 'complex' (1 vente panier multi-articles). Récap des types vendus/manquants.
-      // Étape de préparation (cachée) : classe les offres et insère les étapes concrètes
-      // détaillées de l'achat (checkCart → [B2C signin] → begin → confirm → readOrder par vente).
+      // ── Placeholder d'achat ──
+      // Remplacé AVANT le lancement par expandPurchaseSteps(scRun), qui génère STATIQUEMENT
+      // (sans réseau) toutes les étapes détaillées selon le mode et le scope, afin qu'elles
+      // soient toutes visibles dès le départ :
+      //   B2B : [createAccount] → signin → (par vente) checkCart → begin → confirm → readOrder
+      //   B2C : (1re vente) checkCart → [createAccount] → signin → begin → confirm → readOrder → (ventes suivantes)
       steps.push({
         label: "Préparation de l'achat",
         hidden: true,
-        custom: (collected, scRun) => prepareSteps(collected, scRun),
+        __purchasePlaceholder: true,
       });
 
-      // withCreateAccount / withParentFamily exposés pour la logique d'auth B2C (dans prepareSteps).
-      return { id, label, description, startFields, steps, withCreateAccount, withParentFamily };
+      // Flags exposés :
+      //  - isPurchase        : scénario d'achat (traité par expandPurchaseSteps) ;
+      //  - stopAfterCheckCart: s'arrête au checkCart (aucune vente créée) ;
+      //  - createsSale       : réalise un beginOrderTrans/confirmOrderTrans (crée une vente en base).
+      //    → sert au filtrage par environnement et à la modale d'avertissement.
+      return {
+        id, label, description, startFields, steps,
+        withCreateAccount, withParentFamily, isPurchase: true,
+        stopAfterCheckCart: !!stopAfterCheckCart,
+        createsSale: !stopAfterCheckCart,
+      };
     }
 
     const TEST_SCENARIOS = [
@@ -2478,6 +3077,31 @@
         label: "Achat produit (familyCode fourni, création de compte)",
         description: "À partir d'un code famille fourni, avec création d'un compte (données générées) avant le login, jusqu'à la commande payée.",
         withParentFamily: false, withCreateAccount: true,
+      }),
+      // ── 4 scénarios "jusqu'au panier" (checkCart only) : AUCUNE vente créée en base ──
+      buildPurchaseScenario({
+        id: 'cart-full-login',
+        label: "Panier seul (login)",
+        description: "Depuis une famille de regroupement : offre → produit → login → vérification du panier (checkCart). Aucune vente créée.",
+        withParentFamily: true, withCreateAccount: false, stopAfterCheckCart: true,
+      }),
+      buildPurchaseScenario({
+        id: 'cart-full-create',
+        label: "Panier seul (création de compte)",
+        description: "Depuis une famille de regroupement, avec création d'un compte, jusqu'à la vérification du panier (checkCart). Aucune vente créée.",
+        withParentFamily: true, withCreateAccount: true, stopAfterCheckCart: true,
+      }),
+      buildPurchaseScenario({
+        id: 'cart-product-login',
+        label: "Panier seul (familyCode fourni, login)",
+        description: "À partir d'un code famille fourni : offre → produit → login → vérification du panier (checkCart). Aucune vente créée.",
+        withParentFamily: false, withCreateAccount: false, stopAfterCheckCart: true,
+      }),
+      buildPurchaseScenario({
+        id: 'cart-product-create',
+        label: "Panier seul (familyCode fourni, création de compte)",
+        description: "À partir d'un code famille fourni, avec création d'un compte, jusqu'à la vérification du panier (checkCart). Aucune vente créée.",
+        withParentFamily: false, withCreateAccount: true, stopAfterCheckCart: true,
       }),
       {
         id: 'catalog-family-to-product',
@@ -2808,6 +3432,7 @@
     const retryStepBtn = document.getElementById('retryStepBtn');
     const scenarioSteps = document.getElementById('scenarioSteps');
     const execAutoBtn = document.getElementById('execAutoBtn');
+    const execSemiBtn = document.getElementById('execSemiBtn');
     const execManualBtn = document.getElementById('execManualBtn');
     const scenarioStepConfig = document.getElementById('scenarioStepConfig');
     const scenarioStepConfigTitle = document.getElementById('scenarioStepConfigTitle');
@@ -2816,32 +3441,57 @@
     const scenarioNextStepBtn = document.getElementById('scenarioNextStepBtn');
     const scenarioPrevStepBtn = document.getElementById('scenarioPrevStepBtn');
 
-    // Mode d'exécution des scénarios : 'auto' | 'manual'
+    // Mode d'exécution des scénarios : 'auto' | 'semi' | 'manual'
+    //  - auto   : enchaîne tout seul (choisit le 1er candidat) ; pour l'achat, résout la
+    //             typologie d'offre en parcourant toutes les familles.
+    //  - semi   : masque la typologie d'offre ; déroule le catalogue en s'arrêtant à chaque
+    //             CHOIX (menus peuplés par la réponse précédente), sans champs libres.
+    //  - manual : s'arrête à chaque étape et affiche tous les champs possibles de la requête.
     let scenarioExecMode = 'auto';
     function setExecMode(mode) {
       scenarioExecMode = mode;
-      const auto = mode === 'auto';
-      execAutoBtn.classList.toggle('bg-indigo-600', auto);
-      execAutoBtn.classList.toggle('text-white', auto);
-      execAutoBtn.classList.toggle('text-slate-400', !auto);
-      execManualBtn.classList.toggle('bg-indigo-600', !auto);
-      execManualBtn.classList.toggle('text-white', !auto);
-      execManualBtn.classList.toggle('text-slate-400', auto);
+      const map = { auto: execAutoBtn, semi: execSemiBtn, manual: execManualBtn };
+      Object.entries(map).forEach(([m, btn]) => {
+        if (!btn) return;
+        const active = (m === mode);
+        btn.classList.toggle('bg-indigo-600', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('text-slate-400', !active);
+      });
+      // Le mode influe sur les champs de départ (offerType masqué en semi-auto) → re-rendu.
+      if (typeof renderScenarioStartFields === 'function') renderScenarioStartFields();
     }
     execAutoBtn.addEventListener('click', () => setExecMode('auto'));
+    execSemiBtn.addEventListener('click', () => setExecMode('semi'));
     execManualBtn.addEventListener('click', () => setExecMode('manual'));
 
     // ── Switch de mode ────────────────────────────────────────────────
+    // Couleur d'accent selon le mode : Scénarios = indigo, Manuel = ambre.
+    // Appliquée au bouton actif et au liseré sous le header, pour un repère visuel clair.
     function setMode(mode) {
       const scenario = mode === 'scenario';
       scenarioSection.classList.toggle('hidden', !scenario);
       manualModeWrap.classList.toggle('hidden', scenario);
-      modeManualBtn.classList.toggle('bg-indigo-600', !scenario);
-      modeManualBtn.classList.toggle('text-white', !scenario);
-      modeManualBtn.classList.toggle('text-slate-400', scenario);
-      modeScenarioBtn.classList.toggle('bg-indigo-600', scenario);
-      modeScenarioBtn.classList.toggle('text-white', scenario);
-      modeScenarioBtn.classList.toggle('text-slate-400', !scenario);
+
+      // Réinitialiser les deux boutons (états neutres)
+      [modeManualBtn, modeScenarioBtn].forEach(b => {
+        b.classList.remove('bg-indigo-600', 'bg-amber-600', 'text-white', 'text-slate-900');
+        b.classList.add('text-slate-400');
+      });
+      if (scenario) {
+        modeScenarioBtn.classList.remove('text-slate-400');
+        modeScenarioBtn.classList.add('bg-indigo-600', 'text-white');
+      } else {
+        modeManualBtn.classList.remove('text-slate-400');
+        modeManualBtn.classList.add('bg-amber-600', 'text-slate-900');
+      }
+
+      // Liseré d'accent du header selon le mode.
+      const header = document.getElementById('appHeader');
+      if (header) {
+        header.classList.toggle('border-indigo-500/70', scenario);
+        header.classList.toggle('border-amber-500/70', !scenario);
+      }
     }
     modeManualBtn.addEventListener('click', () => setMode('manual'));
     modeScenarioBtn.addEventListener('click', () => setMode('scenario'));
@@ -2849,23 +3499,57 @@
     // Mode Scénarios par défaut au démarrage
     setMode('scenario');
 
-    // Remplir le sélecteur de scénarios
-    scenarioSelect.innerHTML = `<option value="">${tr('scn.choosePh', '-- Sélectionner un scénario --')}</option>` +
-      TEST_SCENARIOS.map(s => `<option value="${s.id}">${scnTr(s.label)}</option>`).join('');
+    // Remplit le sélecteur de scénarios selon l'environnement :
+    //  - dev     : tous les scénarios, ordre normal ;
+    //  - préprod : tous, mais ceux qui NE créent PAS de vente d'abord (checkCart-only / catalogue) ;
+    //  - prod    : UNIQUEMENT ceux qui ne font ni beginOrderTrans ni confirmOrderTrans.
+    function scenariosForEnv(env) {
+      if (env === 'prod') return TEST_SCENARIOS.filter(s => !s.createsSale);
+      if (env === 'preprod') {
+        const safe = TEST_SCENARIOS.filter(s => !s.createsSale);
+        const sales = TEST_SCENARIOS.filter(s => s.createsSale);
+        return [...safe, ...sales];
+      }
+      return TEST_SCENARIOS;   // dev
+    }
+
+    function refreshScenarioList() {
+      const previous = scenarioSelect.value;
+      const list = scenariosForEnv(currentEnv());
+      scenarioSelect.innerHTML = `<option value="">${tr('scn.choosePh', '-- Sélectionner un scénario --')}</option>` +
+        list.map(s => `<option value="${s.id}">${scnTr(s.label)}</option>`).join('');
+      // Conserver la sélection si elle est toujours disponible, sinon réinitialiser.
+      if (previous && list.some(s => s.id === previous)) {
+        scenarioSelect.value = previous;
+      } else if (previous) {
+        scenarioSelect.value = '';
+        renderScenarioStartFields();
+      }
+      loadScenarioBadges();
+    }
 
     function getScenario(id) {
       return TEST_SCENARIOS.find(s => s.id === id);
     }
 
+    // Remplissage initial du sélecteur (selon l'environnement courant).
+    refreshScenarioList();
+
     // ── Rendu des champs de départ à la sélection ─────────────────────
     scenarioSelect.addEventListener('change', () => {
-      const sc = getScenario(scenarioSelect.value);
       scenarioSteps.classList.add('hidden');
       scenarioSteps.innerHTML = '';
       // Effacer le bloc de synthèse précédent + masquer le retry (contexte d'un autre scénario)
       document.getElementById('scenarioSummary')?.remove();
       retryStepBtn.classList.add('hidden');
       lastFailedRun = null;
+      renderScenarioStartFields();
+    });
+
+    // Rend les champs de départ du scénario sélectionné. Réutilisé au changement de mode
+    // d'exécution (le champ 'offerType' est masqué en mode semi-auto).
+    function renderScenarioStartFields() {
+      const sc = getScenario(scenarioSelect.value);
 
       if (!sc) {
         scenarioDescription.classList.add('hidden');
@@ -2880,10 +3564,25 @@
       // Valeurs de champs de départ sauvegardées pour cette URL + ce scénario
       const savedStart = getScenarioStartFields(sc.id);
 
-      const startFieldsHtml = sc.startFields.map(f => {
+      // En mode semi-auto, on NE propose PAS la typologie d'offre : l'utilisateur choisit
+      // lui-même l'offre/le produit à chaque étape. On masque donc ce champ de départ.
+      const visibleStartFields = sc.startFields.filter(f =>
+        !(f.name === 'offerType' && scenarioExecMode === 'semi'));
+
+      const startFieldsHtml = visibleStartFields.map(f => {
         // Priorité : valeur sauvegardée > valeur par défaut. Les mots de passe ne sont pas restaurés.
         const val = (f.type !== 'password' && savedStart[f.name] !== undefined)
           ? savedStart[f.name] : (f.default || '');
+        // Champ booléen (case à cocher), ex: "Supprimer le panier à la fin".
+        if (f.type === 'checkbox') {
+          const checked = (val === 'true' || val === true) ? 'checked' : '';
+          return `
+          <div class="flex items-center gap-2 sm:col-span-2 lg:col-span-3 bg-slate-900/60 border border-slate-700/60 rounded-md px-2.5 py-2">
+            <input type="checkbox" id="sf-${f.name}" name="${f.name}" ${checked}
+              class="scenario-start-input accent-indigo-500 h-4 w-4 rounded" data-sc-checkbox="1">
+            <label class="text-xs font-mono font-semibold text-slate-300 cursor-pointer" for="sf-${f.name}">${scnTr(f.label)}</label>
+          </div>`;
+        }
         // Champ de type select (ex: typologie d'offre) : rendu en menu déroulant
         if (f.type === 'select' && Array.isArray(f.options)) {
           const opts = f.options.map(o =>
@@ -2924,7 +3623,7 @@
 
       // Afficher le bouton "Rejouer" si un test précédent existe pour ce scénario + URL
       updateReplayButton();
-    });
+    }
 
     // ── Persistance des champs de départ de scénario (par URL + scénario) ──
     function getScenarioStartFields(scenarioId) {
@@ -2946,6 +3645,7 @@
         scenarioStartFields.querySelectorAll('.scenario-start-input').forEach(inp => {
           // Ne pas persister les mots de passe
           if (inp.type === 'password') return;
+          if (inp.dataset.scCheckbox) { values[inp.name] = inp.checked ? 'true' : 'false'; return; }
           if (inp.value.trim() !== '') values[inp.name] = inp.value.trim();
         });
         all[url][scenarioId] = values;
@@ -2988,15 +3688,20 @@
       loadScenarioBadges();
     }
 
-    // Badge (✔ / ✖) à côté de chaque option du sélecteur
+    // Badge (✔ / ⚠ / ✖) à côté de chaque option du sélecteur.
     function loadScenarioBadges() {
       scenarioSelect.querySelectorAll('option').forEach(opt => {
         const sc = getScenario(opt.value);
         if (!sc) return;
         const st = getScenarioStatus(sc.id);
-        const mark = st ? (st.status === 'ok' ? ' ✔' : st.status === 'warn' ? ' ⚠' : ' ✖') : '';
+        const mark = st ? (st.status === 'ok' ? ' ✔' : st.status === 'warn' ? ' ⚠' : st.status === 'fail' ? ' ✖' : ' •') : '';
         opt.textContent = scnTr(sc.label) + mark;
       });
+      // Forcer le rafraîchissement du texte affiché pour l'option SÉLECTIONNÉE : modifier le
+      // textContent d'une <option> déjà sélectionnée ne rafraîchit pas toujours le <select>
+      // fermé (Chrome). On réassigne la valeur pour forcer le ré-affichage.
+      const current = scenarioSelect.value;
+      if (current) { scenarioSelect.value = ''; scenarioSelect.value = current; }
     }
 
     /** Affiche l'état des étapes + badge global pour un scénario. */
@@ -3006,9 +3711,19 @@
       const sc = getScenario(id);
       if (!sc) return;
 
+      // Scénarios d'achat : les étapes réelles dépendent du mode et ne sont connues qu'APRÈS
+      // le lancement (expansion). Afficher les étapes statiques mémorisées serait erroné,
+      // donc on garde la liste masquée tant que le run n'a pas eu lieu (seul le badge global
+      // du sélecteur est mis à jour via loadScenarioBadges).
+      if (sc.isPurchase) { scenarioSteps.classList.add('hidden'); scenarioSteps.innerHTML = ''; return; }
+
       scenarioSteps.classList.remove('hidden');
       const success = statusEntry.status === 'ok' || statusEntry.status === 'warn';
+      // On ignore les étapes techniques masquées (placeholder d'achat, resolveCodes).
+      let visibleNo = 0;
       const rows = sc.steps.map((step, i) => {
+        if (step.hidden) return '';
+        visibleNo++;
         let icon, color;
         if (success || (statusEntry.failedStep != null && i < statusEntry.failedStep)) {
           icon = 'fa-circle-check'; color = 'text-emerald-400';
@@ -3019,7 +3734,7 @@
         }
         return `<div class="flex items-center gap-2 text-xs">
           <i class="fa-solid ${icon} ${color}"></i>
-          <span class="text-slate-300">${i + 1}. ${scnTr(step.label)}</span>
+          <span class="text-slate-300">${visibleNo}. ${scnTr(step.label)}</span>
         </div>`;
       }).join('');
 
@@ -3049,7 +3764,14 @@
 
     function renderScenarioProgress(currentIdx) {
       if (!scRun) return;
-      scenarioSteps.innerHTML = (scRun.steps || scRun.scenario.steps).map((step, i) => {
+      // On n'affiche jamais les étapes techniques masquées (ex: "Préparation de l'achat"),
+      // mais on conserve l'index réel (i) pour lire results[i] ; seule la NUMÉROTATION
+      // visible est recalculée sur les étapes visibles.
+      const allSteps = (scRun.steps || scRun.scenario.steps);
+      let visibleNo = 0;
+      scenarioSteps.innerHTML = allSteps.map((step, i) => {
+        if (step.hidden) return '';
+        visibleNo++;
         let icon, color;
         if (scRun.results[i] === 'ok') { icon = 'fa-circle-check'; color = 'text-emerald-400'; }
         else if (scRun.results[i] === 'warn') { icon = 'fa-triangle-exclamation'; color = 'text-amber-400'; }
@@ -3063,7 +3785,7 @@
         const skipLabel = scRun.results[i] === 'skip' ? ` <span class="text-slate-500 italic">${tr('scn.skipped', '(ignorée)')}</span>` : '';
         return `<div class="flex items-center gap-2 text-xs">
           <i class="fa-solid ${icon} ${color}"></i>
-          <span class="text-slate-300">${i + 1}. ${scnTr(step.label)}${skipLabel}</span>
+          <span class="text-slate-300">${visibleNo}. ${scnTr(step.label)}${skipLabel}</span>
         </div>`;
       }).join('');
     }
@@ -3073,6 +3795,21 @@
       if (!sc) return;
       if (!cachedYamlContent) { alert(tr('scn.needYaml', 'Chargez d\'abord une spec YAML.')); return; }
       if (!targetUrlInput.value.trim()) { alert(tr('scn.needUrl', 'Renseignez l\'URL de l\'API cible.')); return; }
+
+      // En PRÉPROD, un scénario qui crée une vente (beginOrderTrans/confirmOrderTrans) écrit en
+      // base : on demande confirmation avant de lancer. Oui = gris, Non = rouge.
+      if (currentEnv() === 'preprod' && sc.createsSale) {
+        const ok = await showConfirmModal({
+          title: tr('env.saleWarnTitle', 'Création de vente'),
+          message: tr('env.saleWarnMsg', 'Attention, ce scénario va créer une vente en base de données. Êtes-vous sûr de vouloir continuer ?'),
+          icon: 'fa-solid fa-triangle-exclamation', iconClass: 'text-rose-400',
+          okLabel: tr('common.yesContinue', 'Oui, continuer'),
+          cancelLabel: tr('common.cancel', 'Non, annuler'),
+          okStyle: 'bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600',       // Oui en gris
+          cancelStyle: 'bg-rose-600 hover:bg-rose-500 text-white border border-rose-500',            // Non en rouge
+        });
+        if (!ok) return;   // annulation → on ne lance pas
+      }
 
       let startParams, enabledBranches, fake;
 
@@ -3085,6 +3822,7 @@
         // Champs de départ saisis
         startParams = {};
         scenarioStartFields.querySelectorAll('.scenario-start-input').forEach(inp => {
+          if (inp.dataset.scCheckbox) { startParams[inp.name] = inp.checked ? 'true' : 'false'; return; }
           if (inp.value.trim() !== '') startParams[inp.name] = inp.value.trim();
         });
         const localeVal = document.getElementById('globalLocale')?.value.trim();
@@ -3115,6 +3853,10 @@
         replayMode: !!replay,   // en replay, on n'interrompt pas pour les choix
       };
 
+      // Scénario d'achat : étendre STATIQUEMENT le placeholder en étapes détaillées, pour
+      // que toutes les étapes soient visibles dès le lancement (ordre B2C/B2B correct).
+      if (sc.isPurchase) expandPurchaseSteps(scRun);
+
       document.getElementById('scenarioSummary')?.remove();
       scenarioStepConfig.classList.add('hidden');
       retryStepBtn.classList.add('hidden');  // masquer tant qu'un run tourne
@@ -3123,6 +3865,7 @@
       runScenarioBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${tr('scn.running', 'Exécution...')}`;
       scenarioSteps.classList.remove('hidden');
 
+      renderScenarioProgress(-1);   // affiche d'emblée toutes les étapes détaillées
       await executeScenarioStep();
     }
 
@@ -3179,20 +3922,16 @@
         catch (e) { out = { ok: false, error: e.message }; }
         if (out && out.ok) {
           if (out.extracted) Object.entries(out.extracted).forEach(([k, v]) => {
-            if (v !== undefined && v !== null && v !== '') { collected[k] = String(v); setParamValue(k, String(v)); }
+            // On accepte ici les valeurs vides : ex. items2='' (vente absente en eachType),
+            // nécessaire pour que skipIf détecte correctement l'absence.
+            if (v !== undefined && v !== null) { collected[k] = String(v); if (v !== '') setParamValue(k, String(v)); }
           });
-          // Étape de préparation : insère dynamiquement des étapes concrètes juste après.
+          // Étape custom pouvant insérer d'éventuelles étapes après elle (legacy).
           if (Array.isArray(out.insertSteps) && out.insertSteps.length) {
             scRun.steps.splice(i + 1, 0, ...out.insertSteps);
           }
-          // Étape "prepare" invisible (ne pas l'afficher comme une ligne) : marquée hidden.
-          if (step.hidden) {
-            results.splice(i, 1);            // retirer le marqueur de l'étape prepare
-            scRun.steps.splice(i, 1);
-            return executeScenarioStep();    // enchaîner sur la 1re étape insérée (même index)
-          }
           results[i] = 'ok';
-          summary[i] = { label: step.label, route: step.route || { method: '-', path: step.label }, outcome: 'ok', statusCode: null, warnings: [], errors: [] };
+          summary[i] = { label: step.label, route: step.route || { method: '-', path: step.label }, outcome: 'ok', statusCode: null, warnings: [], errors: [], resolveCalls: out.resolveCalls };
           window._consoleLog?.({ type: 'BATCH', route: step.route || { method: 'CUSTOM', path: step.label }, status: 200 });
           const isLast = i >= scRun.steps.length - 1;
           if (isLast) return finalizeScenario();
@@ -3201,7 +3940,7 @@
         } else {
           results[i] = 'fail';
           const errMsg = (out && out.error) || tr('scn.stepFailedConsole', 'Étape "{label}" échouée', { label: scnTr(step.label) });
-          summary[i] = { label: step.label, route: step.route || { method: '-', path: step.label }, outcome: 'fail', statusCode: null, warnings: [], errors: [errMsg] };
+          summary[i] = { label: step.label, route: step.route || { method: '-', path: step.label }, outcome: 'fail', statusCode: null, warnings: [], errors: [errMsg], resolveCalls: out && out.resolveCalls };
           window._consoleLog?.({ type: 'ERROR', route: step.route || { method: 'CUSTOM', path: step.label }, error: errMsg });
           scRun.failedStep = i;
           return finalizeScenario();
@@ -3211,9 +3950,14 @@
       // ── Injecter les valeurs par défaut de l'étape (ex: plage de dates) ──
       // S'applique en auto ET manuel, sans écraser une valeur déjà renseignée.
       if (typeof step.defaultParams === 'function') {
-        const defs = step.defaultParams() || {};
+        const defs = step.defaultParams(collected) || {};
+        // Clés "forcées" : toujours réécrites même si déjà présentes (ex: orderCode propre
+        // à la vente courante en multi-ventes). Les autres ne sont posées que si vides,
+        // pour ne pas écraser une saisie utilisateur (plages de dates, etc.).
+        const forced = step.forceParams || [];
         Object.entries(defs).forEach(([k, v]) => {
-          if (collected[k] === undefined || collected[k] === '') collected[k] = String(v);
+          if (v === undefined || v === null || v === '') return;
+          if (forced.includes(k) || collected[k] === undefined || collected[k] === '') collected[k] = String(v);
         });
       }
 
@@ -3257,9 +4001,18 @@
           undocumented = r?.undocumented || [];
           notImplemented = r?.notImplemented || [];
           const httpOk = statusCode && statusCode < 400;
+          // Étape "schemaNonBlocking" : si l'appel HTTP réussit, les non-conformités de
+          // schéma (même sur champ requis, ex. readOrderDetails dont l'API renvoie une date
+          // sans fuseau) sont rétrogradées en avertissements au lieu de bloquer le scénario.
+          // Le but de l'étape est de confirmer l'existence de la ressource, pas d'en valider
+          // finement chaque champ. Les erreurs sont déplacées dans warnings pour rester visibles.
+          if (step.schemaNonBlocking && httpOk && r?.valid === false) {
+            warnings = [...warnings, ...errors];
+            errors = [];
+          }
           // Priorité d'affichage (tous non bloquants sauf fail) :
           // warn > nullable > undocumented > notImplemented > ok
-          if (httpOk && r?.valid !== false) {
+          if (httpOk && (r?.valid !== false || step.schemaNonBlocking)) {
             if (warnings.length > 0) outcome = 'warn';
             else if (nullables.length > 0) outcome = 'nullable';
             else if (undocumented.length > 0) outcome = 'undocumented';
@@ -3272,6 +4025,7 @@
         window._consoleLog?.({
           type: outcome === 'fail' ? 'ERROR' : (outcome === 'ok' ? 'BATCH' : 'JS_ERROR'),
           route: step.route, status: statusCode, responseBody: body, requestUrl: reqUrl,
+          requestBody: bodies[`${step.route.method} ${step.route.path}`],
           error: outcome === 'fail'
             ? (errors[0] || tr('scn.stepFailedConsole', 'Étape "{label}" échouée', { label: scnTr(step.label) }))
             : (outcome === 'warn' ? tr('scn.warnSchema', '{n} avertissement(s) de schéma', { n: warnings.length })
@@ -3302,8 +4056,9 @@
           scRun.index++;
           return executeScenarioStep();
         }
-        // En mode manuel : ne pas terminer, permettre de réessayer avec d'autres paramètres
-        if (scenarioExecMode === 'manual') {
+        // En mode manuel ou semi-auto (interactifs) : ne pas terminer, permettre de
+        // réessayer l'étape avec d'autres paramètres/choix.
+        if (scenarioExecMode === 'manual' || scenarioExecMode === 'semi') {
           renderScenarioProgress(-1);
           scenarioStepConfigError.textContent = tr('scn.stepFailedRetry', "L'étape a échoué. Ajustez les paramètres et réessayez.");
           renderStepConfig({ retry: true });
@@ -3329,8 +4084,11 @@
 
       const isLastStep = i >= steps.length - 1;
 
-      // ── MODE AUTO ──
-      if (scenarioExecMode === 'auto') {
+      // ── MODE AUTO et SEMI-AUTO ──
+      // Les deux enchaînent en prenant le 1er candidat par défaut, et s'arrêtent uniquement
+      // sur un VRAI choix (plusieurs candidats) de l'étape suivante. La différence est dans
+      // renderStepConfig : en semi, on n'affiche QUE les menus de choix (pas les champs libres).
+      if (scenarioExecMode === 'auto' || scenarioExecMode === 'semi') {
         // Extraire le premier candidat de chaque champ → collected.
         // En REPLAY : ne pas écraser une valeur déjà mémorisée (le choix du run précédent).
         (step.extract || []).forEach(ex => {
@@ -3346,10 +4104,19 @@
 
         if (isLastStep) return finalizeScenario();
 
-        // 2-b : on ne s'arrête que si l'étape SUIVANTE a un champ avec PLUS D'UN choix
-        // déductible (un vrai choix à faire). En replay, on n'interrompt jamais.
+        // On ne s'arrête que si l'étape SUIVANTE a un champ avec PLUS D'UN choix déductible
+        // (un vrai choix) ET qu'elle est configurable (elle a une route ; une étape technique
+        // custom/cachée n'a pas de route à paramétrer). En replay, on n'interrompt jamais.
+        // En mode SEMI : on s'arrête aussi même avec un seul candidat, pour laisser l'utilisateur
+        // confirmer/choisir à chaque étape de catalogue (sauf étapes techniques sans route).
+        const nextStep = steps[i + 1];
+        const nextConfigurable = nextStep && !!nextStep.route;
+        const nextHasCandidates = Object.keys(candForNext).length > 0;
         const hasRealChoice = Object.values(candForNext).some(vals => (vals || []).length > 1);
-        if (hasRealChoice && !scRun.replayMode) {
+        const stopForChoice = (scenarioExecMode === 'semi')
+          ? (nextConfigurable && nextHasCandidates)   // semi : s'arrêter à chaque choix disponible
+          : (hasRealChoice && nextConfigurable);       // auto : seulement sur un vrai choix multiple
+        if (stopForChoice && !scRun.replayMode) {
           renderScenarioProgress(-1);
           renderStepConfig(i);
           return;
@@ -3383,8 +4150,17 @@
       // - En retry, on appelle renderStepConfig avec { retryIdx } pour reconfigurer l'étape ratée.
       const { scenario: sc, collected } = scRun;
       const isRetry = typeof arguments[0] === 'object' && arguments[0]?.retry;
-      const targetIdx = isRetry ? scRun.index : (currentIdx + 1);
-      const targetStep = sc.steps[targetIdx];
+      let targetIdx = isRetry ? scRun.index : (currentIdx + 1);
+      // Utilise la liste EFFECTIVE (scRun.steps), qui inclut les étapes d'achat détaillées
+      // générées par expandPurchaseSteps (sc.steps ne contient que le placeholder).
+      // On saute les étapes techniques sans route (custom/cachées) qui ne se configurent pas.
+      while (scRun.steps[targetIdx] && !scRun.steps[targetIdx].route) targetIdx++;
+      const targetStep = scRun.steps[targetIdx];
+      if (!targetStep || !targetStep.route) {
+        // Plus aucune étape configurable en aval : on enchaîne automatiquement.
+        scRun.index = (isRetry ? scRun.index : currentIdx) + 1;
+        return executeScenarioStep();
+      }
 
       // Pré-remplir les valeurs par défaut de l'étape cible (ex: dateFrom/dateTo, date=demain)
       // sans écraser une valeur déjà renseignée, pour qu'elles apparaissent dans les champs.
@@ -3420,6 +4196,11 @@
       // précédent ET qui ont plus d'un candidat (un vrai choix à faire).
       if (scenarioExecMode === 'auto') {
         paramNames = paramNames.filter(p => (candidatesByParam[p.name] || []).length > 1);
+      }
+      // En mode SEMI-AUTO : n'afficher QUE les champs à CHOIX (candidats issus de la réponse
+      // précédente), même avec un seul candidat, mais JAMAIS les champs libres du YAML.
+      if (scenarioExecMode === 'semi') {
+        paramNames = paramNames.filter(p => (candidatesByParam[p.name] || []).length >= 1);
       }
 
       scenarioStepConfigFields.innerHTML = paramNames.map(p => {
@@ -3649,6 +4430,9 @@
       });
       updateReplayButton();
 
+      // Historique des 5 derniers tests (config rejouable + résultat).
+      recordTestHistory(sc, finalStatus);
+
       // En cas d'échec : conserver l'état complet du run pour pouvoir rejouer l'étape fautive.
       if (failedStep !== null) {
         lastFailedRun = scRun;
@@ -3691,6 +4475,263 @@
       replayScenarioBtn.classList.toggle('hidden', !hasRun);
     }
 
+    // ══════════════════════════════════════════════════════════════════
+    // HISTORIQUE DES DERNIERS TESTS (5 max par URL) + export / import
+    // Un "test" = la configuration d'un run : scénario, mode d'exécution, scope, champs de
+    // départ saisis (hors mot de passe), + métadonnées (date, résultat global).
+    // ══════════════════════════════════════════════════════════════════
+    function getTestHistory() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return [];
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_TEST_HISTORY) || '{}');
+        return Array.isArray(all[url]) ? all[url] : [];
+      } catch { return []; }
+    }
+
+    function writeTestHistory(list) {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_TEST_HISTORY) || '{}');
+        all[url] = list.slice(0, TEST_HISTORY_MAX);
+        localStorage.setItem(STORAGE_KEY_TEST_HISTORY, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+
+    // Construit l'objet "jeu de test" à partir d'un scénario et des champs de départ saisis.
+    function buildTestConfig(sc, status) {
+      const startFields = {};
+      (sc.startFields || []).forEach(f => {
+        if (f.type === 'password') return;   // on ne mémorise jamais les mots de passe
+        const v = scRun?.collected?.[f.name];
+        if (v !== undefined && v !== '') startFields[f.name] = String(v);
+      });
+      return {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        scenarioId: sc.id,
+        scenarioLabel: sc.label,
+        mode: scenarioExecMode,
+        scope: scopeInput.value,
+        startFields,
+        status,
+        ts: Date.now(),
+      };
+    }
+
+    // Enregistre un run terminé en tête de l'historique (déduplique rien : chaque run compte).
+    function recordTestHistory(sc, status) {
+      if (!sc) return;
+      const list = getTestHistory();
+      list.unshift(buildTestConfig(sc, status));
+      writeTestHistory(list);
+      renderTestHistory();
+    }
+
+    // Recharge un test dans l'UI : scénario + mode + scope + champs de départ. Ne lance pas.
+    function loadTestConfig(cfg) {
+      if (!cfg) return;
+      if (cfg.mode) setExecMode(cfg.mode);
+      if (cfg.scope) scopeInput.value = cfg.scope;
+      scenarioSelect.value = cfg.scenarioId;
+      renderScenarioStartFields();   // rendre les champs du scénario choisi (selon le mode)
+      // Pré-remplir les champs de départ mémorisés.
+      Object.entries(cfg.startFields || {}).forEach(([k, v]) => {
+        const inp = document.getElementById(`sf-${k}`);
+        if (inp) inp.value = v;
+      });
+      scenarioSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Télécharge un ou plusieurs tests au format JSON.
+    function downloadTests(tests, filename) {
+      const payload = { kind: 'api-validator-tests', version: 1, exportedAt: new Date().toISOString(), tests };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // Importe des tests depuis un objet JSON (un test, un tableau, ou { tests: [...] }).
+    function importTests(parsed) {
+      let incoming = [];
+      if (Array.isArray(parsed)) incoming = parsed;
+      else if (parsed && Array.isArray(parsed.tests)) incoming = parsed.tests;
+      else if (parsed && parsed.scenarioId) incoming = [parsed];
+      // Ne garder que des entrées plausibles (un scénario connu).
+      incoming = incoming.filter(t => t && t.scenarioId && getScenario(t.scenarioId));
+      if (!incoming.length) { alert(tr('hist.importNone', 'Aucun test valide trouvé dans le fichier.')); return; }
+      // Normaliser (nouvel id + ts si absents) et fusionner en tête.
+      const norm = incoming.map(t => ({
+        id: t.id || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        scenarioId: t.scenarioId, scenarioLabel: t.scenarioLabel || getScenario(t.scenarioId)?.label || t.scenarioId,
+        mode: t.mode || 'auto', scope: t.scope || 'b2c',
+        startFields: (t.startFields && typeof t.startFields === 'object') ? t.startFields : {},
+        status: t.status || null, ts: t.ts || Date.now(),
+      }));
+      writeTestHistory([...norm, ...getTestHistory()]);
+      renderTestHistory();
+      alert(tr('hist.importOk', '{n} test(s) importé(s).', { n: norm.length }));
+    }
+
+    // Rendu du bloc "Derniers tests".
+    const testHistorySection = document.getElementById('testHistorySection');
+    const testHistoryList = document.getElementById('testHistoryList');
+    function renderTestHistory() {
+      if (!testHistorySection) return;
+      const list = getTestHistory();
+      // La section reste TOUJOURS visible (pour accéder à Importer/Exporter), même sans test.
+      testHistorySection.classList.remove('hidden');
+      if (!list.length) {
+        testHistoryList.innerHTML = `<div class="text-[11px] text-slate-500 italic px-1 py-1.5">${tr('hist.none', 'Aucun test pour cette cible. Lancez un scénario ou importez des tests.')}</div>`;
+        return;
+      }
+
+      const statusDot = {
+        ok: 'text-emerald-400', warn: 'text-amber-400', nullable: 'text-cyan-400',
+        undocumented: 'text-violet-400', notImplemented: 'text-slate-400', fail: 'text-rose-400',
+      };
+      const modeLabel = { auto: tr('scn.auto', 'Auto'), semi: tr('scn.semi', 'Semi-auto'), manual: tr('scn.manual', 'Manuel') };
+
+      testHistoryList.innerHTML = list.map((t, idx) => {
+        const when = new Date(t.ts).toLocaleString();
+        const dot = statusDot[t.status] || 'text-slate-500';
+        const fields = Object.entries(t.startFields || {}).map(([k, v]) => `${k}=${v}`).join(', ');
+        return `
+          <div class="flex items-center justify-between gap-2 text-[11px] bg-slate-900/90 border border-slate-700/70 rounded-lg px-2.5 py-1.5">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 text-slate-300 truncate">
+                <i class="fa-solid fa-circle ${dot} text-[7px]"></i>
+                <span class="font-semibold text-indigo-300 truncate">${scnTr(t.scenarioLabel)}</span>
+                <span class="text-slate-500">· ${modeLabel[t.mode] || t.mode} · ${(t.scope || '').toUpperCase()}</span>
+              </div>
+              <div class="text-[9px] text-slate-500 truncate">${when}${fields ? ' · ' + fields : ''}</div>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+              <button type="button" data-hist-fav="${idx}" title="${tr('fav.toggle','Ajouter / retirer des favoris')}"
+                class="px-2 py-1 rounded text-[10px] transition ${isFavorite(t) ? 'text-amber-400 hover:text-amber-300' : 'text-slate-500 hover:text-amber-400'}"><i class="fa-${isFavorite(t) ? 'solid' : 'regular'} fa-star"></i></button>
+              <button type="button" data-hist-load="${idx}" title="${tr('hist.load','Recharger ce test')}"
+                class="px-2 py-1 bg-indigo-600/80 hover:bg-indigo-500 text-white rounded text-[10px] font-bold transition"><i class="fa-solid fa-upload"></i></button>
+              <button type="button" data-hist-export="${idx}" title="${tr('hist.exportOne','Exporter ce test')}"
+                class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-[10px] transition"><i class="fa-solid fa-download"></i></button>
+            </div>
+          </div>`;
+      }).join('');
+
+      testHistoryList.querySelectorAll('[data-hist-load]').forEach(btn => {
+        btn.addEventListener('click', () => loadTestConfig(getTestHistory()[Number(btn.dataset.histLoad)]));
+      });
+      testHistoryList.querySelectorAll('[data-hist-export]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const t = getTestHistory()[Number(btn.dataset.histExport)];
+          if (t) downloadTests([t], `test-${t.scenarioId}-${t.ts}.json`);
+        });
+      });
+      testHistoryList.querySelectorAll('[data-hist-fav]').forEach(btn => {
+        btn.addEventListener('click', () => toggleFavorite(getTestHistory()[Number(btn.dataset.histFav)]));
+      });
+    }
+
+    // ── Favoris de tests (max 5 par URL, non écrasés par la rotation de l'historique) ──
+    // Clé d'identité d'un test (indépendante de la date) : scénario + mode + scope + champs.
+    function favKey(t) {
+      const sf = Object.entries(t.startFields || {}).sort().map(([k, v]) => `${k}=${v}`).join('&');
+      return `${t.scenarioId}|${t.mode}|${t.scope}|${sf}`;
+    }
+    function getFavorites() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return [];
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_FAVORITES) || '{}');
+        return Array.isArray(all[url]) ? all[url] : [];
+      } catch { return []; }
+    }
+    function writeFavorites(list) {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_FAVORITES) || '{}');
+        all[url] = list.slice(0, FAVORITES_MAX);
+        localStorage.setItem(STORAGE_KEY_FAVORITES, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+    function isFavorite(t) {
+      const k = favKey(t);
+      return getFavorites().some(f => favKey(f) === k);
+    }
+    function toggleFavorite(t) {
+      if (!t) return;
+      const k = favKey(t);
+      let favs = getFavorites();
+      if (favs.some(f => favKey(f) === k)) {
+        favs = favs.filter(f => favKey(f) !== k);   // retirer
+      } else {
+        if (favs.length >= FAVORITES_MAX) { alert(tr('fav.max', 'Maximum {n} favoris. Retirez-en un d’abord.', { n: FAVORITES_MAX })); return; }
+        // On stocke une copie figée de la config (non écrasée par la rotation de l'historique).
+        favs.push({ scenarioId: t.scenarioId, scenarioLabel: t.scenarioLabel, mode: t.mode, scope: t.scope, startFields: { ...(t.startFields || {}) } });
+      }
+      writeFavorites(favs);
+      renderFavorites();
+      renderTestHistory();   // rafraîchir l'état des étoiles
+    }
+
+    const favoritesSection = document.getElementById('favoritesSection');
+    const favoritesList = document.getElementById('favoritesList');
+    function renderFavorites() {
+      if (!favoritesSection) return;
+      const favs = getFavorites();
+      if (!favs.length) { favoritesSection.classList.add('hidden'); favoritesList.innerHTML = ''; return; }
+      favoritesSection.classList.remove('hidden');
+      const modeLabel = { auto: tr('scn.auto', 'Auto'), semi: tr('scn.semi', 'Semi-auto'), manual: tr('scn.manual', 'Manuel') };
+      favoritesList.innerHTML = favs.map((f, idx) => {
+        const sub = `${modeLabel[f.mode] || f.mode} · ${(f.scope || '').toUpperCase()}`;
+        return `
+          <div class="flex items-center gap-1.5 bg-amber-950/30 border border-amber-800/50 rounded-full pl-2.5 pr-1 py-1 text-[11px]">
+            <button type="button" data-fav-load="${idx}" title="${tr('fav.load','Charger ce favori')}" class="flex items-center gap-1.5 hover:text-amber-200 transition">
+              <i class="fa-solid fa-star text-amber-400 text-[9px]"></i>
+              <span class="font-semibold text-amber-100 max-w-[160px] truncate">${scnTr(f.scenarioLabel)}</span>
+              <span class="text-amber-400/70">${sub}</span>
+            </button>
+            <button type="button" data-fav-remove="${idx}" title="${tr('fav.remove','Retirer des favoris')}" class="w-4 h-4 flex items-center justify-center text-amber-400/60 hover:text-rose-400 transition"><i class="fa-solid fa-xmark text-[9px]"></i></button>
+          </div>`;
+      }).join('');
+      favoritesList.querySelectorAll('[data-fav-load]').forEach(btn => {
+        btn.addEventListener('click', () => loadTestConfig(getFavorites()[Number(btn.dataset.favLoad)]));
+      });
+      favoritesList.querySelectorAll('[data-fav-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const favs2 = getFavorites();
+          favs2.splice(Number(btn.dataset.favRemove), 1);
+          writeFavorites(favs2);
+          renderFavorites();
+          renderTestHistory();
+        });
+      });
+    }
+
+    // Câblage des boutons globaux de l'historique.
+    document.getElementById('exportAllTestsBtn')?.addEventListener('click', () => {
+      const list = getTestHistory();
+      if (!list.length) { alert(tr('hist.empty', 'Aucun test à exporter.')); return; }
+      downloadTests(list, `tests-${new Date().toISOString().slice(0,10)}.json`);
+    });
+    document.getElementById('importTestsBtn')?.addEventListener('click', () => {
+      document.getElementById('importTestsInput')?.click();
+    });
+    document.getElementById('importTestsInput')?.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try { importTests(JSON.parse(await file.text())); }
+      catch { alert(tr('hist.importErr', 'Fichier JSON invalide.')); }
+      e.target.value = '';   // permet de ré-importer le même fichier
+    });
+    document.getElementById('clearTestsBtn')?.addEventListener('click', () => {
+      writeTestHistory([]);
+      renderTestHistory();
+    });
+
     /**
      * Affiche un bloc de synthèse en fin de scénario : une ligne par route testée,
      * avec le résultat (conforme / avertissements / échec) et le détail des warnings/erreurs.
@@ -3704,7 +4745,16 @@
         scenarioSteps.after(block);
       }
 
-      const rows = summary.filter(Boolean).map((s, idx) => {
+      // Aplatissement : une entrée d'étape de résolution (achat auto) porte `resolveCalls`,
+      // la liste des appels RÉELLEMENT UTILES (déjà sous forme d'entrées de résumé). On la
+      // remplace par ces appels, affichés comme des étapes normales (statut + warnings/erreurs).
+      const flatSummary = [];
+      summary.filter(Boolean).forEach(s => {
+        if (Array.isArray(s.resolveCalls)) flatSummary.push(...s.resolveCalls);
+        else flatSummary.push(s);
+      });
+
+      const rows = flatSummary.map((s, idx) => {
         const conf = {
           ok:       { icon: 'fa-circle-check', color: 'text-emerald-400', label: tr('scn.confOk', 'Conforme') },
           warn:     { icon: 'fa-triangle-exclamation', color: 'text-amber-400', label: tr('scn.confWarn', 'Avertissements') },
@@ -3967,6 +5017,69 @@
       }).join('');
     }
 
+    // Renvoie les routes actuellement COCHÉES en section 3.
+    function getSelectedRoutes() {
+      return Array.from(document.querySelectorAll('.route-checkbox:checked'))
+        .map(cb => detectedRoutes[parseInt(cb.value)])
+        .filter(Boolean);
+    }
+
+    // ── Persistance de la sélection de routes (mode manuel), par URL cible ──
+    // On identifie une route par "METHOD path" (stable entre rechargements, contrairement à l'index).
+    function routeSelKey(r) { return `${r.method} ${r.path}`; }
+
+    function saveRouteSelection() {
+      const url = targetUrlInput.value.trim();
+      if (!url || !Array.isArray(detectedRoutes) || !detectedRoutes.length) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_ROUTE_SELECTION) || '{}');
+        const selected = Array.from(document.querySelectorAll('.route-checkbox:checked'))
+          .map(cb => detectedRoutes[parseInt(cb.value)]).filter(Boolean).map(routeSelKey);
+        all[url] = selected;
+        localStorage.setItem(STORAGE_KEY_ROUTE_SELECTION, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+
+    function getSavedRouteSelection() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return null;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_ROUTE_SELECTION) || '{}');
+        return Array.isArray(all[url]) ? all[url] : null;
+      } catch { return null; }
+    }
+
+    // Applique la sélection sauvegardée aux cases (après renderRoutesList). Met aussi à jour
+    // les cases de groupe (tag) et rafraîchit les sections 4/5. Sans sélection sauvegardée,
+    // on garde le comportement par défaut (tout coché).
+    function applySavedRouteSelection() {
+      const saved = getSavedRouteSelection();
+      if (!saved) return;
+      const savedSet = new Set(saved);
+      document.querySelectorAll('.route-checkbox').forEach(cb => {
+        const r = detectedRoutes[parseInt(cb.value)];
+        if (r) cb.checked = savedSet.has(routeSelKey(r));
+      });
+      // Synchroniser les cases de groupe : cochée si toutes ses routes le sont.
+      document.querySelectorAll('.route-group').forEach(group => {
+        const boxes = group.querySelectorAll('.route-checkbox');
+        const tagBox = group.querySelector('.tag-checkbox');
+        if (tagBox && boxes.length) tagBox.checked = Array.from(boxes).every(b => b.checked);
+      });
+      refreshParamsForSelection();
+    }
+
+    // Re-rend les sections 4 (paramètres) et 5 (corps) pour n'afficher QUE les paramètres des
+    // routes sélectionnées en section 3. Préserve les valeurs déjà saisies.
+    function refreshParamsForSelection() {
+      if (!Array.isArray(detectedRoutes) || !detectedRoutes.length) return;
+      renderParamsSection(getSelectedRoutes());
+      loadParamValues();
+      loadBodyValues();
+      updateSubmitState();
+      saveRouteSelection();   // mémoriser la sélection courante (restaurée au rechargement)
+    }
+
     // Collapse/expand d'un groupe
     window.toggleRouteGroup = function(tagId) {
       const body = document.getElementById(tagId);
@@ -3981,16 +5094,24 @@
       const body = document.getElementById(tagId);
       if (!body) return;
       body.querySelectorAll('.route-checkbox').forEach(cb => cb.checked = checked);
+      refreshParamsForSelection();
     };
 
     document.getElementById('selectAllBtn').onclick = () => {
       document.querySelectorAll('.route-checkbox').forEach(cb => cb.checked = true);
       document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = true);
+      refreshParamsForSelection();
     };
     document.getElementById('deselectAllBtn').onclick = () => {
       document.querySelectorAll('.route-checkbox').forEach(cb => cb.checked = false);
       document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
+      refreshParamsForSelection();
     };
+
+    // Changement d'une case de route (délégation sur le conteneur) → rafraîchir les params.
+    routesContainer.addEventListener('change', (e) => {
+      if (e.target.classList?.contains('route-checkbox')) refreshParamsForSelection();
+    });
 
     // ----------------------------------------------------
     // EXECUTION BATCH
@@ -4073,7 +5194,9 @@
     function renderResults(results) {
       const filteredResults = results.filter(r => {
         if (currentFilter === 'ALL') return true;
-        return getResultCategory(r) === currentFilter;
+        let cat = getResultCategory(r);
+        if (cat === 'SCHEMA_WARNING') cat = 'SCHEMA_ERROR';   // regroupé sous le filtre "schéma"
+        return cat === currentFilter;
       });
 
       if (filteredResults.length === 0) {
@@ -4121,6 +5244,12 @@
             statusText = 'ERREUR PRÉVUE DANS YAML';
             httpBadgeClass = 'bg-amber-950 text-amber-300 border-amber-800';
             break;
+          case 'SCHEMA_WARNING':
+            statusClass = 'bg-amber-950/80 text-amber-300 border-amber-700';
+            badgeIcon = 'fa-triangle-exclamation';
+            statusText = tr('res.catWarning', 'CONFORME AVEC AVERTISSEMENTS');
+            httpBadgeClass = 'bg-emerald-950 text-emerald-400 border-emerald-800';
+            break;
           default:
             statusClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-700';
             badgeIcon = 'fa-circle-check';
@@ -4136,6 +5265,9 @@
           errorSummary = `<span class="text-rose-400 font-semibold">${r.errors.length} erreur(s) de schéma détectée(s)</span>`;
         } else if (category === 'UNDECLARED_ERROR') {
           errorSummary = `<span class="text-purple-300 italic">Code HTTP ${statusCode} non spécifié dans le YAML</span>`;
+        } else if (category === 'SCHEMA_WARNING') {
+          const nbW = (r.warnings?.length || 0) + (r.nullables?.length || 0) + (r.undocumented?.length || 0) + (r.notImplemented?.length || 0);
+          errorSummary = `<span class="text-amber-400 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${tr('res.warnCount', '{n} avertissement(s)', { n: nbW })}</span>`;
         } else {
           errorSummary = '<span class="text-emerald-400 italic"><i class="fa-solid fa-check mr-1"></i> Réponse conforme</span>';
         }
@@ -4183,13 +5315,25 @@
       modalPathTitle.innerText = item.path;
       modalCodeHttp.innerText = item.statusCode || 'N/A';
 
-      if (item.errors && item.errors.length > 0) {
-        modalErrorsBlock.classList.remove('hidden');
-        modalErrorsList.innerHTML = `<ul class="list-disc list-inside space-y-1">
-          ${item.errors.map(e => `<li>${e}</li>`).join('')}
-        </ul>`;
-      } else {
-        modalErrorsBlock.classList.add('hidden');
+      // Détail des problèmes : erreurs bloquantes (rouge) PUIS avertissements non bloquants
+      // (ambre : pattern/format, champs null, non documentés, non implémentés).
+      {
+        const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const group = (arr, color, icon) => (arr && arr.length)
+          ? arr.map(m => `<li class="${color}"><i class="fa-solid ${icon} mr-1"></i>${esc(m)}</li>`).join('')
+          : '';
+        const errHtml = group(item.errors, 'text-rose-300', 'fa-circle-xmark');
+        const warnHtml = group(item.warnings, 'text-amber-300', 'fa-triangle-exclamation');
+        const nullHtml = group(item.nullables, 'text-cyan-300', 'fa-slash');
+        const undocHtml = group(item.undocumented, 'text-violet-300', 'fa-circle-plus');
+        const notImplHtml = group(item.notImplemented, 'text-slate-400', 'fa-eye-slash');
+        const all = errHtml + warnHtml + nullHtml + undocHtml + notImplHtml;
+        if (all) {
+          modalErrorsBlock.classList.remove('hidden');
+          modalErrorsList.innerHTML = `<ul class="list-none space-y-1 text-[11px] font-mono break-words">${all}</ul>`;
+        } else {
+          modalErrorsBlock.classList.add('hidden');
+        }
       }
 
       const receivedData = item.responseBody !== undefined ? item.responseBody : item.data;
@@ -4210,6 +5354,9 @@
       } else if (!item.valid) {
         modalStatusBadge.innerText = 'NON CONFORME';
         modalStatusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold border bg-rose-950 text-rose-300 border-rose-700';
+      } else if (category === 'SCHEMA_WARNING') {
+        modalStatusBadge.innerText = tr('res.catWarning', 'CONFORME AVEC AVERTISSEMENTS');
+        modalStatusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold border bg-amber-950 text-amber-300 border-amber-700';
       } else {
         modalStatusBadge.innerText = 'CONFORME';
         modalStatusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold border bg-emerald-950 text-emerald-300 border-emerald-700';
@@ -4227,6 +5374,44 @@
     detailModal.addEventListener('click', (e) => {
       if (e.target === detailModal) closeModal();
     });
+
+    // ── Modale de confirmation générique ──────────────────────────────
+    // Renvoie une promesse résolue à true (confirmer) / false (annuler).
+    // opts: { title, message, icon, iconClass, okLabel, cancelLabel, okStyle, cancelStyle }
+    function showConfirmModal(opts) {
+      const modal = document.getElementById('confirmModal');
+      const titleEl = document.getElementById('confirmModalTitle');
+      const msgEl = document.getElementById('confirmModalMessage');
+      const iconEl = document.getElementById('confirmModalIcon');
+      const okBtn = document.getElementById('confirmModalOk');
+      const cancelBtn = document.getElementById('confirmModalCancel');
+
+      titleEl.textContent = opts.title || tr('common.confirm', 'Confirmation');
+      msgEl.innerHTML = opts.message || '';
+      iconEl.className = `${opts.icon || 'fa-solid fa-triangle-exclamation'} ${opts.iconClass || 'text-amber-400'} text-lg`;
+      okBtn.textContent = opts.okLabel || tr('common.yes', 'Oui');
+      cancelBtn.textContent = opts.cancelLabel || tr('common.no', 'Non');
+      // Styles personnalisables (ex: Oui en gris, Non en rouge).
+      okBtn.className = `px-4 py-1.5 text-xs font-semibold rounded-lg transition ${opts.okStyle || 'bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600'}`;
+      cancelBtn.className = `px-4 py-1.5 text-xs font-semibold rounded-lg transition ${opts.cancelStyle || 'bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600'}`;
+
+      modal.classList.remove('hidden');
+      return new Promise((resolve) => {
+        const cleanup = (val) => {
+          modal.classList.add('hidden');
+          okBtn.removeEventListener('click', onOk);
+          cancelBtn.removeEventListener('click', onCancel);
+          modal.removeEventListener('click', onBackdrop);
+          resolve(val);
+        };
+        const onOk = () => cleanup(true);
+        const onCancel = () => cleanup(false);
+        const onBackdrop = (e) => { if (e.target === modal) cleanup(false); };
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        modal.addEventListener('click', onBackdrop);
+      });
+    }
 
     copyResponseBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(modalReceivedJson.innerText);
@@ -4287,8 +5472,8 @@
      * responseBody : objet JSON de la réponse
      * duration : ms
      */
-    function consoleLog({ type, label, route, status, responseBody, error, duration, requestUrl }) {
-      consoleEntries.unshift({ type, label, route, status, responseBody, error, duration, requestUrl, ts: new Date() });
+    function consoleLog({ type, label, route, status, responseBody, error, duration, requestUrl, requestBody }) {
+      consoleEntries.unshift({ type, label, route, status, responseBody, error, duration, requestUrl, requestBody, ts: new Date() });
       if (consoleEntries.length > 200) consoleEntries.pop();
       renderConsole();
       // Badge compteur
@@ -4330,23 +5515,37 @@
           : 'text-rose-400';
 
         const hasBody = e.responseBody !== undefined && e.responseBody !== null;
+        const hasError = e.error !== undefined && e.error !== null && e.error !== '';
+        const hasReqBody = e.requestBody !== undefined && e.requestBody !== null && e.requestBody !== '';
+        const expandable = hasBody || hasError || hasReqBody;   // dépliable s'il y a requête, réponse ou erreur
         const entryId = `console-entry-${i}`;
+        const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        // Corps de requête : formaté joliment si c'est du JSON, sinon affiché tel quel.
+        const fmtReq = (() => {
+          if (!hasReqBody) return '';
+          try { return JSON.stringify(typeof e.requestBody === 'string' ? JSON.parse(e.requestBody) : e.requestBody, null, 2); }
+          catch { return String(e.requestBody); }
+        })();
 
         return `
           <div class="px-4 py-1.5 hover:bg-slate-900/50 transition">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="toggleConsoleEntry('${entryId}')">
+            <div class="flex items-center gap-2 ${expandable ? 'cursor-pointer' : ''}" ${expandable ? `onclick="toggleConsoleEntry('${entryId}')"` : ''}>
               <span class="text-slate-600 flex-shrink-0">${time}</span>
               <span class="text-[9px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${typeColor}">${e.type}</span>
               ${e.route ? `<span class="font-bold flex-shrink-0 ${methodColor}">${e.route.method}</span>
               <span class="text-slate-300 truncate flex-1" title="${e.requestUrl || e.route.path}">${e.requestUrl || e.route.path}</span>` : `<span class="text-slate-300 flex-1">${e.label || ''}</span>`}
               ${e.status ? `<span class="flex-shrink-0 font-bold ${statusColor}">HTTP ${e.status}</span>` : ''}
               ${e.duration ? `<span class="text-slate-600 flex-shrink-0">${e.duration}ms</span>` : ''}
-              ${e.error ? `<span class="text-rose-400 truncate flex-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${e.error}</span>` : ''}
-              ${hasBody ? `<i class="fa-solid fa-chevron-right text-[8px] text-slate-600 flex-shrink-0 transition-transform" id="${entryId}-chevron"></i>` : ''}
+              ${hasError ? `<span class="text-rose-400 truncate flex-1" title="${esc(e.error)}"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${esc(e.error)}</span>` : ''}
+              ${expandable ? `<i class="fa-solid fa-chevron-right text-[8px] text-slate-600 flex-shrink-0 transition-transform" id="${entryId}-chevron"></i>` : ''}
             </div>
-            ${hasBody ? `
-            <div id="${entryId}" class="hidden mt-1 ml-4 pl-3 border-l border-slate-700">
-              <pre class="text-[10px] text-sky-300 bg-slate-900 rounded p-2 max-h-40 overflow-auto whitespace-pre-wrap break-all">${JSON.stringify(e.responseBody, null, 2)}</pre>
+            ${expandable ? `
+            <div id="${entryId}" class="hidden mt-1 ml-4 pl-3 border-l border-slate-700 space-y-1">
+              ${hasReqBody ? `<div class="text-[9px] uppercase tracking-wide text-slate-500 font-semibold">${tr('console.reqBody', 'Corps de la requête')}</div>
+              <pre class="text-[10px] text-amber-200 bg-slate-900 rounded p-2 max-h-60 overflow-auto whitespace-pre-wrap break-all">${esc(fmtReq)}</pre>` : ''}
+              ${hasError ? `<pre class="text-[10px] text-rose-300 bg-slate-900 rounded p-2 max-h-60 overflow-auto whitespace-pre-wrap break-words">${esc(e.error)}</pre>` : ''}
+              ${hasBody ? `<div class="text-[9px] uppercase tracking-wide text-slate-500 font-semibold">${tr('console.resBody', 'Réponse')}</div>
+              <pre class="text-[10px] text-sky-300 bg-slate-900 rounded p-2 max-h-60 overflow-auto whitespace-pre-wrap break-all">${esc(JSON.stringify(e.responseBody, null, 2))}</pre>` : ''}
             </div>` : ''}
           </div>`;
       }).join('');

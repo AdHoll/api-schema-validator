@@ -14,6 +14,9 @@ logs/
 uploads/
 *.log
 
+# Exécutables packagés (pkg)
+release/
+
 # OS / editor
 .DS_Store
 Thumbs.db

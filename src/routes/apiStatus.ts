@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import fs from 'fs';
-import path from 'path';
 import https from 'https';
 import { spawn } from 'child_process';
 import * as bw from '../services/bitwarden';
+import { paths } from '../paths';
 
 const router = Router();
 
@@ -13,8 +13,9 @@ const httpsAgent = new https.Agent({
   rejectUnauthorized: process.env.NODE_ENV === 'production',
 });
 
-// Fichier de config partageable : liste des APIs à tester (AUCUN secret dedans)
-const targetsFile = path.join(process.cwd(), 'api-targets.json');
+// Fichier de config partageable : liste des APIs à tester (AUCUN secret dedans).
+// Écrit à côté de l'exe en mode packagé (donnée runtime modifiable).
+const targetsFile = paths.targetsFile;
 
 export interface ApiTarget {
   id: string;              // identifiant interne (généré)

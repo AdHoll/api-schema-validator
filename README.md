@@ -95,6 +95,29 @@ npm start
 
 Le serveur est ensuite disponible sur `http://localhost:3001` (ou le `PORT` configuré).
 
+## Distribution — exécutable autonome
+
+Pour partager l'outil sans que les utilisateurs aient à installer Node, on génère un
+exécutable Windows unique qui démarre le serveur et ouvre le navigateur automatiquement :
+
+```bash
+npm run package      # → release/VivAPI-Validator.exe (Windows x64)
+npm run package:all  # → Windows + macOS + Linux dans release/
+```
+
+L'exe embarque le serveur, l'interface web et la bibliothèque de specs. Les dossiers
+`logs/`, `uploads/` et le fichier `api-targets.json` sont créés **à côté de l'exe**.
+
+Guide complet (distribution, variables d'environnement, sécurité du secret) :
+**[docs/DEPLOIEMENT.md](./docs/DEPLOIEMENT.md)**.
+
+### Mémorisation du Client Secret
+
+La case « Mémoriser le secret » stocke le Client Secret **chiffré** (AES-GCM) dans le
+navigateur, uniquement en **dev/préprod** ; en **production** le secret n'est jamais mémorisé.
+Il s'agit d'une obfuscation locale, pas d'un coffre-fort — voir la note de sécurité du guide
+de déploiement.
+
 ## Structure du projet
 
 ```

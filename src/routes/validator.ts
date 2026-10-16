@@ -6,6 +6,7 @@ import path from 'path';
 import https from 'https';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { extractRoutesFromYaml, validateResponseWithSpec, RouteEndpoint, ValidationResult } from '../services/yamlParser';
+import { paths, ensureDir } from '../paths';
 
 const router = Router();
 
@@ -14,23 +15,15 @@ const httpsAgent = new https.Agent({
   rejectUnauthorized: process.env.NODE_ENV === 'production'
 });
 
-// Création automatique du répertoire d'uploads
-const uploadDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Répertoires RUNTIME (écriture) : créés à côté de l'exe en mode packagé.
+const uploadDir = paths.uploadsDir;
+ensureDir(uploadDir);
 
-// Création automatique du répertoire de logs
-const logDir = path.join(process.cwd(), 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
+const logDir = paths.logsDir;
+ensureDir(logDir);
 
-// Bibliothèque de specs YAML embarquées dans le projet
-const specLibraryDir = path.join(process.cwd(), 'spec-library');
-if (!fs.existsSync(specLibraryDir)) {
-  fs.mkdirSync(specLibraryDir, { recursive: true });
-}
+// Bibliothèque de specs YAML : asset EMBARQUÉ (lecture seule) en mode packagé.
+const specLibraryDir = paths.specLibraryDir;
 
 /**
  * Extrait un numéro de version comparable depuis un nom de fichier "[V1.11.14]...".
