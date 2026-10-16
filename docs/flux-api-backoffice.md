@@ -1,6 +1,6 @@
 # Flux d'utilisation des routes API backoffice par parcours front
 
-**Source API** : `unified-backoffice-api.yaml` **v1.11.16** (repo `web3-common-main`, module `back-end/apibosweb`).
+**Source API** : `unified-backoffice-api.yaml` **v1.11.17** (repo `web3-common-main`, module `back-end/apibosweb`). Les routes et structures documentées sont stables depuis la v1.11.14.
 **Rôle du back-end** : BFF. Il expose l'API `web3-fe.yaml` au front et **consomme** l'API unified-backoffice.
 
 Chaîne d'appel interne pour chaque opération :
@@ -355,7 +355,7 @@ flowchart LR
 ---
 
 ### Fichiers de référence (repo tiers)
-- `back-end/apibosweb/openapi/unified-backoffice-api.yaml` (v1.11.16) — définition des routes BO.
+- `back-end/apibosweb/openapi/unified-backoffice-api.yaml` (v1.11.17) — définition des routes BO.
 - `.../be/unified/call/CallAuth.java`, `CallOrder.java`, `CallPerformance.java`, `CallCart.java`, `CallOffer.java` — orchestration + chaînage.
 - `.../be/unified/request/FactoryOrder.java` — construction des requêtes (noms de champs du chaînage).
 - `.../be/unified/gate/GateUnified.java`, `base/ApiClientFactory.java` — token + exécution + retry 401.

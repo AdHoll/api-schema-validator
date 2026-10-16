@@ -9,7 +9,7 @@
   </defs>
 
   <rect x="0" y="0" width="1500" height="1020" fill="#fafafa"/>
-  <text x="30" y="40" font-size="26" font-weight="700" fill="#263238">Flux API Backoffice par parcours front — apibosweb → unified-backoffice v1.11.16</text>
+  <text x="30" y="40" font-size="26" font-weight="700" fill="#263238">Flux API Backoffice par parcours front — apibosweb → unified-backoffice v1.11.17</text>
   <text x="30" y="66" font-size="14" fill="#607d8b">Chaque bloc = une route backoffice réelle.  Flèche grise = séquence d'appel.  Flèche orange = donnée réinjectée d'une réponse vers l'appel suivant.</text>
 
   <!-- Legend -->
