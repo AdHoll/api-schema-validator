@@ -2214,77 +2214,125 @@
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // doPurchase : étape custom unique qui réalise l'achat selon offerType.
-    //  - open/dated/timed : 1 vente d'une offre du type ; ARRÊT si type absent.
-    //  - eachType : jusqu'à 3 ventes (1 par type présent) ; tolérant ; récap des manquants.
-    //  - complex : 1 seule vente, panier contenant 1 article de chaque type présent.
-    // Renvoie { ok, extracted?, error? } pour l'étape custom du moteur.
-    // ══════════════════════════════════════════════════════════════════
-    async function doPurchase(collected, scRun) {
-      const mode = (collected.offerType || 'open').toLowerCase();
+    // Construction d'ÉTAPES CONCRÈTES détaillées pour une vente (un panier donné).
+    // Chaque vente produit la suite : checkCart → [B2C: signin] → beginOrderTrans →
+    // confirmOrderTrans → readOrderDetails. En B2B, le signin a lieu avant (étapes globales
+    // du scénario), donc on ne l'insère pas ici. Le suffixe (ex. " (open)") distingue les
+    // ventes dans les modes multi-ventes.
+    //  - items   : tableau d'objets cartItem (buildCartItemObj)
+    //  - suffix  : libellé ajouté à chaque étape (ex. " (horodaté)")
+    //  - withSignin : true → insérer l'étape signin après checkCart (B2C, 1re vente)
+    //  - idx     : index unique pour nommer les clés de body par vente
+    // ──────────────────────────────────────────────────────────────────
+    function buildSaleSteps(items, suffix, withSignin, idx) {
+      const ccKey = `cartCode${idx}`, ocKey = `orderCode${idx}`, totKey = `orderTotal${idx}`;
+      const itemsJson = JSON.stringify(items);
+      const steps = [];
 
-      // Lister les offres de la famille
+      // checkCart
+      steps.push({
+        label: `Vérification panier${suffix} → cartCode`,
+        route: { method: 'POST', path: '/api/v1/cart/checkCart' },
+        body: () => JSON.stringify({ shopCart: { cartItems: items } }),
+        extract: [{ targetParam: ccKey, pick: b => b?.preOrder?.cartCode ?? b?.data?.preOrder?.cartCode ?? b?.cartCode }],
+      });
+
+      // signin (B2C uniquement, une seule fois) — inséré juste après le 1er checkCart
+      if (withSignin) {
+        steps.push({
+          label: 'Connexion (B2C) → accountCode',
+          route: { method: 'POST', path: '/api/v1/auth/signin' },
+          custom: (collected, scRun) => (async () => {
+            const auth = await ensureAuthB2C(collected, scRun);
+            return auth.ok ? { ok: true, extracted: { accountCode: collected.accountCode } } : { ok: false, error: tr('scn.saleFailed', 'Échec de la vente ({type}).', { type: 'signin' }) };
+          })(),
+        });
+      }
+
+      // beginOrderTrans
+      steps.push({
+        label: `Début de transaction${suffix} → orderCode`,
+        route: { method: 'POST', path: '/api/v1/order/beginOrderTrans' },
+        body: (collected) => JSON.stringify({ shopCart: { cartCode: collected[ccKey], cartItems: items }, reservationOwnerCode: collected.accountCode }),
+        extract: [
+          { targetParam: ocKey, pick: b => b?.orderCode ?? b?.data?.orderCode },
+          { targetParam: totKey, pick: b => { const g = b?.preOrder?.cart?.total?.gross ?? b?.data?.preOrder?.cart?.total?.gross; return (g !== undefined && g !== null) ? String(g) : undefined; }, silent: true },
+        ],
+      });
+
+      // confirmOrderTrans (EMULATEPAY)
+      steps.push({
+        label: `Confirmation commande${suffix} (paiement émulé)`,
+        route: { method: 'POST', path: '/api/v1/order/confirmOrderTrans' },
+        defaultParams: () => ({ [`payDate${idx}`]: new Date().toISOString() }),
+        body: (collected) => JSON.stringify({ orderCode: collected[ocKey], payments: [{ paymentCode: 'EMULATEPAY', amount: { value: Number(collected[totKey] || 0), currency: 'EUR' }, paymentDate: collected[`payDate${idx}`] }] }),
+        extract: [{ targetParam: 'orderCode', pick: b => b?.orderCode ?? b?.data?.orderCode, silent: true }],
+      });
+
+      // readOrderDetails — lit collected.orderCode (code de vente posé par confirmOrderTrans)
+      steps.push({
+        label: `Lecture commande${suffix} (validation)`,
+        route: { method: 'GET', path: '/api/v1/order/readOrderDetails' },
+        extract: [],
+      });
+
+      return steps;
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // prepareSteps : étape "prepare" (cachée) exécutée au bon endroit du scénario.
+    // Classe les offres de la famille puis GÉNÈRE les étapes concrètes détaillées
+    // (une suite par vente) selon le mode choisi, et les insère dans le run.
+    //  - open/dated/timed : 1 vente du type ; ARRÊT si type absent.
+    //  - complex          : 1 vente, panier multi-articles (1 par type présent).
+    //  - eachType         : 1 vente par type présent (plusieurs suites d'étapes).
+    // Le signin B2C est inséré comme une étape, après le 1er checkCart seulement.
+    // ══════════════════════════════════════════════════════════════════
+    async function prepareSteps(collected, scRun) {
+      const mode = (collected.offerType || 'open').toLowerCase();
+      const isB2C = (collected.scope || scopeInput.value) === 'b2c';
+
       const offersBody = await callRouteForPrefill({ method: 'GET', path: '/api/v1/offer/findOfferCodesByFamily' }, collected);
       const offerCodes = offersBody ? flattenOfferCodes(offersBody) : [];
       if (!offerCodes.length) return { ok: false, error: tr('scn.noOffer', "Aucune offre trouvée pour cette famille.") };
 
-      // Classer les offres par type jusqu'à trouver ce dont on a besoin.
-      // Pour open/dated/timed : on s'arrête à la 1ère du bon type.
-      // Pour eachType/complex : on cherche une offre de CHAQUE type.
+      // Classer les offres par type (1 offre + 1 produit par type)
       const found = { open: null, dated: null, timed: null };
-      const needAll = (mode === 'eachtype' || mode === 'complex');
       for (const oc of offerCodes) {
         const cls = await classifyOffer(collected, oc);
-        if (!cls) continue;
-        if (!found[cls.type]) {
-          const productCode = await firstProductOf(collected, oc);
-          if (!productCode) continue;
-          found[cls.type] = { ...cls, productCode };
-        }
-        if (!needAll && found[mode]) break;             // type simple trouvé
-        if (needAll && found.open && found.dated && found.timed) break; // tous trouvés
+        if (!cls || found[cls.type]) continue;
+        const productCode = await firstProductOf(collected, oc);
+        if (!productCode) continue;
+        found[cls.type] = { ...cls, productCode };
+        if (found.open && found.dated && found.timed) break;
       }
 
-      const logSale = (type, res) => window._consoleLog?.({
-        type: res.ok ? 'BATCH' : 'ERROR',
-        route: { method: 'SALE', path: `${type} → ${res.ok ? res.orderCode : (res.error||'KO')}` },
-        status: res.ok ? 200 : 500,
-      });
+      const typeLabel = { open: 'open', dated: 'daté', timed: 'horodaté' };
+      let saleGroups = [];   // chaque groupe = { items:[...], suffix:'' }
 
-      // ── Modes à 1 type précis ──
       if (mode === 'open' || mode === 'dated' || mode === 'timed') {
         const entry = found[mode];
         if (!entry) return { ok: false, error: tr('scn.typeNotFound', "Aucune offre de type « {type} » trouvée dans cette famille.", { type: mode }) };
-        const res = await runPurchaseCycle(collected, [buildCartItemObj(entry)], scRun);
-        logSale(mode, res);
-        if (!res.ok) return { ok: false, error: tr('scn.saleFailed', 'Échec de la vente ({type}).', { type: mode }) };
-        return { ok: true, extracted: { orderCode: res.orderCode, soldType: mode } };
-      }
-
-      // ── Mode "complex" : 1 vente, panier avec 1 article de chaque type présent ──
-      if (mode === 'complex') {
+        saleGroups.push({ items: [buildCartItemObj(entry)], suffix: '' });
+      } else if (mode === 'complex') {
         const entries = ['open', 'dated', 'timed'].map(t => found[t]).filter(Boolean);
         if (!entries.length) return { ok: false, error: tr('scn.noOffer', "Aucune offre trouvée pour cette famille.") };
-        const items = entries.map(buildCartItemObj);
-        const res = await runPurchaseCycle(collected, items, scRun);
-        logSale('complex[' + entries.map(e => e.type).join('+') + ']', res);
-        if (!res.ok) return { ok: false, error: tr('scn.saleFailed', 'Échec de la vente ({type}).', { type: 'complex' }) };
-        const missing = ['open', 'dated', 'timed'].filter(t => !found[t]);
-        return { ok: true, extracted: { orderCode: res.orderCode, soldTypes: entries.map(e => e.type).join(', '), missingTypes: missing.join(', ') } };
+        saleGroups.push({ items: entries.map(buildCartItemObj), suffix: ' (complexe)' });
+      } else { // eachType
+        for (const t of ['open', 'dated', 'timed']) {
+          if (found[t]) saleGroups.push({ items: [buildCartItemObj(found[t])], suffix: ` (${typeLabel[t]})` });
+        }
+        if (!saleGroups.length) return { ok: false, error: tr('scn.typeNotFound', "Aucune offre de type « {type} » trouvée dans cette famille.", { type: 'open/daté/horodaté' }) };
       }
 
-      // ── Mode "eachType" : jusqu'à 3 ventes (1 par type présent), tolérant ──
-      const sold = []; const missing = []; let lastOrder;
-      for (const t of ['open', 'dated', 'timed']) {
-        if (!found[t]) { missing.push(t); continue; }
-        const res = await runPurchaseCycle(collected, [buildCartItemObj(found[t])], scRun);
-        logSale(t, res);
-        if (res.ok) { sold.push(`${t}:${res.orderCode}`); lastOrder = res.orderCode; }
-        else missing.push(t); // échec de vente = compté comme non abouti
-      }
-      if (!sold.length) return { ok: false, error: tr('scn.noneSold', 'Aucune vente aboutie (types manquants : {missing}).', { missing: missing.join(', ') || '—' }) };
-      // Succès même partiel : on signale les types manquants à la fin
-      return { ok: true, extracted: { orderCode: lastOrder, soldTypes: sold.join(' | '), missingTypes: missing.join(', ') } };
+      // Générer toutes les étapes concrètes. signin B2C inséré après le 1er checkCart seulement.
+      const insertSteps = [];
+      saleGroups.forEach((g, gi) => {
+        const withSignin = isB2C && gi === 0;   // auth une seule fois, à la 1re vente
+        insertSteps.push(...buildSaleSteps(g.items, g.suffix, withSignin, gi));
+      });
+
+      return { ok: true, insertSteps };
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -2390,13 +2438,15 @@
       // Sélection de l'offre selon la typologie + panier + checkout + confirmation (EMULATEPAY).
       // Selon offerType : 1 vente typée (arrêt si type absent), 'eachType' (N ventes tolérant),
       // ou 'complex' (1 vente panier multi-articles). Récap des types vendus/manquants.
+      // Étape de préparation (cachée) : classe les offres et insère les étapes concrètes
+      // détaillées de l'achat (checkCart → [B2C signin] → begin → confirm → readOrder par vente).
       steps.push({
-        label: "Achat selon la typologie → commande(s)",
-        route: { method: 'POST', path: '/api/v1/order/confirmOrderTrans' },
-        custom: (collected, scRun) => doPurchase(collected, scRun),
+        label: "Préparation de l'achat",
+        hidden: true,
+        custom: (collected, scRun) => prepareSteps(collected, scRun),
       });
 
-      // withCreateAccount / withParentFamily exposés pour la logique d'auth B2C (dans doPurchase).
+      // withCreateAccount / withParentFamily exposés pour la logique d'auth B2C (dans prepareSteps).
       return { id, label, description, startFields, steps, withCreateAccount, withParentFamily };
     }
 
@@ -2999,7 +3049,7 @@
 
     function renderScenarioProgress(currentIdx) {
       if (!scRun) return;
-      scenarioSteps.innerHTML = scRun.scenario.steps.map((step, i) => {
+      scenarioSteps.innerHTML = (scRun.steps || scRun.scenario.steps).map((step, i) => {
         let icon, color;
         if (scRun.results[i] === 'ok') { icon = 'fa-circle-check'; color = 'text-emerald-400'; }
         else if (scRun.results[i] === 'warn') { icon = 'fa-triangle-exclamation'; color = 'text-amber-400'; }
@@ -3050,6 +3100,9 @@
       // Réinitialiser l'état de run
       scRun = {
         scenario: sc,
+        // Liste EFFECTIVE des étapes du run (mutable). Une étape "prepare" peut y insérer
+        // des étapes concrètes générées dynamiquement (ventes détaillées selon le mode/scope).
+        steps: [...sc.steps],
         collected: { ...startParams },
         fake,                     // données client générées, résolues dans les bodies via {{@champ}}
         results: new Array(sc.steps.length).fill(null),
@@ -3079,9 +3132,10 @@
      *  - manuel : extrait les candidats via list() et affiche les contrôles de l'étape suivante
      */
     async function executeScenarioStep() {
-      const { scenario: sc, collected, results, summary } = scRun;
+      const { collected, results, summary } = scRun;
+      const steps = scRun.steps;              // liste effective (peut avoir été étendue)
       const i = scRun.index;
-      const step = sc.steps[i];
+      const step = steps[i];
       scRun.retryMode = false; // réinitialisé à chaque exécution d'étape
 
       // ── Point de bifurcation : première étape d'une branche non encore décidée ──
@@ -3096,7 +3150,7 @@
       if (step.optional && step.branchId && !scRun.enabledBranches.has(step.branchId)) {
         results[i] = 'skip';
         summary[i] = { label: step.label, route: step.route, outcome: 'skip', statusCode: null, warnings: [], errors: [] };
-        const isLast = i >= sc.steps.length - 1;
+        const isLast = i >= steps.length - 1;
         if (isLast) return finalizeScenario();
         scRun.index++;
         return executeScenarioStep();
@@ -3108,7 +3162,7 @@
       if (typeof step.skipIf === 'function' && step.skipIf(collected, scRun)) {
         results[i] = 'skip';
         summary[i] = { label: step.label, route: step.route, outcome: 'skip', statusCode: null, warnings: [], errors: [] };
-        const isLast = i >= sc.steps.length - 1;
+        const isLast = i >= steps.length - 1;
         if (isLast) return finalizeScenario();
         scRun.index++;
         return executeScenarioStep();
@@ -3127,10 +3181,20 @@
           if (out.extracted) Object.entries(out.extracted).forEach(([k, v]) => {
             if (v !== undefined && v !== null && v !== '') { collected[k] = String(v); setParamValue(k, String(v)); }
           });
+          // Étape de préparation : insère dynamiquement des étapes concrètes juste après.
+          if (Array.isArray(out.insertSteps) && out.insertSteps.length) {
+            scRun.steps.splice(i + 1, 0, ...out.insertSteps);
+          }
+          // Étape "prepare" invisible (ne pas l'afficher comme une ligne) : marquée hidden.
+          if (step.hidden) {
+            results.splice(i, 1);            // retirer le marqueur de l'étape prepare
+            scRun.steps.splice(i, 1);
+            return executeScenarioStep();    // enchaîner sur la 1re étape insérée (même index)
+          }
           results[i] = 'ok';
           summary[i] = { label: step.label, route: step.route || { method: '-', path: step.label }, outcome: 'ok', statusCode: null, warnings: [], errors: [] };
           window._consoleLog?.({ type: 'BATCH', route: step.route || { method: 'CUSTOM', path: step.label }, status: 200 });
-          const isLast = i >= sc.steps.length - 1;
+          const isLast = i >= scRun.steps.length - 1;
           if (isLast) return finalizeScenario();
           scRun.index++;
           return executeScenarioStep();
@@ -3233,7 +3297,7 @@
           if (typeof step.onFail === 'function') step.onFail(collected, scRun);
           results[i] = 'skip';
           summary[i] = { label: step.label, route: step.route, outcome: 'skip', statusCode, warnings: [], errors: [] };
-          const isLast = i >= sc.steps.length - 1;
+          const isLast = i >= steps.length - 1;
           if (isLast) return finalizeScenario();
           scRun.index++;
           return executeScenarioStep();
@@ -3263,7 +3327,7 @@
       scRun.candidatesByStep = scRun.candidatesByStep || {};
       scRun.candidatesByStep[i + 1] = candForNext;
 
-      const isLastStep = i >= sc.steps.length - 1;
+      const isLastStep = i >= steps.length - 1;
 
       // ── MODE AUTO ──
       if (scenarioExecMode === 'auto') {
