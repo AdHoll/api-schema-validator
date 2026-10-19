@@ -5,6 +5,38 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (SemVer).
 
+## [1.3.0] - 2026-10-19
+
+### Ajouté
+- **Header réorganisé** : nouvelle barre « contexte de test » (2ᵉ ligne) regroupant le switch
+  Manuel/Scénario, le sélecteur de version YAML, le **sélecteur de cible**, le **Client Secret**
+  (+ case mémoriser) et l'import/export. La section « Authentification » est masquée (URL et
+  Client ID proviennent de la cible).
+- **Couleur de la cible selon l'environnement** : bordure et icône vertes (dev), ambre (préprod),
+  rouges (prod).
+- **Mémorisation de la dernière cible** sélectionnée (re-sélectionnée au chargement).
+- **Scénarios — identifiants de compte mémorisés par cible** (autocomplétion applicative) :
+  identifiant et mot de passe (chiffré hors prod) re-proposés, sans injection parasite du navigateur.
+- **Console API — bouton « Corps »** sur chaque entrée pour afficher le corps de la requête
+  envoyée (modale dédiée) ; corps désormais disponible aussi pour les appels manuels.
+- **Documentation — vue « Source »** : affiche le fichier YAML brut tel qu'enregistré, avec
+  numéros de ligne (remplace l'ancienne vue JSON déréférencée, bien plus rapide à ouvrir).
+
+### Modifié
+- **Sélection des routes** repliée par défaut ; seuls les groupes ayant une sélection sauvegardée
+  sont dépliés.
+- Titres de blocs sans numéros (« Sélection des routes », « Paramètres des routes »,
+  « Corps des requêtes »).
+
+### Corrigé
+- **Documentation — corps des réponses d'erreur manquant** : la sérialisation côté serveur
+  confondait objets partagés et références circulaires ; les 254 réponses d'erreur affichent
+  désormais leur schéma.
+- **Appel manuel — « paramètres d'authentification incomplets »** : les champs d'auth, déplacés
+  hors du formulaire, sont maintenant transmis explicitement.
+- **Éditeur de corps (mode manuel)** : validation JSON tolérante à tout placeholder `{{…}}`
+  (ex. `{{@champ}}`), plus de faux « JSON invalide ».
+
 ## [1.2.7] - 2026-10-19
 
 ### Ajouté
@@ -133,6 +165,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (Sem
 - Journalisation des appels avec masquage des secrets.
 - Internationalisation FR / EN / IT / ES, page Documentation des flux.
 
+[1.3.0]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.3.0
 [1.2.7]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.7
 [1.2.6]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.6
 [1.2.5]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.5

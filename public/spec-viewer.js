@@ -29,6 +29,9 @@
 
   let initialised = false;   // versions chargées une seule fois
   let specCache = {};        // filename -> spec JSON
+  let jsonHtmlCache = {};    // filename -> HTML pré-rendu de la vue source (calculé une seule fois)
+  let sourceCache = {};      // filename -> texte YAML source brut (tel qu'enregistré)
+  let currentFile = null;    // filename de la spec actuellement affichée
   let currentSpec = null;    // spec actuellement affichée
   let viewMode = 'pretty';   // 'pretty' (simplifiée) | 'example' (simplifiée JSON) | 'json' (brut)
 
@@ -91,6 +94,7 @@
         specCache[filename] = spec;
       }
       currentSpec = spec;
+      currentFile = filename;
       renderCurrent();
     } catch (e) {
       view.innerHTML = `<div class="bg-rose-950/40 border border-rose-800 rounded-lg p-4 text-rose-300 text-sm">${T('docs.swaggerParseError', 'Impossible de charger cette spécification.')}</div>`;
@@ -116,23 +120,65 @@
   function renderCurrent() {
     const view = document.getElementById('swaggerView');
     if (!view || !currentSpec) return;
-    if (viewMode === 'json') renderJsonView(currentSpec, view);
-    else renderSpec(currentSpec, view);   // 'pretty' et 'example' : mêmes routes dépliables
+    if (viewMode === 'json') renderSourceView(view);   // fichier YAML source (brut, tel qu'enregistré)
+    else renderSpec(currentSpec, view);                // 'pretty' et 'example' : routes dépliables
   }
 
-  // Vue JSON brute : la spec (YAML convertie + déréférencée) en JSON formaté et coloré.
-  function renderJsonView(spec, host) {
-    const json = JSON.stringify(spec, null, 2);
-    host.innerHTML = `
-      <div class="flex justify-end mb-2">
+  // Seuil de coloration : au-delà, on affiche le JSON brut (pas de <span> par token), car
+  // colorer ~1 Mo génère des centaines de milliers de nœuds DOM → ouverture très lente.
+  const JSON_HIGHLIGHT_MAX = 150000;   // ~150 Ko
+
+  // Vue "source" : le fichier YAML brut, tel qu'enregistré (pas la version déréférencée).
+  // Numéros de ligne en gouttière. HTML mis en CACHE par version (calculé au 1er affichage).
+  function buildSourceHtml(text) {
+    const big = text.length > JSON_HIGHLIGHT_MAX;
+    const codeHtml = esc(text);   // le YAML source est affiché tel quel (pas de coloration JSON)
+    const sizeKo = Math.round(text.length / 1024);
+    const note = big ? `<span class="text-[10px] text-slate-500 mr-auto">${sizeKo} Ko</span>` : '';
+    // Gouttière de numéros : une seule chaîne "1\n2\n3..." alignée sur le code.
+    const lineCount = text.split('\n').length;
+    let gutter = '';
+    for (let n = 1; n <= lineCount; n++) gutter += n + '\n';
+    return { text, html: `
+      <div class="flex items-center justify-end gap-2 mb-2">
+        ${note}
         <button type="button" id="swaggerCopyJson" class="text-[11px] font-semibold px-2.5 py-1 rounded border border-slate-600 bg-slate-800 hover:bg-indigo-600 hover:text-white transition">
           <i class="fa-regular fa-copy mr-1"></i>${T('docs.swaggerCopy', 'Copier')}
         </button>
       </div>
-      <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-[11px] leading-relaxed text-slate-200 overflow-auto max-h-[70vh]"><code>${highlightJson(json)}</code></pre>`;
+      <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-auto max-h-[70vh] flex">
+        <pre class="text-[11px] leading-relaxed text-slate-600 text-right select-none px-3 py-4 border-r border-slate-800 bg-slate-950 sticky left-0">${gutter}</pre>
+        <pre class="text-[11px] leading-relaxed text-slate-200 px-4 py-4 flex-1"><code>${codeHtml}</code></pre>
+      </div>` };
+  }
+
+  async function renderSourceView(host) {
+    if (!currentFile) return;
+    // Réutiliser le HTML mis en cache pour cette version si déjà calculé.
+    let cached = jsonHtmlCache[currentFile];
+    if (!cached) {
+      // Récupérer le YAML source brut (tel qu'enregistré) une seule fois par version.
+      let text = sourceCache[currentFile];
+      if (text === undefined) {
+        try {
+          const res = await fetch(`/api/spec/${encodeURIComponent(currentFile)}`);
+          text = res.ok ? await res.text() : '';
+        } catch { text = ''; }
+        sourceCache[currentFile] = text;
+      }
+      if (!text) {
+        host.innerHTML = `<div class="bg-rose-950/40 border border-rose-800 rounded-lg p-4 text-rose-300 text-sm">${T('docs.swaggerParseError', 'Impossible de charger cette spécification.')}</div>`;
+        return;
+      }
+      cached = buildSourceHtml(text);
+      jsonHtmlCache[currentFile] = cached;
+    }
+    // Si l'utilisateur a quitté l'onglet JSON entre-temps, ne pas écraser l'affichage.
+    if (viewMode !== 'json') return;
+    host.innerHTML = cached.html;
     const copyBtn = document.getElementById('swaggerCopyJson');
     if (copyBtn) copyBtn.addEventListener('click', () => {
-      navigator.clipboard?.writeText(json).then(() => {
+      navigator.clipboard?.writeText(cached.text).then(() => {
         copyBtn.innerHTML = `<i class="fa-solid fa-check mr-1"></i>${T('docs.swaggerCopied', 'Copié')}`;
         setTimeout(() => { copyBtn.innerHTML = `<i class="fa-regular fa-copy mr-1"></i>${T('docs.swaggerCopy', 'Copier')}`; }, 1500);
       }).catch(() => {});

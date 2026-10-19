@@ -165,6 +165,9 @@
     'mode.manual':        { fr: 'Manuel',            en: 'Manual',           it: 'Manuale',          es: 'Manual' },
     'mode.scenario':      { fr: 'Scénarios',         en: 'Scenarios',        it: 'Scenari',          es: 'Escenarios' },
     'logs.in':            { fr: 'Logs dans',         en: 'Logs in',          it: 'Log in',           es: 'Registros en' },
+    'hdr.spec':           { fr: 'YAML',              en: 'YAML',             it: 'YAML',             es: 'YAML' },
+    'hdr.target':         { fr: 'Cible',             en: 'Target',           it: 'Destinazione',     es: 'Destino' },
+    'hdr.secret':         { fr: 'Client Secret',     en: 'Client Secret',    it: 'Client Secret',    es: 'Client Secret' },
     'btn.runValidation':  { fr: 'Lancer la validation', en: 'Run validation', it: 'Avvia la validazione', es: 'Ejecutar validación' },
 
     // ── Section 1 : Spécification YAML ──────────────────────────────
@@ -207,13 +210,13 @@
     'scn.nextStep':       { fr: 'Étape suivante',    en: 'Next step',        it: 'Passo successivo', es: 'Paso siguiente' },
 
     // ── Section 3 : Sélection des routes ────────────────────────────
-    'sec3.title':         { fr: '3. Sélection des routes à tester', en: '3. Select routes to test', it: '3. Selezione delle route da testare', es: '3. Selección de rutas a probar' },
+    'sec3.title':         { fr: 'Sélection des routes à tester', en: 'Select routes to test', it: 'Selezione delle route da testare', es: 'Selección de rutas a probar' },
     'sec3.selectAll':     { fr: 'Tout cocher',       en: 'Select all',       it: 'Seleziona tutto',  es: 'Marcar todo' },
     'sec3.deselectAll':   { fr: 'Tout décocher',     en: 'Deselect all',     it: 'Deseleziona tutto', es: 'Desmarcar todo' },
     'sec3.empty':         { fr: 'Sélectionnez un fichier YAML ou chargez une session récente depuis l\'historique ci-dessus.', en: 'Select a YAML file or load a recent session from the history above.', it: 'Seleziona un file YAML o carica una sessione recente dalla cronologia sopra.', es: 'Seleccione un archivo YAML o cargue una sesión reciente del historial anterior.' },
 
     // ── Section 4 : Paramètres ──────────────────────────────────────
-    'sec4.title':         { fr: '4. Paramètres des routes', en: '4. Route parameters', it: '4. Parametri delle route', es: '4. Parámetros de las rutas' },
+    'sec4.title':         { fr: 'Paramètres des routes', en: 'Route parameters', it: 'Parametri delle route', es: 'Parámetros de las rutas' },
     'sec4.subtitle':      { fr: 'Mutualisés entre toutes les routes qui les utilisent.', en: 'Shared across all routes that use them.', it: 'Condivisi tra tutte le route che li utilizzano.', es: 'Compartidos entre todas las rutas que los utilizan.' },
     'sec4.prefill':       { fr: 'Pré-remplissage automatique', en: 'Auto fill', it: 'Precompilazione automatica', es: 'Relleno automático' },
     'sec4.localeGlobal':  { fr: 'Locale (global)',   en: 'Locale (global)',  it: 'Locale (globale)', es: 'Locale (global)' },
@@ -221,7 +224,7 @@
     'sec4.searchPh':      { fr: 'Rechercher un paramètre…', en: 'Search a parameter…', it: 'Cerca un parametro…', es: 'Buscar un parámetro…' },
 
     // ── Section 5 : Corps des requêtes ──────────────────────────────
-    'sec5.title':         { fr: '5. Corps des requêtes (JSON)', en: '5. Request bodies (JSON)', it: '5. Corpi delle richieste (JSON)', es: '5. Cuerpos de las solicitudes (JSON)' },
+    'sec5.title':         { fr: 'Corps des requêtes (JSON)', en: 'Request bodies (JSON)', it: 'Corpi delle richieste (JSON)', es: 'Cuerpos de las solicitudes (JSON)' },
     'sec5.subtitlePre':   { fr: 'Utilisez', en: 'Use', it: 'Usa', es: 'Use' },
     'sec5.subtitlePost':  { fr: 'pour injecter une valeur des paramètres au moment de l\'appel.', en: 'to inject a parameter value at call time.', it: 'per iniettare un valore dei parametri al momento della chiamata.', es: 'para inyectar un valor de los parámetros en el momento de la llamada.' },
 
@@ -246,6 +249,8 @@
     // ── Console API ─────────────────────────────────────────────────
     'console.title':      { fr: 'Console API',        en: 'API Console',      it: 'Console API',      es: 'Consola API' },
     'console.reqBody':    { fr: 'Corps de la requête', en: 'Request body',    it: 'Corpo della richiesta', es: 'Cuerpo de la solicitud' },
+    'console.reqBodyBtn': { fr: 'Corps',               en: 'Body',             it: 'Corpo',            es: 'Cuerpo' },
+    'console.viewReqBody': { fr: 'Voir le corps de la requête', en: 'View request body', it: 'Vedi il corpo della richiesta', es: 'Ver el cuerpo de la solicitud' },
     'console.resBody':    { fr: 'Réponse',            en: 'Response',         it: 'Risposta',         es: 'Respuesta' },
     'console.clear':      { fr: 'Vider',              en: 'Clear',            it: 'Svuota',           es: 'Vaciar' },
     'console.all':        { fr: 'Tous',               en: 'All',              it: 'Tutti',            es: 'Todos' },
@@ -319,10 +324,11 @@
     'docs.swaggerCircular': { fr: 'référence circulaire', en: 'circular reference', it: 'riferimento circolare', es: 'referencia circular' },
     'docs.swaggerViewPretty': { fr: 'Vue simplifiée',  en: 'Simple view',      it: 'Vista semplificata', es: 'Vista simplificada' },
     'docs.swaggerViewExample': { fr: 'Simplifiée JSON', en: 'Simple JSON',    it: 'JSON semplificato', es: 'JSON simplificado' },
-    'docs.swaggerViewJson': { fr: 'JSON',              en: 'JSON',             it: 'JSON',             es: 'JSON' },
+    'docs.swaggerViewJson': { fr: 'Source',            en: 'Source',           it: 'Sorgente',         es: 'Fuente' },
     'docs.swaggerExample': { fr: 'Exemple',            en: 'Example',          it: 'Esempio',          es: 'Ejemplo' },
     'docs.swaggerCopy':   { fr: 'Copier',              en: 'Copy',             it: 'Copia',            es: 'Copiar' },
     'docs.swaggerCopied': { fr: 'Copié',               en: 'Copied',           it: 'Copiato',          es: 'Copiado' },
+    'docs.swaggerJsonBig': { fr: 'Document volumineux ({ko} Ko) : coloration désactivée pour la rapidité.', en: 'Large document ({ko} KB): highlighting disabled for speed.', it: 'Documento voluminoso ({ko} KB): evidenziazione disattivata per velocità.', es: 'Documento grande ({ko} KB): resaltado desactivado por rapidez.' },
     'docs.legend':        { fr: 'Chaque bloc est une route backoffice. Flèche grise = séquence d\'appel. Flèche orange = donnée réinjectée dans l\'appel suivant.', en: 'Each block is a backoffice route. Grey arrow = call sequence. Orange arrow = data reinjected into the next call.', it: 'Ogni blocco è una route backoffice. Freccia grigia = sequenza di chiamata. Freccia arancione = dato reinserito nella chiamata successiva.', es: 'Cada bloque es una ruta backoffice. Flecha gris = secuencia de llamada. Flecha naranja = dato reinyectado en la siguiente llamada.' },
     'docs.scnTitle':      { fr: "Scénarios d'achat automatisés", en: 'Automated purchase scenarios', it: "Scenari di acquisto automatizzati", es: 'Escenarios de compra automatizados' },
     'docs.scnIntro':      { fr: "Les scénarios rejouent un parcours de vente complet (login ou création de compte, sélection d'offre, panier, checkout, paiement émulé EMULATEPAY). Les schémas ci-dessous (en anglais) détaillent la logique.", en: 'Scenarios replay a full sale journey (login or account creation, offer selection, cart, checkout, emulated EMULATEPAY payment). The diagrams below (in English) detail the logic.', it: 'Gli scenari rieseguono un percorso di vendita completo (login o creazione account, selezione offerta, carrello, checkout, pagamento emulato EMULATEPAY). I diagrammi sotto (in inglese) dettagliano la logica.', es: 'Los escenarios reproducen un recorrido de venta completo (login o creación de cuenta, selección de oferta, carrito, checkout, pago emulado EMULATEPAY). Los diagramas de abajo (en inglés) detallan la lógica.' },

@@ -253,16 +253,29 @@ router.get('/spec-parsed/:filename', async (req: Request, res: Response) => {
 
     const apiSpec = await SwaggerParser.dereference(filePath);
 
-    // Sérialisation sûre : remplace les références déjà rencontrées (cycles) par un marqueur.
-    const seen = new WeakSet();
-    const safe = JSON.stringify(apiSpec, (_key, value) => {
-      if (value && typeof value === 'object') {
-        if (seen.has(value)) return { $circular: true };
-        seen.add(value);
+    // Copie profonde qui ne coupe QUE les vraies références circulaires. Après dereference,
+    // un même schéma (ex. réponse d'erreur commune) est souvent PARTAGÉ par plusieurs opérations :
+    // ce n'est PAS un cycle, juste un graphe orienté acyclique (DAG). On ne doit donc PAS le
+    // marquer comme circulaire. Un nœud n'est circulaire que s'il apparaît dans sa propre
+    // chaîne d'ancêtres (ancestors), pas s'il a déjà été vu ailleurs dans l'arbre.
+    const MAX_DEPTH = 60;
+    const prune = (value: any, ancestors: Set<any>, depth: number): any => {
+      if (value === null || typeof value !== 'object') return value;
+      if (ancestors.has(value)) return { $circular: true };   // vrai cycle (ancêtre de lui-même)
+      if (depth > MAX_DEPTH) return { $circular: true };       // garde-fou de profondeur
+      ancestors.add(value);
+      let out: any;
+      if (Array.isArray(value)) {
+        out = value.map((item) => prune(item, ancestors, depth + 1));
+      } else {
+        out = {};
+        for (const k of Object.keys(value)) out[k] = prune(value[k], ancestors, depth + 1);
       }
-      return value;
-    });
+      ancestors.delete(value);   // on retire du chemin en remontant → le partage reste autorisé
+      return out;
+    };
 
+    const safe = JSON.stringify(prune(apiSpec, new Set(), 0));
     res.type('application/json').send(safe);
   } catch (error: any) {
     return res.status(500).json({ error: 'Impossible de parser la spec : ' + error.message });

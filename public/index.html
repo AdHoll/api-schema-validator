@@ -39,7 +39,9 @@
   <div class="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow flex flex-col gap-6">
     
     <!-- Header -->
-    <header id="appHeader" class="border-b-2 border-indigo-500/70 pb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 transition-colors">
+    <header id="appHeader" class="border-b-2 border-indigo-500/70 pb-4 flex flex-col gap-4 transition-colors">
+      <!-- Rangée 1 : logo + navigation / mode / langue / logs / import-export -->
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
       <div class="flex items-center gap-4 flex-shrink-0">
         <img src="/logo.svg" alt="VivAPI Unified Validator" class="h-12 sm:h-14 w-auto flex-shrink-0">
         <div class="hidden xl:block max-w-xs">
@@ -72,10 +74,16 @@
             <i class="fa-solid fa-user-gear mr-1.5"></i> <span data-i18n="nav.admin">Administration</span>
           </a>
         </div>
-        <!-- Séparateur visuel -->
-        <span class="hidden sm:inline-block w-px h-6 bg-slate-700"></span>
-        <!-- Switch de mode compact (couleur selon le mode actif) -->
-        <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
+        <!-- Sélecteur de langue (rempli par i18n.js) -->
+        <div class="lang-switcher"></div>
+      </div>
+      </div><!-- fin rangée 1 -->
+
+      <!-- Rangée 2 : contexte de test (cible, environnement, secret) + logs + import/export.
+           Masquée hors mode manuel/scénario si besoin ; visible dès qu'un profil est connecté. -->
+      <div id="testContextBar" class="flex flex-wrap items-center gap-2 lg:justify-end">
+        <!-- Switch de mode compact (couleur selon le mode actif) — début de la rangée 2 -->
+        <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold lg:mr-auto">
           <button type="button" id="modeManualBtn"
             class="mode-btn px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
             <i class="fa-solid fa-sliders mr-1.5"></i> <span data-i18n="mode.manual">Manuel</span>
@@ -85,8 +93,36 @@
             <i class="fa-solid fa-diagram-project mr-1.5"></i> <span data-i18n="mode.scenario">Scénarios</span>
           </button>
         </div>
-        <!-- Sélecteur de langue (rempli par i18n.js) -->
-        <div class="lang-switcher"></div>
+        <!-- Spécification YAML : sélecteur de version -->
+        <div class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-xs">
+          <i class="fa-solid fa-file-code text-indigo-400"></i>
+          <label for="specVersionSelect" class="text-slate-400 hidden sm:inline" data-i18n="hdr.spec">YAML</label>
+          <select id="specVersionSelect"
+            class="bg-transparent text-slate-200 text-xs font-mono focus:outline-none max-w-[140px]">
+            <option value="" data-i18n="sec1.versionLoading">-- Chargement des versions… --</option>
+          </select>
+        </div>
+        <!-- Cible API (alimentée par la config ; URL + Client ID viennent de la cible).
+             La COULEUR de ce bloc reflète l'environnement de la cible (dev/préprod/prod). -->
+        <div id="targetWrap" class="inline-flex items-center gap-1.5 rounded-lg border-2 px-2.5 py-1 text-xs transition-colors bg-slate-900/80 border-slate-700">
+          <i id="targetWrapIcon" class="fa-solid fa-server text-slate-400"></i>
+          <label for="targetSelect" class="hidden sm:inline text-slate-400" data-i18n="hdr.target">Cible</label>
+          <select id="targetSelect"
+            class="bg-slate-900 text-slate-200 text-xs font-mono focus:outline-none max-w-[180px] rounded">
+            <option value="" data-i18n="sec2.targetPh">-- Choisir une cible --</option>
+          </select>
+        </div>
+        <!-- Client Secret + case mémoriser -->
+        <div class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-xs">
+          <i class="fa-solid fa-key text-indigo-400"></i>
+          <input type="password" id="clientSecret" name="clientSecret"
+            placeholder="Client Secret" data-i18n-attr="placeholder:hdr.secret"
+            class="bg-transparent text-slate-200 text-xs font-mono focus:outline-none w-32 sm:w-40">
+          <label id="rememberSecretWrap" class="flex items-center gap-1 text-[10px] text-slate-400 cursor-pointer" title="" data-i18n-attr="title:sec2.rememberSecret">
+            <input type="checkbox" id="rememberSecret" class="accent-indigo-500 h-3 w-3 rounded">
+            <i class="fa-solid fa-floppy-disk"></i>
+          </label>
+        </div>
         <!-- Séparateur visuel -->
         <span class="hidden sm:inline-block w-px h-6 bg-slate-700"></span>
         <div class="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-400 flex items-center gap-2 whitespace-nowrap">
@@ -102,7 +138,7 @@
           </button>
           <input type="file" id="cfgImportInput" accept="application/json,.json" class="hidden">
         </div>
-      </div>
+      </div><!-- fin rangée 2 -->
     </header>
 
     <!-- Espace de travail complet : grisé/inactif tant qu'aucun profil n'est connecté -->
@@ -110,123 +146,33 @@
 
     <form id="validatorForm" class="flex flex-col gap-6">
 
-      <!-- SECTION CONFIGURATION -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Bloc 1: Fichier YAML & Historique Fichiers -->
-        <div class="lg:col-span-4 bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg flex flex-col justify-between space-y-4">
-          <div class="space-y-3">
-            <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-              <i class="fa-solid fa-file-code"></i> <span data-i18n="sec1.title">1. Spécification YAML</span>
-            </h2>
-
-            <!-- Sélecteur de version embarquée -->
-            <div>
-              <label class="block text-xs font-medium text-slate-400 mb-1.5">
-                <i class="fa-solid fa-layer-group text-indigo-400 mr-1"></i> <span data-i18n="sec1.versionLabel">Version de la spec (bibliothèque)</span>
-              </label>
-              <select id="specVersionSelect"
-                class="w-full text-xs bg-slate-900/80 border border-slate-700 text-slate-300 px-2.5 py-2 rounded-lg font-mono focus:outline-none focus:border-indigo-500">
-                <option value="" data-i18n="sec1.versionLoading">-- Chargement des versions… --</option>
-              </select>
-            </div>
-
-            <!-- TEMPORAIREMENT MASQUÉ : import YAML manuel + historique.
-                 Pour réactiver, retirer les attributs `hidden` ci-dessous et remettre
-                 data-feature-import-manual à "on" (voir le flag JS FEATURE_MANUAL_IMPORT). -->
-            <div class="hidden items-center gap-2 text-[10px] text-slate-500 uppercase tracking-wide">
-              <span class="flex-1 h-px bg-slate-700/60"></span> <span data-i18n="sec1.or">ou</span> <span class="flex-1 h-px bg-slate-700/60"></span>
-            </div>
-
-            <div class="hidden">
-              <label class="block text-xs font-medium text-slate-400 mb-1.5" data-i18n="sec1.fileLabel">Fichier OpenAPI (.yaml / .yml)</label>
-              <input type="file" id="specFile" name="spec" accept=".yaml,.yml"
-                class="block w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer bg-slate-900/80 rounded-lg border border-slate-700/80">
-            </div>
-
-            <!-- Historique des Fichiers YAML -->
-            <div id="yamlHistorySection" class="hidden pt-2 border-t border-slate-700/60">
-              <div class="flex justify-between items-center mb-1">
-                <span class="text-[11px] font-medium text-slate-400 flex items-center gap-1">
-                  <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> <span data-i18n="sec1.historyLabel">Sessions récentes sauvegardées :</span>
-                </span>
-                <button type="button" id="clearYamlHistoryBtn" class="text-[10px] text-slate-500 hover:text-rose-400 transition" data-i18n="sec1.clear">Effacer</button>
-              </div>
-              <div id="yamlHistoryList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
-            </div>
-          </div>
-
-
+      <!-- SECTION CONFIGURATION — déplacée dans le header (rangée 2).
+           Les champs ci-dessous sont CONSERVÉS (cachés) car lus par le JS : URL réelle de la
+           cible, affichage URL, Client ID et Scope (déduits de la cible choisie), import de
+           fichier YAML et historiques (fonctionnalités désactivées mais référencées sans garde). -->
+      <div id="legacyConfigFields" class="hidden" aria-hidden="true">
+        <input type="file" id="specFile" name="spec" accept=".yaml,.yml">
+        <div id="yamlHistorySection" class="hidden">
+          <button type="button" id="clearYamlHistoryBtn"></button>
+          <div id="yamlHistoryList"></div>
         </div>
-
-        <!-- Bloc 2: Authentification OAuth2 & Historique URLs -->
-        <div class="lg:col-span-8 bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-              <i class="fa-solid fa-key"></i> <span data-i18n="sec2.title">2. Authentification OAuth2</span>
-            </h2>
-
-            <!-- Selecteur d'historique des cibles -->
-            <div id="targetHistoryDropdown" class="hidden w-full sm:w-auto">
-              <select id="targetHistorySelect" class="w-full text-xs bg-slate-900 border border-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg font-mono focus:outline-none focus:border-indigo-500">
-                <option value="" data-i18n="sec2.historyPh">-- Choisir une cible dans l'historique --</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-            <div class="md:col-span-6">
-              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.target">API cible</label>
-              <!-- Sélecteur de cibles (alimenté par la config ; ajout réservé aux admins) -->
-              <select id="targetSelect"
-                class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
-                <option value="" data-i18n="sec2.targetPh">-- Choisir une cible --</option>
-              </select>
-              <!-- URL réelle (lecture seule, renseignée par le sélecteur ; clé de stockage interne) -->
-              <input type="hidden" id="targetUrl" name="targetUrl" value="">
-              <p id="targetUrlDisplay" class="mt-1 text-[10px] text-slate-500 font-mono truncate"></p>
-            </div>
-
-            <div class="md:col-span-3">
-              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.clientId">Client ID</label>
-              <input type="text" id="clientId" name="clientId" placeholder="ApiUserW3" required
-                class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
-            </div>
-
-            <div class="md:col-span-3">
-              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.clientSecret">Client Secret</label>
-              <input type="password" id="clientSecret" name="clientSecret" required
-                class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
-              <!-- Mémorisation chiffrée du secret (dev/préprod uniquement, masquée en prod) -->
-              <label id="rememberSecretWrap" class="mt-1.5 flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer">
-                <input type="checkbox" id="rememberSecret" class="accent-indigo-500 h-3 w-3 rounded">
-                <span data-i18n="sec2.rememberSecret">Mémoriser le secret (chiffré, hors prod)</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-            <div class="md:col-span-4">
-              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.scope">Scope</label>
-              <select id="scope" name="scope" required class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-semibold">
-                <option value="b2c">b2c</option>
-                <option value="b2b">b2b</option>
-              </select>
-            </div>
-            <div class="md:col-span-4">
-              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.env">Environnement</label>
-              <select id="envType" name="envType" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-semibold">
-                <option value="dev" data-i18n="sec2.envDev">Développement</option>
-                <option value="preprod" data-i18n="sec2.envPreprod">Pré-production</option>
-                <option value="prod" data-i18n="sec2.envProd">Production</option>
-              </select>
-            </div>
-            <div class="md:col-span-4 text-[11px] text-slate-400 italic pt-3 sm:pt-0">
-              * <span data-i18n="sec2.tokenNote">Les identifiants seront transmis via Query Parameters sur</span> <code class="text-indigo-300">/api/v1/security/token</code>.
-            </div>
-          </div>
+        <div id="targetHistoryDropdown" class="hidden">
+          <select id="targetHistorySelect"></select>
         </div>
-
+        <input type="hidden" id="targetUrl" name="targetUrl" value="">
+        <p id="targetUrlDisplay"></p>
+        <input type="text" id="clientId" name="clientId">
+        <select id="scope" name="scope">
+          <option value="b2c">b2c</option>
+          <option value="b2b">b2b</option>
+        </select>
+        <!-- Environnement : non affiché dans le header (déduit de la cible) ; sa valeur pilote
+             désormais la COULEUR du sélecteur de cible. Conservé ici car lu partout par le JS. -->
+        <select id="envType" name="envType">
+          <option value="dev" data-i18n="sec2.envDev">Développement</option>
+          <option value="preprod" data-i18n="sec2.envPreprod">Pré-production</option>
+          <option value="prod" data-i18n="sec2.envProd">Production</option>
+        </select>
       </div>
 
       <!-- ================= MODE SCÉNARIOS ================= -->
@@ -345,7 +291,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
           <div class="flex items-center gap-3">
             <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-              <i class="fa-solid fa-route"></i> <span data-i18n="sec3.title">3. Sélection des routes à tester</span>
+              <i class="fa-solid fa-route"></i> <span data-i18n="sec3.title">Sélection des routes à tester</span>
             </h2>
             <span id="activeSourceBadge" class="hidden text-[11px] bg-indigo-950/80 border border-indigo-700 text-indigo-300 font-mono px-2 py-0.5 rounded-md"></span>
           </div>
@@ -369,7 +315,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
           <div class="flex items-center gap-3">
             <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-              <i class="fa-solid fa-sliders"></i> <span data-i18n="sec4.title">4. Paramètres des routes</span>
+              <i class="fa-solid fa-sliders"></i> <span data-i18n="sec4.title">Paramètres des routes</span>
             </h2>
             <span class="text-xs text-slate-400 italic hidden sm:inline" data-i18n="sec4.subtitle">Mutualisés entre toutes les routes qui les utilisent.</span>
           </div>
@@ -395,7 +341,7 @@
       <div id="bodiesSection" class="hidden bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
           <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
-            <i class="fa-solid fa-code"></i> <span data-i18n="sec5.title">5. Corps des requêtes (JSON)</span>
+            <i class="fa-solid fa-code"></i> <span data-i18n="sec5.title">Corps des requêtes (JSON)</span>
           </h2>
           <span class="text-xs text-slate-400 italic">
             <span data-i18n="sec5.subtitlePre">Utilisez</span> <code class="text-indigo-300">{{variable}}</code> <span data-i18n="sec5.subtitlePost">pour injecter une valeur des paramètres au moment de l'appel.</span>
@@ -650,19 +596,36 @@
       const prev = targetSelect.value;
       targetSelect.innerHTML = `<option value="">${tr('sec2.targetPh', '-- Choisir une cible --')}</option>` +
         targets.map(t => `<option value="${t.id}">[${(t.env || '').toUpperCase()}] ${t.label}</option>`).join('');
-      if (prev && targets.some(t => t.id === prev)) targetSelect.value = prev;
+      if (prev && targets.some(t => t.id === prev)) {
+        targetSelect.value = prev;
+      } else if (!prev) {
+        // Restaurer la dernière cible mémorisée (si elle existe encore et reste autorisée).
+        let last = null;
+        try { last = localStorage.getItem(STORAGE_KEY_LAST_TARGET); } catch { /* ignore */ }
+        if (last && targets.some(t => t.id === last)) {
+          targetSelect.value = last;
+          if (typeof applySelectedTarget === 'function') applySelectedTarget();
+        }
+      }
+      if (typeof applyEnvColor === 'function') applyEnvColor();
     }
 
     // Applique la cible choisie : renseigne URL (cachée), clientId, scope, environnement.
     function applySelectedTarget() {
       const cfg = window.Auth?.getConfig();
       const t = (cfg?.targets || []).find(x => x.id === targetSelect.value);
-      if (!t) { targetUrlInput.value = ''; if (targetUrlDisplay) targetUrlDisplay.textContent = ''; return; }
+      // Mémoriser (ou oublier) la dernière cible sélectionnée pour la restaurer au prochain chargement.
+      try {
+        if (t) localStorage.setItem(STORAGE_KEY_LAST_TARGET, t.id);
+        else localStorage.removeItem(STORAGE_KEY_LAST_TARGET);
+      } catch { /* ignore */ }
+      if (!t) { targetUrlInput.value = ''; if (targetUrlDisplay) targetUrlDisplay.textContent = ''; if (typeof applyEnvColor === 'function') applyEnvColor(); return; }
       targetUrlInput.value = t.url;
       if (targetUrlDisplay) targetUrlDisplay.textContent = t.url;
       clientIdInput.value = t.clientId || '';
       scopeInput.value = t.scope || 'b2c';
       if (envTypeInput && t.env) envTypeInput.value = t.env;
+      if (typeof applyEnvColor === 'function') applyEnvColor();
       clientSecretInput.value = '';   // le secret n'est jamais pré-rempli ; re-saisie requise
       // Rejouer les restaurations liées à l'URL (params, bodies, historique, secret chiffré hors prod).
       loadParamValues();
@@ -716,8 +679,28 @@
 
     function currentEnv() { return envTypeInput?.value || 'dev'; }
 
+    // Colore la BORDURE du bloc cible (#targetWrap) + son icône selon l'environnement de la
+    // cible choisie : dev=vert, préprod=ambre, prod=rouge. On ne touche PAS au fond ni au texte
+    // du <select> (sinon le menu déroulant natif devient illisible, texte clair sur fond clair).
+    const targetWrap = document.getElementById('targetWrap');
+    const targetWrapIcon = document.getElementById('targetWrapIcon');
+    function applyEnvColor() {
+      if (!targetWrap) return;
+      const borders = { dev: 'border-emerald-500', preprod: 'border-amber-400', prod: 'border-rose-500' };
+      const icons   = { dev: 'text-emerald-400',  preprod: 'text-amber-400',   prod: 'text-rose-400' };
+      const allBorders = ['border-slate-700', 'border-emerald-500', 'border-amber-400', 'border-rose-500'];
+      const allIcons   = ['text-slate-400', 'text-emerald-400', 'text-amber-400', 'text-rose-400'];
+      allBorders.forEach(c => targetWrap.classList.remove(c));
+      if (targetWrapIcon) allIcons.forEach(c => targetWrapIcon.classList.remove(c));
+      const hasTarget = !!(targetSelect && targetSelect.value);
+      targetWrap.classList.add(hasTarget ? (borders[currentEnv()] || 'border-slate-700') : 'border-slate-700');
+      if (targetWrapIcon) targetWrapIcon.classList.add(hasTarget ? (icons[currentEnv()] || 'text-slate-400') : 'text-slate-400');
+    }
+    applyEnvColor();   // état initial
+
     envTypeInput?.addEventListener('change', async () => {
       const env = currentEnv();
+      applyEnvColor();
       const url = targetUrlInput.value.trim();
       // Vérif souple : si l'URL ne porte pas le marqueur de la typologie choisie (dev/préprod),
       // on demande confirmation (sans bloquer).
@@ -803,6 +786,8 @@
     const STORAGE_KEY_ROUTE_SELECTION = 'validator_route_selection_by_url'; // routes cochées (mode manuel)
     const STORAGE_KEY_FAVORITES = 'validator_test_favorites_by_url';   // favoris de tests par URL
     const FAVORITES_MAX = 5;
+    const STORAGE_KEY_LAST_TARGET = 'validator_last_target_id';   // dernière cible sélectionnée
+    const STORAGE_KEY_SCENARIO_CREDS = 'validator_scenario_creds_by_url';   // identifiants de compte (scénarios), par cible
 
     // ----------------------------------------------------
     // INDEXEDDB — Stockage du contenu YAML (pas de limite de taille)
@@ -1558,8 +1543,12 @@
         textarea.classList.remove('ring-1', 'ring-rose-500');
         return true;
       }
-      // On retire d'abord les placeholders {{...}} pour valider la structure JSON
-      const testStr = val.replace(/\{\{\s*[\w.-]+\s*\}\}/g, '"__placeholder__"');
+      // On retire d'abord les placeholders {{...}} pour valider la STRUCTURE JSON.
+      // On accepte tout contenu entre les doubles accolades (lettres, @, espaces, /, etc.),
+      // y compris quand le placeholder est déjà entre guillemets dans le JSON ("{{x}}").
+      const testStr = val
+        .replace(/"\s*\{\{[^}]*\}\}\s*"/g, '"__placeholder__"')   // placeholder déjà quoté
+        .replace(/\{\{[^}]*\}\}/g, '"__placeholder__"');          // placeholder nu
       try {
         JSON.parse(testStr);
         errBox?.classList.add('hidden');
@@ -3096,8 +3085,8 @@
       startFields.push({ name: 'createAccount', label: 'Créer un compte (sinon login du compte existant)', type: 'checkbox', default: '' });
       // Identifiants de connexion (compte existant) : toujours proposés. Ignorés si « créer
       // un compte » est coché (les identifiants sont alors générés).
-      startFields.push({ name: 'username', label: 'Identifiant (compte existant)', type: 'text', default: '', autocomplete: 'username' });
-      startFields.push({ name: 'password', label: 'Mot de passe (compte existant)', type: 'password', default: '', autocomplete: 'current-password' });
+      startFields.push({ name: 'username', label: 'Identifiant (compte existant)', type: 'text', default: '', autocomplete: 'off' });
+      startFields.push({ name: 'password', label: 'Mot de passe (compte existant)', type: 'password', default: '', autocomplete: 'new-password' });
       // Scénarios "jusqu'au panier" : option de suppression du panier à la fin (removeCart).
       if (stopAfterCheckCart) {
         startFields.push({ name: 'removeCart', label: 'Supprimer le panier à la fin', type: 'checkbox', default: '' });
@@ -3386,8 +3375,8 @@
         label: 'Compte & commandes (login)',
         description: "Se connecte, lit le compte, cherche une commande et lit un ticket.",
         startFields: [
-          { name: 'username', label: 'Identifiant', type: 'text', default: '', autocomplete: 'username' },
-          { name: 'password', label: 'Mot de passe', type: 'password', default: '', autocomplete: 'current-password' },
+          { name: 'username', label: 'Identifiant', type: 'text', default: '', autocomplete: 'off' },
+          { name: 'password', label: 'Mot de passe', type: 'password', default: '', autocomplete: 'new-password' },
         ],
         steps: [
           {
@@ -3722,6 +3711,14 @@
 
       runScenarioBtn.disabled = false;
 
+      // Autocomplétion applicative des identifiants de compte (username + mdp hors prod),
+      // mémorisés par cible. Pré-remplit si vide, puis enregistre à chaque modification.
+      restoreScenarioCreds();
+      ['username', 'password'].forEach(name => {
+        const inp = scenarioStartFields.querySelector(`[name="${name}"]`);
+        if (inp) inp.addEventListener('change', () => { saveScenarioCreds(); });
+      });
+
       // Réafficher le statut sauvegardé (24h) s'il existe
       renderScenarioStatus(sc.id, getScenarioStatus(sc.id));
 
@@ -3754,6 +3751,51 @@
         });
         all[url][scenarioId] = values;
         localStorage.setItem(STORAGE_KEY_SCENARIO_FIELDS, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+
+    // ── Identifiants de COMPTE pour les scénarios (username + mot de passe), par cible ──
+    // Autocomplétion applicative : on re-propose ce que l'utilisateur a déjà saisi pour cette
+    // cible (et NON ce que le navigateur voudrait injecter). Le mot de passe est chiffré en
+    // local (AES-GCM, hors prod) ; jamais mémorisé en production.
+    async function saveScenarioCreds() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      const u = scenarioStartFields.querySelector('[name="username"]');
+      const p = scenarioStartFields.querySelector('[name="password"]');
+      if (!u && !p) return;   // ce scénario n'a pas de champs identifiants
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SCENARIO_CREDS) || '{}');
+        const entry = {};
+        if (u && u.value.trim()) entry.username = u.value.trim();
+        // Mot de passe : chiffré hors prod uniquement.
+        if (p && p.value && currentEnv() !== 'prod') {
+          const enc = await encryptSecret(p.value);
+          if (enc) { entry.encPassword = enc; entry.encEnv = currentEnv(); }
+        }
+        if (Object.keys(entry).length) { all[url] = entry; }
+        else delete all[url];
+        localStorage.setItem(STORAGE_KEY_SCENARIO_CREDS, JSON.stringify(all));
+      } catch { /* silencieux */ }
+    }
+
+    async function restoreScenarioCreds() {
+      const url = targetUrlInput.value.trim();
+      if (!url) return;
+      const u = scenarioStartFields.querySelector('[name="username"]');
+      const p = scenarioStartFields.querySelector('[name="password"]');
+      if (!u && !p) return;
+      try {
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_SCENARIO_CREDS) || '{}');
+        const entry = all[url];
+        if (!entry) return;
+        // Identifiant : re-proposé seulement si l'utilisateur n'a rien saisi.
+        if (u && !u.value && entry.username) u.value = entry.username;
+        // Mot de passe : déchiffré hors prod uniquement (jamais restauré en prod).
+        if (p && !p.value && entry.encPassword && currentEnv() !== 'prod') {
+          const dec = await decryptSecret(entry.encPassword);
+          if (dec) p.value = dec;
+        }
       } catch { /* silencieux */ }
     }
 
@@ -3931,6 +3973,9 @@
         });
         const localeVal = document.getElementById('globalLocale')?.value.trim();
         if (localeVal) startParams.locale = localeVal;
+
+        // Mémoriser les identifiants de compte saisis (username + mdp chiffré hors prod), par cible.
+        saveScenarioCreds();
 
         // Le choix des branches se fait pendant l'exécution (au point de bifurcation),
         // donc on démarre avec aucune branche décidée.
@@ -5121,6 +5166,10 @@
             </div>
           </div>`;
       }).join('');
+
+      // Par défaut : tout replié (sera ré-ouvert par applySavedRouteSelection si une sélection
+      // sauvegardée existe pour cette cible).
+      applyDefaultCollapse('all');
     }
 
     // Renvoie les routes actuellement COCHÉES en section 3.
@@ -5172,6 +5221,8 @@
         const tagBox = group.querySelector('.tag-checkbox');
         if (tagBox && boxes.length) tagBox.checked = Array.from(boxes).every(b => b.checked);
       });
+      // Déplier uniquement les groupes ayant une route cochée dans la sélection restaurée.
+      applyDefaultCollapse('selected');
       refreshParamsForSelection();
     }
 
@@ -5194,6 +5245,21 @@
       const collapsed = body.classList.toggle('hidden');
       chevron?.classList.toggle('rotate-[-90deg]', collapsed);
     };
+
+    // Plie/déplie les groupes de routes.
+    //  - mode 'all'      : tout replié (état par défaut au 1er rendu).
+    //  - mode 'selected' : déplie uniquement les groupes ayant au moins une route cochée
+    //                      (utilisé après restauration d'une sélection sauvegardée).
+    function applyDefaultCollapse(mode) {
+      document.querySelectorAll('#routesContainer .route-group').forEach(group => {
+        const body = group.querySelector('div[id]');   // conteneur des lignes (id = tagId)
+        const chevron = group.querySelector('[id$="-chevron"]');
+        if (!body) return;
+        const expand = (mode === 'selected') && !!group.querySelector('.route-checkbox:checked');
+        body.classList.toggle('hidden', !expand);
+        if (chevron) chevron.classList.toggle('rotate-[-90deg]', !expand);
+      });
+    }
 
     // Cocher/décocher toutes les routes d'un groupe
     window.toggleTagCheckboxes = function(tagId, checked) {
@@ -5237,6 +5303,13 @@
 
       const selectedRoutes = selectedIndices.map(i => detectedRoutes[i]);
       const formData = new FormData(form);
+      // Les champs d'auth (cible/clientId/secret/scope) vivent désormais dans le header et le
+      // conteneur caché, HORS du <form> → new FormData(form) ne les capte pas. On les fixe
+      // explicitement pour éviter l'erreur serveur « paramètres d'authentification incomplets ».
+      formData.set('targetUrl', targetUrlInput.value);
+      formData.set('clientId', clientIdInput.value);
+      formData.set('clientSecret', clientSecretInput.value);
+      formData.set('scope', scopeInput.value);
       formData.append('selectedRoutes', JSON.stringify(selectedRoutes));
       formData.append('userParams', JSON.stringify(collectUserParams()));
       formData.append('requestBodies', JSON.stringify(collectRequestBodies()));
@@ -5270,7 +5343,10 @@
 
         currentBatchResults = data.results;
 
-        // Logger chaque résultat dans la console
+        // Corps de requête envoyés (par route "METHODE chemin"), pour les afficher en console.
+        const sentBodies = collectRequestBodies();
+
+        // Logger chaque résultat dans la console (avec le corps de requête s'il y en a un).
         (data.results || []).forEach(r => {
           window._consoleLog?.({
             type: r.valid ? 'BATCH' : 'ERROR',
@@ -5278,6 +5354,7 @@
             status: r.statusCode,
             responseBody: r.responseBody,
             requestUrl: r.requestUrl,
+            requestBody: sentBodies[`${r.method} ${r.path}`],
             error: r.valid ? null : (r.errors?.[0] || null),
           });
         });
@@ -5643,6 +5720,7 @@
               ${e.status ? `<span class="flex-shrink-0 font-bold ${statusColor}">HTTP ${e.status}</span>` : ''}
               ${e.duration ? `<span class="text-slate-600 flex-shrink-0">${e.duration}ms</span>` : ''}
               ${hasError ? `<span class="text-rose-400 truncate flex-1" title="${esc(e.error)}"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${esc(e.error)}</span>` : ''}
+              ${hasReqBody ? `<button type="button" class="flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-amber-800 bg-amber-950/60 text-amber-300 hover:bg-amber-900/60 transition" title="${tr('console.viewReqBody', 'Voir le corps de la requête')}" onclick="event.stopPropagation(); showRequestBody(${i})"><i class="fa-solid fa-code mr-1"></i>${tr('console.reqBodyBtn', 'Corps')}</button>` : ''}
               ${expandable ? `<i class="fa-solid fa-chevron-right text-[8px] text-slate-600 flex-shrink-0 transition-transform" id="${entryId}-chevron"></i>` : ''}
             </div>
             ${expandable ? `
@@ -5663,6 +5741,47 @@
       if (!el) return;
       const hidden = el.classList.toggle('hidden');
       chevron?.classList.toggle('rotate-90', !hidden);
+    };
+
+    // Affiche le corps de la requête d'une entrée console dans une modale dédiée (lecture seule).
+    window.showRequestBody = function(index) {
+      const filtered = currentConsoleFilter === 'ALL'
+        ? consoleEntries
+        : consoleEntries.filter(en => en.type === currentConsoleFilter);
+      const e = filtered[index];
+      if (!e || e.requestBody === undefined || e.requestBody === null || e.requestBody === '') return;
+      let pretty;
+      try { pretty = JSON.stringify(typeof e.requestBody === 'string' ? JSON.parse(e.requestBody) : e.requestBody, null, 2); }
+      catch { pretty = String(e.requestBody); }
+      const escLocal = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+      let overlay = document.getElementById('reqBodyOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'reqBodyOverlay';
+        overlay.className = 'fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4';
+        overlay.innerHTML = `
+          <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="bg-slate-800/90 px-5 py-3 border-b border-slate-700 flex justify-between items-center">
+              <h3 class="text-sm font-bold text-amber-300 flex items-center gap-2"><i class="fa-solid fa-code"></i> <span id="reqBodyTitle"></span></h3>
+              <div class="flex items-center gap-2">
+                <button type="button" id="reqBodyCopy" class="text-[11px] font-semibold px-2.5 py-1 rounded border border-slate-600 bg-slate-800 hover:bg-indigo-600 hover:text-white transition"><i class="fa-regular fa-copy mr-1"></i>${tr('docs.swaggerCopy', 'Copier')}</button>
+                <button type="button" id="reqBodyClose" class="text-slate-400 hover:text-slate-100 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+              </div>
+            </div>
+            <div class="p-4 overflow-auto">
+              <pre id="reqBodyContent" class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[11px] text-amber-200 overflow-auto whitespace-pre-wrap break-all"></pre>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (ev) => { if (ev.target === overlay) overlay.classList.add('hidden'); });
+        overlay.querySelector('#reqBodyClose').addEventListener('click', () => overlay.classList.add('hidden'));
+      }
+      overlay.querySelector('#reqBodyTitle').textContent = e.route ? `${e.route.method} ${e.route.path}` : tr('console.reqBody', 'Corps de la requête');
+      overlay.querySelector('#reqBodyContent').innerHTML = escLocal(pretty);
+      const copyBtn = overlay.querySelector('#reqBodyCopy');
+      copyBtn.onclick = () => { navigator.clipboard?.writeText(pretty).catch(() => {}); };
+      overlay.classList.remove('hidden');
     };
 
     // Exposer consoleLog globalement pour les appels dans callRouteForPrefill et le batch
@@ -5828,6 +5947,13 @@
       const apiConsole = document.getElementById('apiConsole');
       if (apiConsole) apiConsole.classList.toggle('hidden', !canUse);
 
+      // Barre de contexte de test (header rangée 2 : cible / env / secret) : grisée sans profil.
+      const testBar = document.getElementById('testContextBar');
+      if (testBar) {
+        testBar.classList.toggle('opacity-40', !canUse);
+        testBar.classList.toggle('pointer-events-none', !canUse);
+      }
+
       // Filtrage fin selon la matrice du profil (defini à la tâche 6).
       if (typeof applyProfileFilters === 'function') applyProfileFilters(profile);
     }
@@ -5842,6 +5968,7 @@
       const envLabel = { dev: tr('sec2.envDev', 'Développement'), preprod: tr('sec2.envPreprod', 'Pré-production'), prod: tr('sec2.envProd', 'Production') };
       envTypeInput.innerHTML = (list.length ? list : all).map(e => `<option value="${e.id}">${envLabel[e.id] || e.label}</option>`).join('');
       if (prev && list.some(e => e.id === prev)) envTypeInput.value = prev;
+      if (typeof applyEnvColor === 'function') applyEnvColor();
     }
 
     // Filtres dépendants du profil : cibles, environnements, specs, scénarios, routes.

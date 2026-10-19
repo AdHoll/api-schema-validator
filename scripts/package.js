@@ -17,7 +17,6 @@ const pkg = require('../package.json');
 
 const version = pkg.version;
 const all = process.argv.includes('--all');
-const releaseDir = path.join(__dirname, '..', 'release');
 
 // Nom de base du livrable, versionné.
 const baseName = `VivAPI-Validator-${version}`;
@@ -28,14 +27,17 @@ const targets = all
   ? 'node18-win-x64,node18-macos-x64,node18-linux-x64'
   : 'node18-win-x64';
 
+// Chemin RELATIF (au cwd = racine du projet) pour éviter les espaces du chemin absolu,
+// qui cassent le parsing de pkg (le dossier contient « Documents Adrien », etc.).
 const output = all
-  ? path.join(releaseDir, baseName)             // pkg suffixe -win.exe / -macos / -linux
-  : path.join(releaseDir, `${baseName}.exe`);   // Windows : nom exact
+  ? `release/${baseName}`              // pkg suffixe -win.exe / -macos / -linux
+  : `release/${baseName}.exe`;         // Windows : nom exact
 
-const args = ['pkg', '.', '--targets', targets, '--output', output];
+// On exécute pkg directement via son binaire local (pas de shell → pas de problème de quoting).
+const pkgBin = path.join(__dirname, '..', 'node_modules', 'pkg', 'lib-es5', 'bin.js');
+const args = [pkgBin, '.', '--targets', targets, '--output', output];
 
 console.log(`[package] version ${version} → ${output}${all ? ' (+ suffixes OS)' : ''}`);
 
-// npx pkg ... (npx est résolu via le PATH ; sous Windows le shell:true permet de lancer npx.cmd)
-const res = spawnSync('npx', args, { stdio: 'inherit', shell: true });
+const res = spawnSync(process.execPath, args, { stdio: 'inherit', cwd: path.join(__dirname, '..') });
 process.exit(res.status === null ? 1 : res.status);
