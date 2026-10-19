@@ -7,8 +7,11 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/auth.js"></script>
+  <script src="/login.js"></script>
+  <script src="/nav-guard.js"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans" data-requires-auth>
 
   <div class="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow flex flex-col gap-6">
 
@@ -25,7 +28,7 @@
           <a href="/index.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
             <i class="fa-solid fa-list-check mr-1.5"></i> <span data-i18n="nav.validator">Validateur</span>
           </a>
-          <a href="/status.html" class="px-3.5 py-1.5 rounded-md transition bg-indigo-600 text-white">
+          <a href="/status.html" class="hidden px-3.5 py-1.5 rounded-md transition bg-indigo-600 text-white">
             <i class="fa-solid fa-heart-pulse mr-1.5"></i> <span data-i18n="nav.status">Statut des APIs</span>
           </a>
           <a href="/docs.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
@@ -42,8 +45,18 @@
       </div>
     </header>
 
+    <!-- Bandeau : fonctionnalité mise en stand-by -->
+    <div class="bg-amber-950/40 border border-amber-800/70 rounded-xl p-8 text-center text-amber-200">
+      <i class="fa-solid fa-pause text-3xl mb-3"></i>
+      <h2 class="text-lg font-semibold mb-1" data-i18n="status.standbyTitle">Statut des APIs — en stand-by</h2>
+      <p class="text-sm text-amber-300/80" data-i18n="status.standbyMsg">Cette fonctionnalité est temporairement désactivée.</p>
+      <a href="/index.html" class="inline-block mt-4 text-xs font-semibold px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">
+        <i class="fa-solid fa-list-check mr-1"></i> <span data-i18n="nav.validator">Validateur</span>
+      </a>
+    </div>
+
     <!-- SECTION COFFRE BITWARDEN -->
-    <section class="bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
+    <section class="hidden bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4" data-guarded>
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
           <i class="fa-solid fa-vault"></i> <span data-i18n="bw.title">Coffre Bitwarden</span>
@@ -83,7 +96,7 @@
     </section>
 
     <!-- SECTION APIS -->
-    <section class="bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4">
+    <section class="hidden bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 shadow-lg space-y-4" data-guarded>
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700/80 pb-3 gap-2">
         <h2 class="text-base font-semibold text-indigo-300 flex items-center gap-2">
           <i class="fa-solid fa-server"></i> <span data-i18n="api.title">APIs à tester</span>
@@ -176,6 +189,7 @@
   </div>
 
   <script src="/i18n.js"></script>
-  <script src="/status.js"></script>
+  <!-- status.js désactivé : fonctionnalité en stand-by -->
+  <!-- <script src="/status.js"></script> -->
 </body>
 </html>

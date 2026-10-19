@@ -239,6 +239,36 @@ router.get('/spec/:filename', (req: Request, res: Response) => {
   }
 });
 
+// Route : renvoie la spec OpenAPI DÉRÉFÉRENCÉE (tous les $ref résolus) en JSON,
+// pour la vue "type Swagger" en lecture seule de la Documentation.
+// Les éventuelles références circulaires sont neutralisées à la sérialisation.
+router.get('/spec-parsed/:filename', async (req: Request, res: Response) => {
+  try {
+    const requested = path.basename(req.params.filename);
+    const filePath = path.join(specLibraryDir, requested);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Version introuvable.' });
+    }
+
+    const apiSpec = await SwaggerParser.dereference(filePath);
+
+    // Sérialisation sûre : remplace les références déjà rencontrées (cycles) par un marqueur.
+    const seen = new WeakSet();
+    const safe = JSON.stringify(apiSpec, (_key, value) => {
+      if (value && typeof value === 'object') {
+        if (seen.has(value)) return { $circular: true };
+        seen.add(value);
+      }
+      return value;
+    });
+
+    res.type('application/json').send(safe);
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Impossible de parser la spec : ' + error.message });
+  }
+});
+
 // Route 1 : Analyse le YAML et extrait la liste des endpoints
 router.post('/parse-routes', upload.single('spec'), async (req: Request, res: Response) => {
   try {

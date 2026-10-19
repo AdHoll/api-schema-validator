@@ -7,6 +7,9 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Gestion des profils/droits (garde-fou côté client) -->
+  <script src="/auth.js"></script>
+  <script src="/login.js"></script>
   <style>
     /* Scrollbar personnalisée */
     ::-webkit-scrollbar {
@@ -48,16 +51,25 @@
       </div>
       <!-- Barre de contrôles : alignée à droite, repliable proprement -->
       <div class="flex flex-wrap items-center justify-end gap-2">
-        <!-- Onglets de page : Validateur / Statut des APIs / Documentation -->
+        <!-- Profil courant + connexion/changement -->
+        <div class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-xs">
+          <i class="fa-solid fa-user-shield text-indigo-400"></i>
+          <span id="currentProfileLabel" class="font-semibold text-slate-300">Non connecté</span>
+          <button type="button" id="profileSwitchBtn" class="ml-1 text-[10px] text-indigo-400 hover:text-indigo-300 transition">Se connecter</button>
+        </div>
+        <!-- Onglets de page : Validateur / Statut des APIs / Documentation / Admin -->
         <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
-          <a href="/index.html" class="px-3.5 py-1.5 rounded-md transition bg-indigo-600 text-white">
+          <a href="/index.html" id="navValidator" class="nav-tab px-3.5 py-1.5 rounded-md transition bg-indigo-600 text-white">
             <i class="fa-solid fa-list-check mr-1.5"></i> <span data-i18n="nav.validator">Validateur</span>
           </a>
-          <a href="/status.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+          <a href="/status.html" id="navStatus" class="nav-tab hidden px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
             <i class="fa-solid fa-heart-pulse mr-1.5"></i> <span data-i18n="nav.status">Statut des APIs</span>
           </a>
-          <a href="/docs.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+          <a href="/docs.html" id="navDocs" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
             <i class="fa-solid fa-book mr-1.5"></i> <span data-i18n="nav.docs">Documentation</span>
+          </a>
+          <a href="/admin.html" id="navAdmin" class="nav-tab hidden px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-user-gear mr-1.5"></i> <span data-i18n="nav.admin">Administration</span>
           </a>
         </div>
         <!-- Séparateur visuel -->
@@ -80,8 +92,21 @@
         <div class="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-400 flex items-center gap-2 whitespace-nowrap">
           <i class="fa-solid fa-folder-open text-indigo-400"></i> <span data-i18n="logs.in">Logs dans</span> <code class="text-indigo-300">/logs</code>
         </div>
+        <!-- Import / export de la configuration (réservé aux admins) -->
+        <div id="cfgIoWrap" class="hidden inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs">
+          <button type="button" id="cfgExportBtn" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-indigo-300 transition" title="" data-i18n-attr="title:cfg.export">
+            <i class="fa-solid fa-file-export"></i>
+          </button>
+          <button type="button" id="cfgImportBtn" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-indigo-300 transition" title="" data-i18n-attr="title:cfg.import">
+            <i class="fa-solid fa-file-import"></i>
+          </button>
+          <input type="file" id="cfgImportInput" accept="application/json,.json" class="hidden">
+        </div>
       </div>
     </header>
+
+    <!-- Espace de travail complet : grisé/inactif tant qu'aucun profil n'est connecté -->
+    <div id="workspace" class="flex flex-col gap-6 transition-opacity">
 
     <form id="validatorForm" class="flex flex-col gap-6">
 
@@ -151,9 +176,15 @@
 
           <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
             <div class="md:col-span-6">
-              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.targetUrl">URL de l'API Cible</label>
-              <input type="url" id="targetUrl" name="targetUrl" placeholder="https://web3-vision-dev-fr.vivaticket.com" required
+              <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="sec2.target">API cible</label>
+              <!-- Sélecteur de cibles (alimenté par la config ; ajout réservé aux admins) -->
+              <select id="targetSelect"
                 class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+                <option value="" data-i18n="sec2.targetPh">-- Choisir une cible --</option>
+              </select>
+              <!-- URL réelle (lecture seule, renseignée par le sélecteur ; clé de stockage interne) -->
+              <input type="hidden" id="targetUrl" name="targetUrl" value="">
+              <p id="targetUrlDisplay" class="mt-1 text-[10px] text-slate-500 font-mono truncate"></p>
             </div>
 
             <div class="md:col-span-3">
@@ -439,6 +470,17 @@
       </div>
     </section>
 
+    </div><!-- fin #workspace -->
+
+    <!-- Message d'invite à se connecter (visible uniquement hors connexion) -->
+    <div id="loginPrompt" class="hidden bg-slate-800/60 border border-slate-700 rounded-xl p-8 text-center text-slate-400">
+      <i class="fa-solid fa-lock text-3xl text-slate-500 mb-3"></i>
+      <p class="text-sm" data-i18n="idx.loginPrompt">Connectez-vous pour accéder au validateur.</p>
+      <button type="button" id="loginPromptBtn" class="mt-4 text-xs font-semibold px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">
+        <i class="fa-solid fa-right-to-bracket mr-1"></i> <span data-i18n="prof.switch">Se connecter</span>
+      </button>
+    </div>
+
   </div>
 
   <!-- CONSOLE DE LOG API -->
@@ -593,6 +635,62 @@
     const clientSecretInput = document.getElementById('clientSecret');
     const scopeInput = document.getElementById('scope');
     const envTypeInput = document.getElementById('envType');
+    const targetSelect = document.getElementById('targetSelect');
+    const targetUrlDisplay = document.getElementById('targetUrlDisplay');
+
+    // Peuple le sélecteur de cibles depuis la config (profils/droits). Les cibles sont
+    // définies par les admins (page Admin). Filtrées par environnement autorisé au profil.
+    function renderTargetSelect() {
+      if (!targetSelect || !window.Auth) return;
+      const cfg = window.Auth.getConfig();
+      let targets = (cfg && Array.isArray(cfg.targets)) ? cfg.targets : [];
+      // Restreindre aux environnements autorisés pour le profil courant (admins = tout).
+      const allowedEnvs = window.Auth.allowedList('environments');   // null = pas de restriction
+      if (Array.isArray(allowedEnvs)) targets = targets.filter(t => allowedEnvs.includes(t.env));
+      const prev = targetSelect.value;
+      targetSelect.innerHTML = `<option value="">${tr('sec2.targetPh', '-- Choisir une cible --')}</option>` +
+        targets.map(t => `<option value="${t.id}">[${(t.env || '').toUpperCase()}] ${t.label}</option>`).join('');
+      if (prev && targets.some(t => t.id === prev)) targetSelect.value = prev;
+    }
+
+    // Applique la cible choisie : renseigne URL (cachée), clientId, scope, environnement.
+    function applySelectedTarget() {
+      const cfg = window.Auth?.getConfig();
+      const t = (cfg?.targets || []).find(x => x.id === targetSelect.value);
+      if (!t) { targetUrlInput.value = ''; if (targetUrlDisplay) targetUrlDisplay.textContent = ''; return; }
+      targetUrlInput.value = t.url;
+      if (targetUrlDisplay) targetUrlDisplay.textContent = t.url;
+      clientIdInput.value = t.clientId || '';
+      scopeInput.value = t.scope || 'b2c';
+      if (envTypeInput && t.env) envTypeInput.value = t.env;
+      clientSecretInput.value = '';   // le secret n'est jamais pré-rempli ; re-saisie requise
+      // Rejouer les restaurations liées à l'URL (params, bodies, historique, secret chiffré hors prod).
+      loadParamValues();
+      loadBodyValues();
+      updateSubmitState();
+      highlightAuthFields();
+      renderTestHistory();
+      renderFavorites();
+      updateRememberSecretVisibility();
+      if (Array.isArray(detectedRoutes) && detectedRoutes.length) applySavedRouteSelection();
+      // Restaurer le secret chiffré mémorisé pour cette cible (hors prod).
+      restoreEncryptedSecretForCurrentTarget();
+    }
+
+    // Déchiffre et restaure le secret mémorisé pour l'URL courante (hors prod), s'il existe.
+    async function restoreEncryptedSecretForCurrentTarget() {
+      try {
+        if (currentEnv() === 'prod') return;
+        const url = targetUrlInput.value.trim();
+        if (!url) return;
+        const all = JSON.parse(localStorage.getItem(STORAGE_KEY_URLS) || '[]');
+        const entry = Array.isArray(all) ? all.find(x => x.targetUrl === url) : null;
+        if (entry?.encSecret) {
+          const dec = await decryptSecret(entry.encSecret);
+          if (dec) { clientSecretInput.value = dec; if (rememberSecretInput) rememberSecretInput.checked = true; }
+        }
+      } catch { /* ignore */ }
+    }
 
     // Surligne le contour des champs d'authentification quand ils contiennent une valeur,
     // pour voir d'un coup d'œil si une API est bien renseignée.
@@ -792,6 +890,10 @@
         const el = document.getElementById('appVersion');
         if (el && d?.version) el.textContent = 'v' + d.version;
       }).catch(() => {});
+
+      // ── Profils / droits ────────────────────────────────────────────
+      // Met à jour l'UI selon le profil courant (label, onglet Admin), puis applique les droits.
+      setupProfileUI();
 
       // Filtre de recherche des paramètres
       document.getElementById('paramSearch').addEventListener('input', (e) => {
@@ -2189,7 +2291,10 @@
         const previous = specVersionSelect.value;
         const res = await fetch('/api/spec-versions');
         const data = await res.json();
-        const versions = data.versions || [];
+        let versions = data.versions || [];
+        // Filtrer selon les droits du profil (specs autorisées). Admin → allowed = null = tout.
+        const allowedSpecs = window.Auth ? window.Auth.allowedList('specs') : null;
+        if (Array.isArray(allowedSpecs)) versions = versions.filter(v => allowedSpecs.includes(v.filename));
         if (versions.length === 0) {
           specVersionSelect.innerHTML = `<option value="">${tr('idx.versionNone', 'Aucune version dans la bibliothèque')}</option>`;
           return;
@@ -2882,10 +2987,13 @@
       const isB2C = (scRun.collected.scope || scopeInput.value) === 'b2c';
       const typeLabel = { open: 'open', dated: 'daté', timed: 'horodaté' };
 
+      // Option « créer un compte » : lue dynamiquement depuis la case à cocher du scénario.
+      const wantCreateAccount = scRun.collected.createAccount === 'true';
+
       // ── MODE SEMI-AUTO : déroulé catalogue détaillé avec choix (pas de résolution auto) ──
       if (scenarioExecMode === 'semi') {
         const authSteps = [];
-        if (sc.withCreateAccount) authSteps.push(createAccountStep());
+        if (wantCreateAccount) authSteps.push(createAccountStep());
         authSteps.push(signinStep());
 
         const gen = [];
@@ -2919,9 +3027,9 @@
         custom: (collected, run) => resolveSaleItems(collected, run),
       };
 
-      // Étapes d'authentification.
+      // Étapes d'authentification (création de compte conditionnée par la case à cocher).
       const authSteps = [];
-      if (sc.withCreateAccount) authSteps.push(createAccountStep());
+      if (wantCreateAccount) authSteps.push(createAccountStep());
       authSteps.push(signinStep());
 
       // Assemblage dans l'ordre voulu.
@@ -2967,7 +3075,7 @@
     // L'achat lui-même est réalisé par une étape custom unique (doPurchase) selon la
     // typologie choisie (open / dated / timed / eachType / complex).
     // ══════════════════════════════════════════════════════════════════
-    function buildPurchaseScenario({ id, label, description, withParentFamily, withCreateAccount, stopAfterCheckCart }) {
+    function buildPurchaseScenario({ id, label, description, withParentFamily, stopAfterCheckCart }) {
       const startFields = [];
       if (!withParentFamily) {
         startFields.push({ name: 'familyCode', label: 'Code famille', type: 'text', default: '' });
@@ -2982,12 +3090,14 @@
         { value: 'eachType', label: 'Un de chaque type présent' },
         { value: 'complex', label: 'Vente complexe (1 vente, les 3 types)' },
       ] });
-      // Identifiants de connexion : UNIQUEMENT pour les scénarios "login" (compte existant).
-      // En création de compte, les identifiants sont générés → on ne les demande pas.
-      if (!withCreateAccount) {
-        startFields.push({ name: 'username', label: 'Identifiant (compte existant)', type: 'text', default: '', autocomplete: 'username' });
-        startFields.push({ name: 'password', label: 'Mot de passe (compte existant)', type: 'password', default: '', autocomplete: 'current-password' });
-      }
+      // Option « créer un compte » : si cochée, une étape de création de compte (données
+      // générées) est ajoutée avant la connexion, et les identifiants saisis sont ignorés.
+      // Sinon, on se connecte avec le compte existant saisi ci-dessous.
+      startFields.push({ name: 'createAccount', label: 'Créer un compte (sinon login du compte existant)', type: 'checkbox', default: '' });
+      // Identifiants de connexion (compte existant) : toujours proposés. Ignorés si « créer
+      // un compte » est coché (les identifiants sont alors générés).
+      startFields.push({ name: 'username', label: 'Identifiant (compte existant)', type: 'text', default: '', autocomplete: 'username' });
+      startFields.push({ name: 'password', label: 'Mot de passe (compte existant)', type: 'password', default: '', autocomplete: 'current-password' });
       // Scénarios "jusqu'au panier" : option de suppression du panier à la fin (removeCart).
       if (stopAfterCheckCart) {
         startFields.push({ name: 'removeCart', label: 'Supprimer le panier à la fin', type: 'checkbox', default: '' });
@@ -3043,7 +3153,7 @@
       //    → sert au filtrage par environnement et à la modale d'avertissement.
       return {
         id, label, description, startFields, steps,
-        withCreateAccount, withParentFamily, isPurchase: true,
+        withParentFamily, isPurchase: true,
         stopAfterCheckCart: !!stopAfterCheckCart,
         createsSale: !stopAfterCheckCart,
       };
@@ -3055,53 +3165,29 @@
       // Paiement émulé EMULATEPAY. Données client générées via {{@champ}}.
       // ════════════════════════════════════════════════════════════════
       buildPurchaseScenario({
-        id: 'purchase-full-login',
-        label: "Achat complet (login)",
-        description: "Depuis une famille de regroupement : offre → produit → login (compte existant) → panier → checkout → paiement émulé → commande.",
-        withParentFamily: true, withCreateAccount: false,
+        id: 'purchase-full',
+        label: "Achat complet",
+        description: "Depuis une famille de regroupement : offre → produit → connexion → panier → checkout → paiement émulé → commande. Cochez « Créer un compte » pour générer un nouveau compte au lieu de vous connecter.",
+        withParentFamily: true,
       }),
       buildPurchaseScenario({
-        id: 'purchase-full-create',
-        label: "Achat complet (création de compte)",
-        description: "Depuis une famille de regroupement, avec création d'un compte (données générées) avant le login, jusqu'à la commande payée.",
-        withParentFamily: true, withCreateAccount: true,
+        id: 'purchase-product',
+        label: "Achat produit (familyCode fourni)",
+        description: "À partir d'un code famille fourni : offre → produit → connexion → panier → checkout → paiement émulé → commande. Cochez « Créer un compte » pour générer un nouveau compte au lieu de vous connecter.",
+        withParentFamily: false,
+      }),
+      // ── 2 scénarios "jusqu'au panier" (checkCart only) : AUCUNE vente créée en base ──
+      buildPurchaseScenario({
+        id: 'cart-full',
+        label: "Panier seul",
+        description: "Depuis une famille de regroupement : offre → produit → connexion → vérification du panier (checkCart). Aucune vente créée. Cochez « Créer un compte » pour générer un nouveau compte au lieu de vous connecter.",
+        withParentFamily: true, stopAfterCheckCart: true,
       }),
       buildPurchaseScenario({
-        id: 'purchase-product-login',
-        label: "Achat produit (familyCode fourni, login)",
-        description: "À partir d'un code famille fourni : offre → produit → login (compte existant) → panier → checkout → paiement émulé → commande.",
-        withParentFamily: false, withCreateAccount: false,
-      }),
-      buildPurchaseScenario({
-        id: 'purchase-product-create',
-        label: "Achat produit (familyCode fourni, création de compte)",
-        description: "À partir d'un code famille fourni, avec création d'un compte (données générées) avant le login, jusqu'à la commande payée.",
-        withParentFamily: false, withCreateAccount: true,
-      }),
-      // ── 4 scénarios "jusqu'au panier" (checkCart only) : AUCUNE vente créée en base ──
-      buildPurchaseScenario({
-        id: 'cart-full-login',
-        label: "Panier seul (login)",
-        description: "Depuis une famille de regroupement : offre → produit → login → vérification du panier (checkCart). Aucune vente créée.",
-        withParentFamily: true, withCreateAccount: false, stopAfterCheckCart: true,
-      }),
-      buildPurchaseScenario({
-        id: 'cart-full-create',
-        label: "Panier seul (création de compte)",
-        description: "Depuis une famille de regroupement, avec création d'un compte, jusqu'à la vérification du panier (checkCart). Aucune vente créée.",
-        withParentFamily: true, withCreateAccount: true, stopAfterCheckCart: true,
-      }),
-      buildPurchaseScenario({
-        id: 'cart-product-login',
-        label: "Panier seul (familyCode fourni, login)",
-        description: "À partir d'un code famille fourni : offre → produit → login → vérification du panier (checkCart). Aucune vente créée.",
-        withParentFamily: false, withCreateAccount: false, stopAfterCheckCart: true,
-      }),
-      buildPurchaseScenario({
-        id: 'cart-product-create',
-        label: "Panier seul (familyCode fourni, création de compte)",
-        description: "À partir d'un code famille fourni, avec création d'un compte, jusqu'à la vérification du panier (checkCart). Aucune vente créée.",
-        withParentFamily: false, withCreateAccount: true, stopAfterCheckCart: true,
+        id: 'cart-product',
+        label: "Panier seul (familyCode fourni)",
+        description: "À partir d'un code famille fourni : offre → produit → connexion → vérification du panier (checkCart). Aucune vente créée. Cochez « Créer un compte » pour générer un nouveau compte au lieu de vous connecter.",
+        withParentFamily: false, stopAfterCheckCart: true,
       }),
       {
         id: 'catalog-family-to-product',
@@ -3352,20 +3438,15 @@
     // ── i18n des scénarios : mapping libellé FR (dans TEST_SCENARIOS) → clé i18n ──
     // Les définitions ci-dessus restent en FR (fallback) ; au rendu on résout via scnTr().
     const SCN_LABEL_KEYS = {
-      // Scénario nominal d'achat
-      'Achat complet (login)': 'scn.sc.purchaseFullLogin.label',
-      "Depuis une famille de regroupement : offre → produit → login (compte existant) → panier → checkout → paiement émulé → commande.": 'scn.sc.purchaseFullLogin.desc',
-      'Achat complet (création de compte)': 'scn.sc.purchaseFullCreate.label',
-      "Depuis une famille de regroupement, avec création d'un compte (données générées) avant le login, jusqu'à la commande payée.": 'scn.sc.purchaseFullCreate.desc',
-      'Achat produit (familyCode fourni, login)': 'scn.sc.purchaseProductLogin.label',
-      "À partir d'un code famille fourni : offre → produit → login (compte existant) → panier → checkout → paiement émulé → commande.": 'scn.sc.purchaseProductLogin.desc',
-      'Achat produit (familyCode fourni, création de compte)': 'scn.sc.purchaseProductCreate.label',
-      "À partir d'un code famille fourni, avec création d'un compte (données générées) avant le login, jusqu'à la commande payée.": 'scn.sc.purchaseProductCreate.desc',
-      'Identifiant (si login direct)': 'scn.sf.usernameOpt',
-      'Mot de passe (si login direct)': 'scn.sf.passwordOpt',
-      'Création de compte': 'scn.br.createAccount.label',
-      'Créer un compte (données générées)': 'scn.br.createAccount.on',
-      'Login direct (id/mdp fournis)': 'scn.br.createAccount.off',
+      // Scénarios d'achat (fusionnés : création de compte = option cochable)
+      'Achat complet': 'scn.sc.purchaseFull.label',
+      "Depuis une famille de regroupement : offre → produit → connexion → panier → checkout → paiement émulé → commande. Cochez « Créer un compte » pour générer un nouveau compte au lieu de vous connecter.": 'scn.sc.purchaseFull.desc',
+      'Achat produit (familyCode fourni)': 'scn.sc.purchaseProduct.label',
+      "À partir d'un code famille fourni : offre → produit → connexion → panier → checkout → paiement émulé → commande. Cochez « Créer un compte » pour générer un nouveau compte au lieu de vous connecter.": 'scn.sc.purchaseProduct.desc',
+      'Panier seul': 'scn.sc.cartFull.label',
+      "Depuis une famille de regroupement : offre → produit → connexion → vérification du panier (checkCart). Aucune vente créée. Cochez « Créer un compte » pour générer un nouveau compte au lieu de vous connecter.": 'scn.sc.cartFull.desc',
+      'Panier seul (familyCode fourni)': 'scn.sc.cartProduct.label',
+      "À partir d'un code famille fourni : offre → produit → connexion → vérification du panier (checkCart). Aucune vente créée. Cochez « Créer un compte » pour générer un nouveau compte au lieu de vous connecter.": 'scn.sc.cartProduct.desc',
       'Création de compte (données générées) → login': 'scn.st.createAccount',
       'Vérification panier → cartCode': 'scn.st.checkCartCode',
       'Début de transaction → orderCode': 'scn.st.beginOrder',
@@ -3389,6 +3470,10 @@
       'Code famille': 'scn.sf.familyCode',
       'Identifiant': 'scn.sf.username',
       'Mot de passe': 'scn.sf.password',
+      'Créer un compte (sinon login du compte existant)': 'scn.sf.createAccount',
+      'Identifiant (compte existant)': 'scn.sf.usernameExisting',
+      'Mot de passe (compte existant)': 'scn.sf.passwordExisting',
+      'Supprimer le panier à la fin': 'scn.sf.removeCart',
       // Branche
       'Avec séance': 'scn.br.session.on',
       'Sans séance': 'scn.br.session.off',
@@ -3515,7 +3600,10 @@
 
     function refreshScenarioList() {
       const previous = scenarioSelect.value;
-      const list = scenariosForEnv(currentEnv());
+      let list = scenariosForEnv(currentEnv());
+      // Filtrer selon les droits du profil (scénarios autorisés). Admin → allowed = null = tout.
+      const allowedScn = window.Auth ? window.Auth.allowedList('scenarios') : null;
+      if (Array.isArray(allowedScn)) list = list.filter(s => allowedScn.includes(s.id));
       scenarioSelect.innerHTML = `<option value="">${tr('scn.choosePh', '-- Sélectionner un scénario --')}</option>` +
         list.map(s => `<option value="${s.id}">${scnTr(s.label)}</option>`).join('');
       // Conserver la sélection si elle est toujours disponible, sinon réinitialiser.
@@ -3597,7 +3685,7 @@
           </div>`;
         }
         return `
-        <div class="flex flex-col gap-1">
+        <div class="flex flex-col gap-1" data-field-wrap="${f.name}">
           <label class="text-xs font-mono font-semibold text-slate-300" for="sf-${f.name}">${scnTr(f.label)}</label>
           <input type="${f.type}" id="sf-${f.name}" name="${f.name}"
             ${f.autocomplete ? `autocomplete="${f.autocomplete}"` : ''}
@@ -3615,6 +3703,22 @@
       scenarioStartFields.querySelectorAll('.scenario-start-input').forEach(inp => {
         inp.addEventListener('input', () => saveScenarioStartFields(sc.id));
       });
+
+      // Les identifiants « compte existant » n'ont de sens que pour une CONNEXION : on les
+      // masque quand « Créer un compte » est coché (ils sont alors ignorés). Appliqué au rendu
+      // et à chaque changement de la case.
+      const createAccountCb = scenarioStartFields.querySelector('[name="createAccount"]');
+      if (createAccountCb) {
+        const syncLoginFields = () => {
+          const hide = createAccountCb.checked;
+          ['username', 'password'].forEach(name => {
+            const wrap = scenarioStartFields.querySelector(`[data-field-wrap="${name}"]`);
+            if (wrap) wrap.classList.toggle('hidden', hide);
+          });
+        };
+        createAccountCb.addEventListener('change', syncLoginFields);
+        syncLoginFields();   // état initial
+      }
 
       runScenarioBtn.disabled = false;
 
@@ -4987,9 +5091,11 @@
         const rows = items.map(({ route: r, index: i }) => {
           const badgeStyle = methodColors[r.method] || 'text-slate-300 bg-slate-800 border-slate-700';
           const summary = r.summary ? `<span class="text-slate-500 truncate ml-1" title="${r.summary}">— ${r.summary}</span>` : '';
+          // Droits : une route non autorisée au profil est masquée et non cochée (index préservé).
+          const routeAllowed = !window.Auth || window.Auth.isAllowed('routes', `${r.method} ${r.path}`);
           return `
-            <label class="flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-800/60 cursor-pointer border-b border-slate-800/60 last:border-0 transition">
-              <input type="checkbox" class="route-checkbox accent-indigo-500 h-3.5 w-3.5 rounded flex-shrink-0" value="${i}" checked>
+            <label class="flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-800/60 cursor-pointer border-b border-slate-800/60 last:border-0 transition ${routeAllowed ? '' : 'hidden'}">
+              <input type="checkbox" class="route-checkbox accent-indigo-500 h-3.5 w-3.5 rounded flex-shrink-0" value="${i}" ${routeAllowed ? 'checked' : ''}>
               <span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${badgeStyle}">${r.method}</span>
               <span class="font-mono text-slate-200 truncate">${r.path}</span>
               ${summary}
@@ -5655,6 +5761,133 @@
     }
     document.addEventListener('i18n:ready', refreshDynamicI18n);
     document.addEventListener('i18n:changed', refreshDynamicI18n);
+
+    // ══════════════════════════════════════════════════════════════════
+    // PROFILS / DROITS (garde-fou côté client, via window.Auth + window.Login)
+    // ══════════════════════════════════════════════════════════════════
+    const PROFILE_LABEL_KEYS = {
+      superadmin: ['prof.superadmin', 'Super admin'],
+      subadmin:   ['prof.subadmin', 'Sous admin'],
+      dev:        ['prof.dev', 'Développeur'],
+      qa:         ['prof.qa', 'QA'],
+      support:    ['prof.support', 'Support'],
+    };
+
+    // Met à jour l'affichage lié au profil (label, onglet Admin) puis applique les droits.
+    function applyProfileUI(profile) {
+      const labelEl = document.getElementById('currentProfileLabel');
+      const switchBtn = document.getElementById('profileSwitchBtn');
+      if (labelEl) {
+        if (profile && PROFILE_LABEL_KEYS[profile]) {
+          labelEl.textContent = tr(PROFILE_LABEL_KEYS[profile][0], PROFILE_LABEL_KEYS[profile][1]);
+        } else {
+          labelEl.textContent = tr('prof.none', 'Non connecté');
+        }
+      }
+      if (switchBtn) switchBtn.textContent = profile ? tr('prof.switch2', 'Changer') : tr('prof.switch', 'Se connecter');
+
+      // Onglet Admin + bloc import/export config : visibles uniquement pour super/sous admin.
+      const navAdmin = document.getElementById('navAdmin');
+      if (navAdmin) navAdmin.classList.toggle('hidden', !window.Auth.isAdmin(profile));
+      const cfgIo = document.getElementById('cfgIoWrap');
+      if (cfgIo) cfgIo.classList.toggle('hidden', !window.Auth.isAdmin(profile));
+
+      applyAccessControl(profile);
+    }
+
+    // Applique les restrictions d'accès selon le profil.
+    //  - Sans profil : tout l'espace de travail (formulaire + switch de mode) est grisé et
+    //    inactif ; seule la Documentation reste accessible. La modale de connexion est ouverte.
+    //  - Avec profil : accès, puis filtrage fin (specs/scénarios/environnements/routes) via les
+    //    hooks dédiés (applyProfileFilters).
+    function applyAccessControl(profile) {
+      const canUse = !!profile;
+
+      // Onglet Statut des APIs : mis en stand-by → masqué dans tous les cas.
+      const navStatus = document.getElementById('navStatus');
+      if (navStatus) navStatus.classList.add('hidden');
+
+      // Onglet Validateur : grisé sans profil.
+      const navValidator = document.getElementById('navValidator');
+      if (navValidator) {
+        navValidator.classList.toggle('opacity-40', !canUse);
+        navValidator.classList.toggle('pointer-events-none', !canUse);
+      }
+
+      // Espace de travail COMPLET (formulaire + résultats) : entièrement grisé et inactif
+      // sans profil. On masque aussi la console API et on affiche un message d'invite.
+      const workspace = document.getElementById('workspace');
+      if (workspace) {
+        workspace.classList.toggle('opacity-40', !canUse);
+        workspace.classList.toggle('pointer-events-none', !canUse);
+        workspace.classList.toggle('select-none', !canUse);
+        workspace.setAttribute('aria-disabled', String(!canUse));
+      }
+      const loginPrompt = document.getElementById('loginPrompt');
+      if (loginPrompt) loginPrompt.classList.toggle('hidden', canUse);
+      const apiConsole = document.getElementById('apiConsole');
+      if (apiConsole) apiConsole.classList.toggle('hidden', !canUse);
+
+      // Filtrage fin selon la matrice du profil (defini à la tâche 6).
+      if (typeof applyProfileFilters === 'function') applyProfileFilters(profile);
+    }
+
+    // Reconstruit le sélecteur d'environnement selon les droits (environnements autorisés).
+    function refreshEnvSelect() {
+      if (!envTypeInput || !window.Auth) return;
+      const allowed = window.Auth.allowedList('environments');   // null = tout (admin)
+      const all = window.Auth.ENVIRONMENTS;                      // [{id,label}]
+      const list = Array.isArray(allowed) ? all.filter(e => allowed.includes(e.id)) : all;
+      const prev = envTypeInput.value;
+      const envLabel = { dev: tr('sec2.envDev', 'Développement'), preprod: tr('sec2.envPreprod', 'Pré-production'), prod: tr('sec2.envProd', 'Production') };
+      envTypeInput.innerHTML = (list.length ? list : all).map(e => `<option value="${e.id}">${envLabel[e.id] || e.label}</option>`).join('');
+      if (prev && list.some(e => e.id === prev)) envTypeInput.value = prev;
+    }
+
+    // Filtres dépendants du profil : cibles, environnements, specs, scénarios, routes.
+    // Appelé à chaque changement de profil (via applyAccessControl).
+    function applyProfileFilters(profile) {
+      if (typeof refreshEnvSelect === 'function') refreshEnvSelect();
+      if (typeof renderTargetSelect === 'function') renderTargetSelect();
+      if (typeof loadSpecVersions === 'function') loadSpecVersions();
+      if (typeof refreshScenarioList === 'function') refreshScenarioList();
+      // Les routes (mode manuel) sont re-filtrées au prochain rendu de la liste (renderRoutesList).
+      if (Array.isArray(detectedRoutes) && detectedRoutes.length && typeof renderRoutesList === 'function') {
+        renderRoutesList(detectedRoutes, detectedTagOrder);
+      }
+    }
+
+    function setupProfileUI() {
+      const switchBtn = document.getElementById('profileSwitchBtn');
+      if (switchBtn) switchBtn.addEventListener('click', () => window.Login.open());
+      document.getElementById('loginPromptBtn')?.addEventListener('click', () => window.Login.open());
+      // Sélecteur de cibles : appliquer la cible choisie au changement.
+      if (targetSelect) targetSelect.addEventListener('change', applySelectedTarget);
+
+      // Import / export de la configuration (réservé aux admins, affiché via applyProfileUI).
+      document.getElementById('cfgExportBtn')?.addEventListener('click', () => window.Auth.exportConfig());
+      document.getElementById('cfgImportBtn')?.addEventListener('click', () => document.getElementById('cfgImportInput')?.click());
+      document.getElementById('cfgImportInput')?.addEventListener('change', async (e) => {
+        const f = e.target.files?.[0]; if (!f) return;
+        try {
+          window.Auth.importConfig(JSON.parse(await f.text()));
+          applyProfileFilters(window.Auth.getCurrentProfile());   // re-filtrer selon la nouvelle config
+          alert(tr('cfg.imported', 'Configuration importée.'));
+        } catch { alert(tr('cfg.importErr', 'Fichier JSON invalide.')); }
+        e.target.value = '';
+      });
+
+      // Réagir aux changements de profil (connexion / changement).
+      window.Login.onChange(applyProfileUI);
+      // Réappliquer le libellé du profil APRÈS chaque (re)traduction i18n : i18n réapplique les
+      // data-i18n sur le DOM et écraserait sinon le libellé dynamique du profil courant.
+      const reapplyProfile = () => applyProfileUI(window.Auth.getCurrentProfile());
+      document.addEventListener('i18n:ready', reapplyProfile);
+      document.addEventListener('i18n:changed', reapplyProfile);
+      // Appliquer l'état courant, et forcer la connexion si aucun profil (sauf doc).
+      applyProfileUI(window.Auth.getCurrentProfile());
+      window.Login.ensureAuth();
+    }
   </script>
   <script src="/i18n.js"></script>
 </body>

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VivAPI Unified Validator — Administration</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/auth.js"></script>
+  <script src="/login.js"></script>
+  <script src="/nav-guard.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans" data-requires-auth>
+
+  <div class="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow flex flex-col gap-6">
+
+    <!-- Header + onglets -->
+    <header class="border-b-2 border-slate-700 pb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div class="flex items-center gap-4 flex-shrink-0">
+        <img src="/logo.svg" alt="VivAPI Unified Validator" class="h-12 sm:h-14 w-auto flex-shrink-0">
+        <p class="text-slate-400 text-xs sm:text-sm hidden xl:block max-w-xs" data-i18n="admin.subtitle">
+          Gestion des profils, des droits et des cibles API
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-1 text-xs font-semibold">
+          <a href="/index.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-list-check mr-1.5"></i> <span data-i18n="nav.validator">Validateur</span>
+          </a>
+          <a href="/status.html" class="hidden px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-heart-pulse mr-1.5"></i> <span data-i18n="nav.status">Statut des APIs</span>
+          </a>
+          <a href="/docs.html" class="px-3.5 py-1.5 rounded-md transition text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-book mr-1.5"></i> <span data-i18n="nav.docs">Documentation</span>
+          </a>
+          <a href="/admin.html" class="px-3.5 py-1.5 rounded-md transition bg-indigo-600 text-white">
+            <i class="fa-solid fa-user-gear mr-1.5"></i> <span data-i18n="nav.admin">Administration</span>
+          </a>
+        </div>
+        <span class="hidden sm:inline-block w-px h-6 bg-slate-700"></span>
+        <div class="lang-switcher"></div>
+      </div>
+    </header>
+
+    <!-- Accès refusé (non-admin) -->
+    <div id="adminDenied" class="hidden bg-rose-950/40 border border-rose-800 rounded-xl p-6 text-center text-rose-300">
+      <i class="fa-solid fa-lock text-2xl mb-2"></i>
+      <p data-i18n="admin.denied">Accès réservé aux administrateurs. Connectez-vous avec un profil admin.</p>
+    </div>
+
+    <!-- Contenu admin -->
+    <div id="adminContent" class="hidden flex flex-col gap-6" data-guarded>
+
+      <!-- Barre d'actions : import / export -->
+      <div class="flex flex-wrap items-center gap-2 bg-slate-800/80 rounded-xl p-4 border border-slate-700/80">
+        <span class="text-sm font-semibold text-indigo-300 mr-auto flex items-center gap-2">
+          <i class="fa-solid fa-sliders"></i> <span data-i18n="admin.configTitle">Configuration des droits</span>
+        </span>
+        <button type="button" id="adminExportBtn" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-600 bg-slate-800 hover:bg-indigo-600 hover:text-white transition">
+          <i class="fa-solid fa-download mr-1"></i> <span data-i18n="admin.export">Exporter la config</span>
+        </button>
+        <button type="button" id="adminImportBtn" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-600 bg-slate-800 hover:bg-indigo-600 hover:text-white transition">
+          <i class="fa-solid fa-upload mr-1"></i> <span data-i18n="admin.import">Importer</span>
+        </button>
+        <input type="file" id="adminImportInput" accept="application/json,.json" class="hidden">
+      </div>
+
+      <!-- Matrice de droits -->
+      <section class="bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 space-y-5" data-collapsible data-collapse-key="matrix">
+        <button type="button" class="collapse-toggle w-full flex items-center gap-2 text-base font-semibold text-indigo-300">
+          <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform" data-collapse-chevron></i>
+          <i class="fa-solid fa-table-cells-large"></i> <span data-i18n="admin.matrixTitle">Droits par profil</span>
+        </button>
+        <div data-collapse-body class="space-y-5">
+          <p class="text-xs text-slate-400" data-i18n="admin.matrixHelp">
+            Cochez les éléments disponibles pour chaque profil restreint (Développeur, QA, Support).
+            Les super/sous admins ont accès à tout.
+          </p>
+
+          <div class="flex items-center gap-2 text-xs">
+            <label class="text-slate-400" data-i18n="admin.specFor">Version de spec (pour lister les routes) :</label>
+            <select id="adminSpecSelect" class="bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-slate-200 font-mono"></select>
+          </div>
+
+          <div id="adminMatrix" class="space-y-6"></div>
+        </div>
+      </section>
+
+      <!-- Cibles API -->
+      <section class="bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 space-y-4" data-collapsible data-collapse-key="targets">
+        <button type="button" class="collapse-toggle w-full flex items-center gap-2 text-base font-semibold text-indigo-300">
+          <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform" data-collapse-chevron></i>
+          <i class="fa-solid fa-server"></i> <span data-i18n="admin.targetsTitle">Cibles API</span>
+        </button>
+        <div data-collapse-body class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 items-end">
+          <div class="lg:col-span-2 flex flex-col gap-1">
+            <label class="text-[11px] text-slate-400" data-i18n="admin.tLabel">Libellé</label>
+            <input id="tLabel" class="bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-slate-200">
+          </div>
+          <div class="lg:col-span-2 flex flex-col gap-1">
+            <label class="text-[11px] text-slate-400" data-i18n="admin.tUrl">URL</label>
+            <input id="tUrl" placeholder="https://..." class="bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-slate-200 font-mono">
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] text-slate-400" data-i18n="admin.tClientId">Client ID</label>
+            <input id="tClientId" class="bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-slate-200 font-mono">
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] text-slate-400" data-i18n="admin.tScope">Scope</label>
+            <select id="tScope" class="bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-slate-200">
+              <option value="b2c">b2c</option><option value="b2b">b2b</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] text-slate-400" data-i18n="admin.tEnv">Environnement</label>
+            <select id="tEnv" class="bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-slate-200">
+              <option value="dev">dev</option><option value="preprod">preprod</option><option value="prod">prod</option>
+            </select>
+          </div>
+          <div class="lg:col-span-6 flex flex-wrap items-center gap-2">
+            <button type="button" id="tAddBtn" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">
+              <i class="fa-solid fa-plus mr-1"></i> <span data-add-label data-i18n="admin.tAdd">Ajouter la cible</span>
+            </button>
+            <button type="button" id="tCancelBtn" class="hidden text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+              <i class="fa-solid fa-xmark mr-1"></i> <span data-i18n="common.cancel2">Annuler</span>
+            </button>
+            <span id="tFormTitle" class="text-[11px] text-indigo-300 italic"></span>
+            <span id="tProdNote" class="hidden ml-2 text-[10px] text-amber-400" data-i18n="admin.tProdNote">Les cibles de production ne peuvent être ajoutées que par un super admin.</span>
+          </div>
+        </div>
+        <div id="adminTargetsList" class="space-y-1.5"></div>
+        </div>
+      </section>
+
+      <!-- Mots de passe des profils (superadmin uniquement) -->
+      <section id="adminPwdSection" class="hidden bg-slate-800/80 rounded-xl p-5 border border-slate-700/80 space-y-4" data-collapsible data-collapse-key="passwords">
+        <button type="button" class="collapse-toggle w-full flex items-center gap-2 text-base font-semibold text-indigo-300">
+          <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform" data-collapse-chevron></i>
+          <i class="fa-solid fa-key"></i> <span data-i18n="admin.pwdTitle">Mots de passe des profils</span>
+        </button>
+        <div data-collapse-body class="space-y-4">
+          <p class="text-xs text-slate-400" data-i18n="admin.pwdHelp">Définir (ou effacer) le mot de passe d'un profil. Vide = profil ouvert sans mot de passe (profils restreints uniquement).</p>
+          <div id="adminPwdList" class="space-y-2"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    function tr(key, fallback, vars) {
+      if (window.I18n && typeof window.I18n.t === 'function') { const s = window.I18n.t(key, vars); if (s && s !== key) return s; }
+      let s = fallback;
+      if (vars) for (const [k, v] of Object.entries(vars)) s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), String(v));
+      return s;
+    }
+    const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    const A = window.Auth;
+    const PROF_LABEL = {
+      dev: () => tr('prof.dev','Développeur'), qa: () => tr('prof.qa','QA'), support: () => tr('prof.support','Support'),
+    };
+
+    let detectedRoutesForSpec = [];   // routes de la spec sélectionnée pour la matrice
+
+    function isAdminNow() { return A.isAdmin(); }
+
+    // ── Rendu de la matrice ────────────────────────────────────────────────
+    async function loadSpecsIntoSelect() {
+      const sel = document.getElementById('adminSpecSelect');
+      try {
+        const res = await fetch('/api/spec-versions');
+        const data = await res.json();
+        const versions = data.versions || [];
+        sel.innerHTML = versions.map(v => `<option value="${esc(v.filename)}">${esc(v.label)}</option>`).join('');
+        return versions;
+      } catch { sel.innerHTML = ''; return []; }
+    }
+
+    async function loadRoutesForSpec(filename) {
+      try {
+        const specRes = await fetch(`/api/spec/${encodeURIComponent(filename)}`);
+        const yamlContent = await specRes.text();
+        const fd = new FormData();
+        fd.append('spec', new Blob([yamlContent], { type: 'application/x-yaml' }), 'spec.yaml');
+        const res = await fetch('/api/parse-routes', { method: 'POST', body: fd });
+        const data = await res.json();
+        return data.routes || [];
+      } catch { return []; }
+    }
+
+    // Couleur de pastille par méthode HTTP
+    const METHOD_COLORS = {
+      GET: 'text-emerald-300 border-emerald-700/60 bg-emerald-950/40',
+      POST: 'text-sky-300 border-sky-700/60 bg-sky-950/40',
+      PUT: 'text-amber-300 border-amber-700/60 bg-amber-950/40',
+      PATCH: 'text-violet-300 border-violet-700/60 bg-violet-950/40',
+      DELETE: 'text-rose-300 border-rose-700/60 bg-rose-950/40',
+    };
+    function methodBadge(method) {
+      const cls = METHOD_COLORS[method] || 'text-slate-300 border-slate-600 bg-slate-800/60';
+      return `<span class="inline-block font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border ${cls}">${esc(method)}</span>`;
+    }
+
+    function matrixSection(titleKey, titleFb, family, items) {
+      const rows = items.map((it, idx) => {
+        const cells = A.RESTRICTABLE.map(p =>
+          `<td class="text-center px-2 py-1.5 align-middle">
+             <input type="checkbox" class="accent-indigo-500 h-4 w-4 rounded cursor-pointer" data-perm data-profile="${p}" data-family="${family}" data-id="${esc(it.id)}" ${A.getPermission(p, family, it.id) ? 'checked' : ''}>
+           </td>`).join('');
+        // Libellé : pour les routes, séparer la méthode (badge) du chemin
+        let labelCell;
+        if (family === 'routes' && it.method) {
+          labelCell = `<div class="flex items-center gap-2">${methodBadge(it.method)}<span class="font-mono text-[11px] text-slate-300">${esc(it.path)}</span></div>`;
+        } else {
+          labelCell = `<span class="text-slate-200 text-[11px]">${esc(it.label)}</span>`;
+        }
+        const zebra = idx % 2 === 1 ? 'bg-slate-900/40' : 'bg-slate-900/10';
+        return `<tr class="${zebra} border-b border-slate-700/40 hover:bg-indigo-950/30 transition-colors" data-mrow data-family="${family}" ${it.method ? `data-method="${esc(it.method)}"` : ''}>
+          <td class="px-3 py-1.5">${labelCell}</td>${cells}</tr>`;
+      }).join('');
+      const heads = A.RESTRICTABLE.map(p => `<th class="px-2 py-1.5 text-[11px] font-semibold text-slate-400">${PROF_LABEL[p]()}</th>`).join('');
+
+      // Barre d'actions globales (tout cocher / tout décocher)
+      const globalActions = `
+        <div class="flex items-center gap-1.5">
+          <button type="button" class="admin-bulk text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-600 bg-slate-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition" data-bulk="all" data-family="${family}">
+            <i class="fa-solid fa-check-double mr-1"></i>${tr('admin.checkAll','Tout cocher')}
+          </button>
+          <button type="button" class="admin-bulk text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-600 bg-slate-800 hover:bg-rose-600 hover:text-white hover:border-rose-500 transition" data-bulk="none" data-family="${family}">
+            <i class="fa-solid fa-xmark mr-1"></i>${tr('admin.uncheckAll','Tout décocher')}
+          </button>
+        </div>`;
+
+      // Boutons par méthode ET par profil (routes uniquement) :
+      // pour chaque méthode HTTP, un bouton bascule par profil restreint (dev / QA / support)
+      // + un bouton « Tous » qui agit sur les trois profils à la fois.
+      let methodActions = '';
+      if (family === 'routes') {
+        const methods = [...new Set(items.map(it => it.method).filter(Boolean))];
+        if (methods.length) {
+          const rows = methods.map(mt => {
+            const perProfile = A.RESTRICTABLE.map(p => `
+              <button type="button" class="admin-bulk-method text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-600 bg-slate-800 hover:bg-indigo-600 hover:text-white transition" data-bulk-method="${esc(mt)}" data-bulk-profile="${p}" data-family="${family}">
+                ${PROF_LABEL[p]()}
+              </button>`).join('');
+            return `
+              <div class="flex flex-wrap items-center gap-1.5 py-0.5">
+                <span class="w-14 flex-shrink-0">${methodBadge(mt)}</span>
+                ${perProfile}
+                <button type="button" class="admin-bulk-method text-[10px] font-semibold px-2 py-0.5 rounded border border-indigo-600/60 bg-indigo-950/40 text-indigo-300 hover:bg-indigo-600 hover:text-white transition" data-bulk-method="${esc(mt)}" data-bulk-profile="*" data-family="${family}">
+                  ${tr('admin.allProfiles','Tous')}
+                </button>
+              </div>`;
+          }).join('');
+          methodActions = `
+            <div class="bg-slate-900/40 border border-slate-700/50 rounded-lg p-2.5 space-y-1">
+              <p class="text-[10px] text-slate-500 mb-1">${tr('admin.byMethodHelp','Activer/désactiver toutes les routes d\'une méthode pour un profil :')}</p>
+              ${rows}
+            </div>`;
+        }
+      }
+
+      return `
+        <div data-section="${family}">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-slate-200">${tr(titleKey, titleFb)}</h3>
+            ${globalActions}
+          </div>
+          ${methodActions ? `<div class="mb-2">${methodActions}</div>` : ''}
+          <div class="overflow-x-auto rounded-lg border border-slate-700/60">
+            <table class="w-full text-xs">
+              <thead><tr class="bg-slate-800/80 border-b border-slate-600"><th class="px-3 py-1.5 text-left text-[11px] font-semibold text-slate-400">${tr('admin.element','Élément')}</th>${heads}</tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    async function renderMatrix() {
+      const specSel = document.getElementById('adminSpecSelect');
+      const specs = (await loadSpecsIntoSelect());
+      const specItems = specs.map(v => ({ id: v.filename, label: v.label }));
+      if (specSel.value) detectedRoutesForSpec = await loadRoutesForSpec(specSel.value);
+      else if (specs[0]) { specSel.value = specs[0].filename; detectedRoutesForSpec = await loadRoutesForSpec(specs[0].filename); }
+      const routeItems = detectedRoutesForSpec.map(r => ({ id: `${r.method} ${r.path}`, label: `${r.method} ${r.path}`, method: r.method, path: r.path }));
+
+      const el = document.getElementById('adminMatrix');
+      el.innerHTML =
+        matrixSection('admin.famSpecs', 'Versions de spec', 'specs', specItems) +
+        matrixSection('admin.famEnvironments', 'Environnements', 'environments', A.ENVIRONMENTS) +
+        matrixSection('admin.famScenarios', 'Scénarios', 'scenarios', A.SCENARIOS) +
+        matrixSection('admin.famRoutes', 'Routes', 'routes', routeItems);
+
+      el.querySelectorAll('[data-perm]').forEach(cb => {
+        cb.addEventListener('change', () => {
+          A.setPermission(cb.dataset.profile, cb.dataset.family, cb.dataset.id, cb.checked);
+        });
+      });
+
+      // Applique un état à un ensemble de cases + persiste
+      const setBoxes = (boxes, checked) => {
+        boxes.forEach(cb => {
+          cb.checked = checked;
+          A.setPermission(cb.dataset.profile, cb.dataset.family, cb.dataset.id, checked);
+        });
+      };
+
+      // Boutons « Tout cocher / Tout décocher » par section
+      el.querySelectorAll('.admin-bulk').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const section = btn.closest('[data-section]');
+          const boxes = section.querySelectorAll('[data-perm]');
+          setBoxes([...boxes], btn.dataset.bulk === 'all');
+        });
+      });
+
+      // Boutons « basculer toutes les routes d'une méthode » pour UN profil (ou tous)
+      el.querySelectorAll('.admin-bulk-method').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const section = btn.closest('[data-section]');
+          const method = btn.dataset.bulkMethod;
+          const profile = btn.dataset.bulkProfile;   // un profil, ou '*' pour tous
+          const rows = section.querySelectorAll(`[data-mrow][data-method="${method}"]`);
+          const boxes = [];
+          rows.forEach(r => r.querySelectorAll('[data-perm]').forEach(cb => {
+            if (profile === '*' || cb.dataset.profile === profile) boxes.push(cb);
+          }));
+          // Bascule : si tout est déjà coché (pour ce profil/méthode), on décoche ; sinon on coche.
+          const allChecked = boxes.length > 0 && boxes.every(cb => cb.checked);
+          setBoxes(boxes, !allChecked);
+        });
+      });
+    }
+
+    // ── Cibles ───────────────────────────────────────────────────────────────
+    function renderTargets() {
+      const list = document.getElementById('adminTargetsList');
+      const targets = A.getTargets();
+      if (!targets.length) { list.innerHTML = `<p class="text-[11px] text-slate-500 italic">${tr('admin.noTarget','Aucune cible définie.')}</p>`; return; }
+      list.innerHTML = targets.map(t => `
+        <div class="flex items-center gap-2 text-[11px] bg-slate-900/90 border border-slate-700/70 rounded-lg px-2.5 py-1.5 ${editingTargetId === t.id ? 'ring-1 ring-indigo-500' : ''}">
+          <span class="font-mono text-[9px] px-1.5 py-0.5 rounded border border-slate-600 text-slate-400">${esc((t.env||'').toUpperCase())}</span>
+          <span class="font-semibold text-indigo-300">${esc(t.label)}</span>
+          <span class="text-slate-500 font-mono truncate flex-1">${esc(t.url)} · ${esc(t.clientId||'')} · ${esc(t.scope||'')}</span>
+          <button type="button" data-edit-target="${esc(t.id)}" class="text-slate-500 hover:text-indigo-400 transition" title="${tr('admin.tEdit','Modifier')}"><i class="fa-solid fa-pen"></i></button>
+          <button type="button" data-del-target="${esc(t.id)}" class="text-slate-500 hover:text-rose-400 transition" title="${tr('admin.tDelete','Supprimer')}"><i class="fa-solid fa-trash-can"></i></button>
+        </div>`).join('');
+      list.querySelectorAll('[data-del-target]').forEach(b => {
+        b.addEventListener('click', () => {
+          if (editingTargetId === b.dataset.delTarget) cancelTargetEdit();
+          A.removeTarget(b.dataset.delTarget); renderTargets();
+        });
+      });
+      list.querySelectorAll('[data-edit-target]').forEach(b => {
+        b.addEventListener('click', () => startTargetEdit(b.dataset.editTarget));
+      });
+    }
+
+    // Bascule le formulaire de cibles en mode « édition » : pré-remplit les champs.
+    let editingTargetId = null;
+    function startTargetEdit(id) {
+      const t = A.getTarget(id);
+      if (!t) return;
+      editingTargetId = id;
+      document.getElementById('tLabel').value = t.label || '';
+      document.getElementById('tUrl').value = t.url || '';
+      document.getElementById('tClientId').value = t.clientId || '';
+      document.getElementById('tScope').value = t.scope || 'b2c';
+      document.getElementById('tEnv').value = t.env || 'dev';
+      // Bascule le libellé du bouton + affiche « Annuler ».
+      const addBtn = document.getElementById('tAddBtn');
+      addBtn.querySelector('[data-add-label]').textContent = tr('admin.tSave', 'Enregistrer les modifications');
+      document.getElementById('tCancelBtn').classList.remove('hidden');
+      document.getElementById('tFormTitle').textContent = tr('admin.tEditing', 'Modification d\'une cible');
+      renderTargets();   // rafraîchit le surlignage de la ligne en cours d'édition
+      document.getElementById('tLabel').focus();
+    }
+    function cancelTargetEdit() {
+      editingTargetId = null;
+      ['tLabel','tUrl','tClientId'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('tScope').value = 'b2c';
+      document.getElementById('tEnv').value = 'dev';
+      document.getElementById('tAddBtn').querySelector('[data-add-label]').textContent = tr('admin.tAdd', 'Ajouter la cible');
+      document.getElementById('tCancelBtn').classList.add('hidden');
+      document.getElementById('tFormTitle').textContent = '';
+      renderTargets();
+    }
+
+    // ── Mots de passe (superadmin) ─────────────────────────────────────────
+    function renderPasswords() {
+      const section = document.getElementById('adminPwdSection');
+      if (!A.isSuperadmin()) { section.classList.add('hidden'); return; }
+      section.classList.remove('hidden');
+      const list = document.getElementById('adminPwdList');
+      const labels = { superadmin: tr('prof.superadmin','Super admin'), subadmin: tr('prof.subadmin','Sous admin'), dev: tr('prof.dev','Développeur'), qa: tr('prof.qa','QA'), support: tr('prof.support','Support') };
+      const statusBadge = (p) => A.hasPassword(p)
+        ? `<span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border text-emerald-300 border-emerald-700/60 bg-emerald-950/40" title="${tr('admin.pwdSetTip','Un mot de passe est défini pour ce profil')}"><i class="fa-solid fa-circle-check"></i>${tr('admin.pwdSet','Défini')}</span>`
+        : `<span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border text-slate-400 border-slate-600 bg-slate-800/60" title="${tr('admin.pwdUnsetTip','Aucun mot de passe défini')}"><i class="fa-regular fa-circle"></i>${tr('admin.pwdUnset','Non défini')}</span>`;
+      list.innerHTML = A.PROFILES.map(p => `
+        <div class="flex flex-wrap items-center gap-2 text-xs" data-pwd-row="${p}">
+          <span class="w-28 text-slate-300">${labels[p]}</span>
+          <span class="w-24" data-pwd-status="${p}">${statusBadge(p)}</span>
+          <input type="password" data-pwd="${p}" placeholder="${tr('admin.newPwd','nouveau mot de passe')}" class="bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-slate-200 flex-1 min-w-[160px]">
+          <button type="button" data-set-pwd="${p}" class="px-2.5 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">${tr('admin.setPwd','Définir')}</button>
+          ${A.isRestrictable(p) ? `<button type="button" data-clear-pwd="${p}" class="px-2.5 py-1.5 rounded-md border border-slate-600 bg-slate-800 hover:bg-rose-600 hover:text-white hover:border-rose-500 text-slate-300 font-semibold ${A.hasPassword(p) ? '' : 'hidden'}">${tr('admin.clearPwd','Effacer')}</button>` : ''}
+        </div>`).join('');
+      const refreshRow = (p) => {
+        list.querySelector(`[data-pwd-status="${p}"]`).innerHTML = statusBadge(p);
+        const clearBtn = list.querySelector(`[data-clear-pwd="${p}"]`);
+        if (clearBtn) clearBtn.classList.toggle('hidden', !A.hasPassword(p));
+      };
+      list.querySelectorAll('[data-set-pwd]').forEach(b => {
+        b.addEventListener('click', async () => {
+          const p = b.dataset.setPwd;
+          const input = list.querySelector(`[data-pwd="${p}"]`);
+          if (!input.value) { alert(tr('admin.pwdEmpty', 'Saisissez un mot de passe (ou utilisez « Effacer »).')); return; }
+          await A.setProfilePassword(p, input.value);
+          input.value = '';
+          refreshRow(p);
+          alert(tr('admin.pwdSaved', 'Mot de passe mis à jour pour {p}.', { p: labels[p] }));
+        });
+      });
+      list.querySelectorAll('[data-clear-pwd]').forEach(b => {
+        b.addEventListener('click', async () => {
+          const p = b.dataset.clearPwd;
+          if (!confirm(tr('admin.pwdClearConfirm', 'Effacer le mot de passe de {p} ?', { p: labels[p] }))) return;
+          await A.setProfilePassword(p, '');
+          refreshRow(p);
+        });
+      });
+    }
+
+    // ── Initialisation de la page ──────────────────────────────────────────
+    async function initAdmin() {
+      const denied = document.getElementById('adminDenied');
+      const content = document.getElementById('adminContent');
+      if (!isAdminNow()) { denied.classList.remove('hidden'); content.classList.add('hidden'); return; }
+      denied.classList.add('hidden'); content.classList.remove('hidden');
+
+      await renderMatrix();
+      renderTargets();
+      renderPasswords();
+
+      document.getElementById('adminSpecSelect').addEventListener('change', renderMatrix);
+
+      // Cibles : ajout OU mise à jour (selon editingTargetId)
+      document.getElementById('tAddBtn').addEventListener('click', () => {
+        const env = document.getElementById('tEnv').value;
+        if (env === 'prod' && !A.isSuperadmin()) { alert(tr('admin.tProdDenied', 'Seul un super admin peut ajouter une cible de production.')); return; }
+        const url = document.getElementById('tUrl').value.trim();
+        if (!url) { alert(tr('admin.tUrlRequired', "L'URL est obligatoire.")); return; }
+        const data = {
+          label: document.getElementById('tLabel').value.trim() || url,
+          url, clientId: document.getElementById('tClientId').value.trim(),
+          scope: document.getElementById('tScope').value, env,
+        };
+        if (editingTargetId) {
+          A.updateTarget(editingTargetId, data);
+          cancelTargetEdit();   // réinitialise le formulaire et rafraîchit la liste
+        } else {
+          A.addTarget(data);
+          ['tLabel','tUrl','tClientId'].forEach(id => document.getElementById(id).value = '');
+          renderTargets();
+        }
+      });
+      document.getElementById('tCancelBtn').addEventListener('click', cancelTargetEdit);
+      // Note prod réservée au superadmin
+      document.getElementById('tProdNote').classList.toggle('hidden', A.isSuperadmin());
+
+      // Import / export
+      document.getElementById('adminExportBtn').addEventListener('click', () => A.exportConfig());
+      document.getElementById('adminImportBtn').addEventListener('click', () => document.getElementById('adminImportInput').click());
+      document.getElementById('adminImportInput').addEventListener('change', async (e) => {
+        const f = e.target.files?.[0]; if (!f) return;
+        try { A.importConfig(JSON.parse(await f.text())); await renderMatrix(); renderTargets(); renderPasswords(); alert(tr('admin.imported','Configuration importée.')); }
+        catch { alert(tr('admin.importErr','Fichier JSON invalide.')); }
+        e.target.value = '';
+      });
+    }
+
+    // ── Sections repliables ─────────────────────────────────────────────────
+    // Chaque <section data-collapsible data-collapse-key="..."> a un en-tête .collapse-toggle
+    // et un corps [data-collapse-body]. L'état (ouvert/fermé) est mémorisé dans localStorage.
+    const COLLAPSE_STORE = 'vivapi_admin_collapsed';
+    function getCollapsedState() {
+      try { return JSON.parse(localStorage.getItem(COLLAPSE_STORE) || '{}') || {}; } catch { return {}; }
+    }
+    function saveCollapsedState(state) {
+      try { localStorage.setItem(COLLAPSE_STORE, JSON.stringify(state)); } catch { /* ignore */ }
+    }
+    function applyCollapse(section, collapsed) {
+      const body = section.querySelector('[data-collapse-body]');
+      const chevron = section.querySelector('[data-collapse-chevron]');
+      if (body) body.classList.toggle('hidden', collapsed);
+      if (chevron) chevron.classList.toggle('-rotate-90', collapsed);
+    }
+    function setupCollapsibles() {
+      const state = getCollapsedState();
+      document.querySelectorAll('[data-collapsible]').forEach(section => {
+        const key = section.dataset.collapseKey;
+        applyCollapse(section, !!state[key]);
+        const toggle = section.querySelector('.collapse-toggle');
+        if (toggle && !toggle.dataset.bound) {
+          toggle.dataset.bound = '1';
+          toggle.addEventListener('click', () => {
+            const st = getCollapsedState();
+            st[key] = !st[key];
+            saveCollapsedState(st);
+            applyCollapse(section, st[key]);
+          });
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // nav-guard force la connexion si aucun profil. On (re)initialise quand le profil change.
+      initAdmin();
+      setupCollapsibles();
+      if (window.Login) window.Login.onChange(() => { initAdmin(); setupCollapsibles(); });
+    });
+  </script>
+  <script src="/i18n.js"></script>
+</body>
+</html>

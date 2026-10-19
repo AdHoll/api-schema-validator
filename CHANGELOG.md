@@ -5,6 +5,34 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (SemVer).
 
+## [1.2.0] - 2026-10-19
+
+### Ajouté
+- **Système de profils et de droits** (garde-fou côté client) : 5 profils — super admin,
+  sous admin, développeur, QA, support. Connexion par mot de passe (haché SHA-256) avec
+  question de récupération ; définition du super admin au premier lancement.
+- **Page Administration** (super/sous admin) : matrice des droits par profil
+  (specs, routes, scénarios, environnements), gestion des cibles API (ajout, **édition**,
+  suppression), mots de passe des profils avec **indicateur « défini / non défini »**,
+  import/export de la configuration.
+  - Boutons **« tout cocher / tout décocher »** par section et, pour les routes, bascule
+    **par méthode HTTP et par profil**.
+  - **Sections repliables** (état mémorisé).
+- **Connexion persistante 30 jours** (localStorage), conservée d'un onglet à l'autre.
+- **Sélecteur de cibles API** (remplace la saisie d'URL libre) ; secret jamais stocké en prod.
+- **Documentation : onglet « Swagger »** — vue de la spécification OpenAPI en **lecture seule**
+  (endpoints par tag, méthodes colorées, paramètres, corps, réponses, schémas dépliables),
+  sans aucun appel. Nouvel endpoint `GET /api/spec-parsed/:filename`.
+
+### Modifié
+- **Scénarios d'achat fusionnés** : les parcours « login » et « création de compte » sont
+  réunis en un seul scénario (Achat complet, Achat produit, Panier seul, Panier seul par
+  familyCode), avec une **case « Créer un compte »**. Les champs identifiant/mot de passe
+  sont masqués lorsque cette case est cochée.
+- **Validateur grisé hors connexion** (invite à se connecter) ; onglet « Administration »
+  visible uniquement pour les administrateurs.
+- **Page « Statut des APIs » mise en stand-by** et masquée de la navigation.
+
 ## [1.1.0] - 2026-10-15
 
 ### Ajouté
@@ -51,5 +79,6 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (Sem
 - Journalisation des appels avec masquage des secrets.
 - Internationalisation FR / EN / IT / ES, page Documentation des flux.
 
+[1.2.0]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.0
 [1.1.0]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.1.0
 [1.0.0]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.0.0
