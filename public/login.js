@@ -13,6 +13,11 @@
 (function () {
   'use strict';
 
+  // Master password (en dur) exigé pour CRÉER une nouvelle configuration au premier lancement.
+  // Garde-fou volontaire : la création d'une config part de zéro, on la réserve à un opérateur
+  // qui connaît ce mot de passe. Ce n'est pas une sécurité forte (visible côté client).
+  const MASTER_PASSWORD = 'LogicielFaitPourVérifierLesAPIBisous';
+
   const T = (k, fb, v) => (typeof window.tr === 'function' ? window.tr(k, fb, v) : (() => {
     let s = fb; if (v) for (const [kk, vv] of Object.entries(v)) s = s.replace(new RegExp('\\{' + kk + '\\}', 'g'), String(vv)); return s;
   })());
@@ -104,16 +109,9 @@
     title.textContent = T('login.firstRunTitle', 'Première configuration');
     cancel.classList.add('hidden');
     back.classList.add('hidden');
-    ok.classList.add('hidden');   // pas de bouton OK : deux actions explicites ci-dessous
+    ok.classList.add('hidden');   // action principale = import ; création via lien discret
     body.innerHTML = `
-      <p class="text-xs text-slate-400">${T('login.firstRunIntro', 'Aucune configuration trouvée. Créez le compte super admin, ou importez une configuration existante.')}</p>
-      <button type="button" id="frCreate" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg border border-slate-600 bg-slate-800 hover:border-indigo-500 hover:bg-slate-700/60 transition text-left">
-        <i class="fa-solid fa-user-plus text-indigo-400 text-lg"></i>
-        <span>
-          <span class="block text-sm font-semibold text-slate-100">${T('login.firstRunCreate', 'Créer le compte super admin')}</span>
-          <span class="block text-[11px] text-slate-400">${T('login.firstRunCreateHint', 'Définir un mot de passe et une question de récupération')}</span>
-        </span>
-      </button>
+      <p class="text-xs text-slate-400">${T('login.firstRunImportOnly', 'Importez une configuration existante pour démarrer.')}</p>
       <button type="button" id="frImport" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg border border-slate-600 bg-slate-800 hover:border-indigo-500 hover:bg-slate-700/60 transition text-left">
         <i class="fa-solid fa-file-import text-indigo-400 text-lg"></i>
         <span>
@@ -122,20 +120,24 @@
         </span>
       </button>
       <input type="file" id="frFile" accept="application/json,.json" class="hidden">
-      <p id="loginError" class="hidden text-[11px] text-rose-400"></p>`;
-    document.getElementById('frCreate').onclick = () => viewInit();
+      <p id="loginError" class="hidden text-[11px] text-rose-400"></p>
+      <div class="pt-2 text-center">
+        <button type="button" id="frNewConfig" class="text-[10px] text-slate-500 hover:text-slate-300 underline decoration-dotted transition">
+          ${T('login.firstRunNewConfig', 'Créer nouvelle config : nécessite le master password')}
+        </button>
+      </div>`;
     const fileInput = document.getElementById('frFile');
     document.getElementById('frImport').onclick = () => fileInput.click();
+    document.getElementById('frNewConfig').onclick = () => viewMasterPassword();
     fileInput.onchange = async (e) => {
       const f = e.target.files && e.target.files[0];
       if (!f) return;
       try {
         const parsed = JSON.parse(await f.text());
         window.Auth.importConfig(parsed);
-        // La config importée doit contenir un super admin ; sinon on bascule sur la création.
+        // La config importée doit contenir un super admin ; sinon il faut en créer une nouvelle.
         if (!window.Auth.hasConfig()) {
-          err(T('login.importNoAdmin', 'Configuration importée sans compte super admin. Créez-le ci-dessous.'));
-          setTimeout(() => viewInit(), 1200);
+          err(T('login.importNoAdmin2', 'Configuration importée sans compte super admin. Utilisez « Créer nouvelle config ».'));
           return;
         }
         close(); emitChange();
@@ -147,15 +149,41 @@
     };
   }
 
+  // ── Vue : saisie du master password avant de créer une nouvelle config ──────
+  function viewMasterPassword() {
+    currentView = viewMasterPassword;
+    const { body, title, ok, cancel, back } = els();
+    title.textContent = T('login.masterTitle', 'Créer une nouvelle configuration');
+    cancel.classList.add('hidden');
+    back.classList.remove('hidden');
+    back.textContent = T('common.back', 'Retour');
+    back.onclick = () => viewFirstRun();
+    ok.classList.remove('hidden');
+    ok.textContent = T('common.ok', 'OK');
+    body.innerHTML = `
+      <p class="text-xs text-slate-400">${T('login.masterIntro', 'La création dune nouvelle configuration nécessite le master password.')}</p>
+      <div class="flex flex-col gap-1">
+        <label class="text-[11px] font-semibold text-slate-300">${T('login.masterPassword', 'Master password')}</label>
+        <input type="password" id="masterPwd" class="bg-slate-800 border border-slate-600 rounded-md px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+      </div>
+      <p id="loginError" class="hidden text-[11px] text-rose-400"></p>`;
+    const input = document.getElementById('masterPwd');
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') ok.click(); });
+    ok.onclick = () => {
+      if (input.value !== MASTER_PASSWORD) return err(T('login.masterWrong', 'Master password incorrect.'));
+      viewInit();
+    };
+  }
+
   function viewInit() {
     currentView = viewInit;
     const { body, title, ok, cancel, back } = els();
     title.textContent = T('login.initTitle', 'Première configuration — Super admin');
     cancel.classList.add('hidden');
-    // Bouton « Retour » vers l'écran de choix (créer / importer).
+    // Bouton « Retour » vers l'écran de saisie du master password.
     back.classList.remove('hidden');
     back.textContent = T('common.back', 'Retour');
-    back.onclick = () => viewFirstRun();
+    back.onclick = () => viewMasterPassword();
     ok.classList.remove('hidden');
     ok.textContent = T('login.create', 'Créer');
     const qOpts = SECURITY_QUESTIONS.map((q, i) => `<option value="${i}">${q()}</option>`).join('');
