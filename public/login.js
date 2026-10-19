@@ -79,10 +79,64 @@
   }
 
   // ── Vue : initialisation du superadmin (1er lancement) ────────────────────
+  // ── Vue : premier lancement — choix entre créer l'admin ou importer une config ──
+  function viewFirstRun() {
+    const { body, title, ok, cancel, back } = els();
+    title.textContent = T('login.firstRunTitle', 'Première configuration');
+    cancel.classList.add('hidden');
+    back.classList.add('hidden');
+    ok.classList.add('hidden');   // pas de bouton OK : deux actions explicites ci-dessous
+    body.innerHTML = `
+      <p class="text-xs text-slate-400">${T('login.firstRunIntro', 'Aucune configuration trouvée. Créez le compte super admin, ou importez une configuration existante.')}</p>
+      <button type="button" id="frCreate" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg border border-slate-600 bg-slate-800 hover:border-indigo-500 hover:bg-slate-700/60 transition text-left">
+        <i class="fa-solid fa-user-plus text-indigo-400 text-lg"></i>
+        <span>
+          <span class="block text-sm font-semibold text-slate-100">${T('login.firstRunCreate', 'Créer le compte super admin')}</span>
+          <span class="block text-[11px] text-slate-400">${T('login.firstRunCreateHint', 'Définir un mot de passe et une question de récupération')}</span>
+        </span>
+      </button>
+      <button type="button" id="frImport" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg border border-slate-600 bg-slate-800 hover:border-indigo-500 hover:bg-slate-700/60 transition text-left">
+        <i class="fa-solid fa-file-import text-indigo-400 text-lg"></i>
+        <span>
+          <span class="block text-sm font-semibold text-slate-100">${T('login.firstRunImport', 'Importer une configuration')}</span>
+          <span class="block text-[11px] text-slate-400">${T('login.firstRunImportHint', 'Charger un fichier de configuration (.json) existant')}</span>
+        </span>
+      </button>
+      <input type="file" id="frFile" accept="application/json,.json" class="hidden">
+      <p id="loginError" class="hidden text-[11px] text-rose-400"></p>`;
+    document.getElementById('frCreate').onclick = () => viewInit();
+    const fileInput = document.getElementById('frFile');
+    document.getElementById('frImport').onclick = () => fileInput.click();
+    fileInput.onchange = async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      try {
+        const parsed = JSON.parse(await f.text());
+        window.Auth.importConfig(parsed);
+        // La config importée doit contenir un super admin ; sinon on bascule sur la création.
+        if (!window.Auth.hasConfig()) {
+          err(T('login.importNoAdmin', 'Configuration importée sans compte super admin. Créez-le ci-dessous.'));
+          setTimeout(() => viewInit(), 1200);
+          return;
+        }
+        close(); emitChange();
+      } catch {
+        err(T('login.importErr', 'Fichier de configuration invalide.'));
+      } finally {
+        e.target.value = '';
+      }
+    };
+  }
+
   function viewInit() {
     const { body, title, ok, cancel, back } = els();
     title.textContent = T('login.initTitle', 'Première configuration — Super admin');
-    cancel.classList.add('hidden'); back.classList.add('hidden');
+    cancel.classList.add('hidden');
+    // Bouton « Retour » vers l'écran de choix (créer / importer).
+    back.classList.remove('hidden');
+    back.textContent = T('common.back', 'Retour');
+    back.onclick = () => viewFirstRun();
+    ok.classList.remove('hidden');
     ok.textContent = T('login.create', 'Créer');
     const qOpts = SECURITY_QUESTIONS.map((q, i) => `<option value="${i}">${q()}</option>`).join('');
     body.innerHTML = `
@@ -122,6 +176,7 @@
   function viewLogin(preselect) {
     const { body, title, ok, cancel, back } = els();
     title.textContent = T('login.title', 'Connexion');
+    ok.classList.remove('hidden');
     ok.textContent = T('login.connect', 'Se connecter');
     cancel.classList.toggle('hidden', !window.Auth.getCurrentProfile()); // annulable seulement si déjà connecté
     cancel.textContent = T('common.cancel2', 'Annuler');
@@ -156,6 +211,7 @@
     const { body, title, ok, back, cancel } = els();
     const question = window.Auth.getSecurityQuestion(profile);
     title.textContent = T('login.recoverTitle', 'Récupération du mot de passe');
+    ok.classList.remove('hidden');
     cancel.classList.add('hidden');
     back.classList.remove('hidden');
     back.textContent = T('common.back', 'Retour');
@@ -193,7 +249,7 @@
     opts = opts || {};
     ensureOverlay();
     show();
-    if (!window.Auth.hasConfig()) viewInit();
+    if (!window.Auth.hasConfig()) viewFirstRun();
     else viewLogin(opts.preselect || window.Auth.getCurrentProfile() || 'support');
   }
 
