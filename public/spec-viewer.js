@@ -30,7 +30,7 @@
   let initialised = false;   // versions chargées une seule fois
   let specCache = {};        // filename -> spec JSON
   let currentSpec = null;    // spec actuellement affichée
-  let viewMode = 'pretty';   // 'pretty' (vue simplifiée) | 'json' (JSON brut)
+  let viewMode = 'pretty';   // 'pretty' (simplifiée) | 'example' (simplifiée JSON) | 'json' (brut)
 
   // ── Bascule d'onglets internes ─────────────────────────────────────────────
   function setupTabs() {
@@ -101,7 +101,7 @@
 
   // ── Bascule d'affichage : vue simplifiée vs JSON brut ───────────────────────
   function setViewMode(mode) {
-    viewMode = (mode === 'json') ? 'json' : 'pretty';
+    viewMode = (mode === 'json' || mode === 'example') ? mode : 'pretty';
     // Met à jour l'état visuel des boutons de bascule s'ils existent.
     document.querySelectorAll('[data-swagger-view]').forEach(btn => {
       const active = btn.dataset.swaggerView === viewMode;
@@ -117,7 +117,7 @@
     const view = document.getElementById('swaggerView');
     if (!view || !currentSpec) return;
     if (viewMode === 'json') renderJsonView(currentSpec, view);
-    else renderSpec(currentSpec, view);
+    else renderSpec(currentSpec, view);   // 'pretty' et 'example' : mêmes routes dépliables
   }
 
   // Vue JSON brute : la spec (YAML convertie + déréférencée) en JSON formaté et coloré.
@@ -272,12 +272,16 @@
       parts.push(sectionBlock(T('docs.swaggerParams', 'Paramètres'), blocks));
     }
 
+    // Rendu du corps : en mode « Simplifiée JSON », on affiche un exemple JSON généré ;
+    // sinon la structure détaillée (schéma + exemples éventuels).
+    const renderBody = (content) => (viewMode === 'example') ? renderExampleBlock(content) : renderContent(content);
+
     // Corps de la requête
     const rb = op.requestBody;
     if (rb && rb.content) {
       parts.push(sectionBlock(
         T('docs.swaggerBody', 'Corps de la requête') + (rb.required ? ' <span class="text-rose-400">*</span>' : ''),
-        renderContent(rb.content)
+        renderBody(rb.content)
       ));
     }
 
@@ -286,7 +290,7 @@
     const respRows = Object.keys(responses).map(code => {
       const r = responses[code] || {};
       const codeColor = /^2/.test(code) ? 'text-emerald-300' : /^3/.test(code) ? 'text-sky-300' : /^4/.test(code) ? 'text-amber-300' : /^5/.test(code) ? 'text-rose-300' : 'text-slate-300';
-      const body = r.content ? renderContent(r.content) : '';
+      const body = r.content ? renderBody(r.content) : '';
       return `
         <div class="border border-slate-700/60 rounded-lg overflow-hidden">
           <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-900/60">
@@ -307,6 +311,96 @@
         <h5 class="text-xs font-semibold text-indigo-300">${title}</h5>
         ${inner}
       </div>`;
+  }
+
+  // ── Génération d'un exemple JSON à partir d'un schéma (type Swagger « Example Value ») ──
+  // Produit des valeurs factices selon le type/format/enum, comme l'onglet exemple de Swagger.
+  function schemaToExample(schema, depth, seen) {
+    depth = depth || 0;
+    seen = seen || new Set();
+    if (!schema || typeof schema !== 'object') return null;
+    if (schema.$circular) return {};
+    if (depth > 8) return null;
+
+    // Exemple explicite fourni par la spec : on le respecte.
+    if (schema.example !== undefined) return schema.example;
+    if (Array.isArray(schema.enum) && schema.enum.length) return schema.enum[0];
+    if (schema.default !== undefined) return schema.default;
+
+    // Combinateurs : on prend la première branche exploitable.
+    for (const comb of ['allOf', 'oneOf', 'anyOf']) {
+      if (Array.isArray(schema[comb]) && schema[comb].length) {
+        if (comb === 'allOf') {
+          // Fusionne les objets de toutes les sous-parties.
+          const merged = {};
+          schema[comb].forEach(s => {
+            const v = schemaToExample(s, depth, seen);
+            if (v && typeof v === 'object' && !Array.isArray(v)) Object.assign(merged, v);
+          });
+          return merged;
+        }
+        return schemaToExample(schema[comb][0], depth + 1, seen);
+      }
+    }
+
+    const type = schema.type || (schema.properties ? 'object' : (schema.items ? 'array' : undefined));
+
+    if (type === 'object' || schema.properties) {
+      const obj = {};
+      const props = schema.properties || {};
+      Object.keys(props).forEach(name => { obj[name] = schemaToExample(props[name], depth + 1, seen); });
+      // additionalProperties (map) : on met une entrée d'exemple si c'est un schéma.
+      if (!Object.keys(props).length && schema.additionalProperties && typeof schema.additionalProperties === 'object') {
+        obj.key = schemaToExample(schema.additionalProperties, depth + 1, seen);
+      }
+      return obj;
+    }
+
+    if (type === 'array') {
+      return [schemaToExample(schema.items, depth + 1, seen)];
+    }
+
+    // Types scalaires
+    switch (type) {
+      case 'integer': return 0;
+      case 'number': return 0;
+      case 'boolean': return true;
+      case 'string': {
+        switch (schema.format) {
+          case 'date-time': return '2029-12-31T23:59:59Z';
+          case 'date': return '2029-12-31';
+          case 'time': return '23:59:59';
+          case 'email': return 'user@example.com';
+          case 'uuid': return '00000000-0000-0000-0000-000000000000';
+          case 'uri': case 'url': return 'https://example.com';
+          case 'byte': return 'U3dhZ2dlcg==';
+          case 'binary': return 'string';
+          case 'password': return 'string';
+          default: return 'string';
+        }
+      }
+      default: return schema.properties ? {} : 'string';
+    }
+  }
+
+  // Bloc d'exemple JSON (vue « Simplifiée JSON ») : type MIME + exemple généré, copiable.
+  function renderExampleBlock(content) {
+    return Object.keys(content).map(mt => {
+      const media = content[mt] || {};
+      // Exemple explicite prioritaire, sinon généré depuis le schéma.
+      let value;
+      if (media.example !== undefined) value = media.example;
+      else if (media.examples && typeof media.examples === 'object') {
+        const first = Object.values(media.examples)[0];
+        value = first && first.value !== undefined ? first.value : first;
+      } else if (media.schema) value = schemaToExample(media.schema);
+      else value = null;
+      return `
+        <div class="space-y-1.5">
+          <span class="inline-block font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">${esc(mt)}</span>
+          <pre class="bg-slate-950 border border-slate-800 rounded-md p-3 text-[11px] leading-relaxed overflow-auto max-h-[60vh]"><code>${highlightJson(jsonStr(value))}</code></pre>
+        </div>`;
+    }).join('');
   }
 
   // Rendu d'un bloc content (map mediaType -> {schema, example, examples}) :

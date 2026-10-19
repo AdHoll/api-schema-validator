@@ -5,6 +5,14 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (SemVer).
 
+## [1.2.7] - 2026-10-19
+
+### Ajouté
+- **Vue Swagger — 3e mode « Simplifiée JSON »** : mêmes routes dépliables que la vue
+  simplifiée, mais le corps de requête et les réponses sont affichés sous forme d'**exemple
+  JSON généré depuis le schéma** (valeurs factices par type/format/enum), à la manière de
+  l'onglet « Example Value » de Swagger.
+
 ## [1.2.6] - 2026-10-19
 
 ### Modifié
@@ -125,6 +133,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (Sem
 - Journalisation des appels avec masquage des secrets.
 - Internationalisation FR / EN / IT / ES, page Documentation des flux.
 
+[1.2.7]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.7
 [1.2.6]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.6
 [1.2.5]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.5
 [1.2.4]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.4

@@ -318,6 +318,7 @@
     'docs.swaggerNoDetail': { fr: 'Aucun détail supplémentaire.', en: 'No further details.', it: 'Nessun dettaglio aggiuntivo.', es: 'Sin detalles adicionales.' },
     'docs.swaggerCircular': { fr: 'référence circulaire', en: 'circular reference', it: 'riferimento circolare', es: 'referencia circular' },
     'docs.swaggerViewPretty': { fr: 'Vue simplifiée',  en: 'Simple view',      it: 'Vista semplificata', es: 'Vista simplificada' },
+    'docs.swaggerViewExample': { fr: 'Simplifiée JSON', en: 'Simple JSON',    it: 'JSON semplificato', es: 'JSON simplificado' },
     'docs.swaggerViewJson': { fr: 'JSON',              en: 'JSON',             it: 'JSON',             es: 'JSON' },
     'docs.swaggerExample': { fr: 'Exemple',            en: 'Example',          it: 'Esempio',          es: 'Ejemplo' },
     'docs.swaggerCopy':   { fr: 'Copier',              en: 'Copy',             it: 'Copia',            es: 'Copiar' },
