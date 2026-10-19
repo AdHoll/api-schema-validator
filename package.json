@@ -1,6 +1,6 @@
 {
   "name": "vivapi-unified-validator",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "VivAPI Unified Validator — Validateur de schéma OpenAPI/YAML avec authentification OAuth2 (scope B2B/B2C)",
   "main": "dist/index.js",
   "bin": "dist/index.js",
@@ -8,8 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn src/index.ts",
-    "package": "npm run build && npx pkg . --targets node18-win-x64 --output release/VivAPI-Validator.exe",
-    "package:all": "npm run build && npx pkg . --targets node18-win-x64,node18-macos-x64,node18-linux-x64 --out-path release"
+    "package": "npm run build && node scripts/package.js",
+    "package:all": "npm run build && node scripts/package.js --all"
   },
   "pkg": {
     "assets": [
