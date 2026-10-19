@@ -47,7 +47,8 @@
       <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
         <div class="px-6 py-4 border-b border-slate-700 flex items-center gap-3">
           <i class="fa-solid fa-user-shield text-indigo-400 text-lg"></i>
-          <h3 id="loginTitle" class="text-sm font-semibold text-slate-100"></h3>
+          <h3 id="loginTitle" class="text-sm font-semibold text-slate-100 mr-auto"></h3>
+          <div class="lang-switcher"></div>
         </div>
         <div id="loginBody" class="px-6 py-5 space-y-3 text-sm text-slate-300"></div>
         <div class="bg-slate-800/50 px-6 py-3 border-t border-slate-700/80 flex justify-between gap-2">
@@ -70,8 +71,25 @@
     back: document.getElementById('loginBackBtn'),
   });
 
-  function show() { ensureOverlay().classList.remove('hidden'); }
+  function show() {
+    ensureOverlay().classList.remove('hidden');
+    // Peupler le sélecteur de langue de la modale (idempotent) et l'aligner sur la langue courante.
+    if (window.I18n && typeof window.I18n.buildSelectors === 'function') {
+      window.I18n.buildSelectors();
+      if (typeof window.I18n.apply === 'function') window.I18n.apply(overlay);
+    }
+  }
   function close() { if (overlay) overlay.classList.add('hidden'); }
+
+  // Vue actuellement affichée (fonction + args), pour la re-rendre au changement de langue.
+  let currentView = null;
+  // Au changement de langue, re-rendre la vue courante si la modale est ouverte, pour que
+  // tous les libellés générés dynamiquement (boutons, aides, questions) soient traduits.
+  document.addEventListener('i18n:changed', () => {
+    if (overlay && !overlay.classList.contains('hidden') && typeof currentView === 'function') {
+      currentView();
+    }
+  });
 
   function err(msg) {
     const e = document.getElementById('loginError');
@@ -81,6 +99,7 @@
   // ── Vue : initialisation du superadmin (1er lancement) ────────────────────
   // ── Vue : premier lancement — choix entre créer l'admin ou importer une config ──
   function viewFirstRun() {
+    currentView = viewFirstRun;
     const { body, title, ok, cancel, back } = els();
     title.textContent = T('login.firstRunTitle', 'Première configuration');
     cancel.classList.add('hidden');
@@ -129,6 +148,7 @@
   }
 
   function viewInit() {
+    currentView = viewInit;
     const { body, title, ok, cancel, back } = els();
     title.textContent = T('login.initTitle', 'Première configuration — Super admin');
     cancel.classList.add('hidden');
@@ -174,6 +194,8 @@
 
   // ── Vue : connexion (choix du profil + mot de passe) ──────────────────────
   function viewLogin(preselect) {
+    // Re-sélectionner le profil courant du <select> si la vue est re-rendue (changement de langue).
+    currentView = () => viewLogin(document.getElementById('loginProfile')?.value || preselect);
     const { body, title, ok, cancel, back } = els();
     title.textContent = T('login.title', 'Connexion');
     ok.classList.remove('hidden');
@@ -208,6 +230,7 @@
 
   // ── Vue : récupération (question secrète) ─────────────────────────────────
   function viewRecover(profile) {
+    currentView = () => viewRecover(profile);
     const { body, title, ok, back, cancel } = els();
     const question = window.Auth.getSecurityQuestion(profile);
     title.textContent = T('login.recoverTitle', 'Récupération du mot de passe');

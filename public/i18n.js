@@ -642,5 +642,5 @@
   }
 
   // API publique
-  window.I18n = { t, setLang, getLang: () => currentLang, apply, SUPPORTED, LANG_LABELS };
+  window.I18n = { t, setLang, getLang: () => currentLang, apply, buildSelectors, SUPPORTED, LANG_LABELS };
 })();
