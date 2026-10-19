@@ -5,6 +5,12 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (SemVer).
 
+## [1.2.5] - 2026-10-19
+
+### Modifié
+- **Master password** (création d'une nouvelle config) : le mot de passe n'est plus stocké
+  en clair dans le code ; seul son empreinte **SHA-256** est embarquée et comparée à la saisie.
+
 ## [1.2.4] - 2026-10-19
 
 ### Modifié
@@ -112,6 +118,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (Sem
 - Journalisation des appels avec masquage des secrets.
 - Internationalisation FR / EN / IT / ES, page Documentation des flux.
 
+[1.2.5]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.5
 [1.2.4]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.4
 [1.2.3]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.3
 [1.2.2]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.2

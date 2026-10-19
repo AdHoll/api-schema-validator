@@ -13,10 +13,10 @@
 (function () {
   'use strict';
 
-  // Master password (en dur) exigé pour CRÉER une nouvelle configuration au premier lancement.
-  // Garde-fou volontaire : la création d'une config part de zéro, on la réserve à un opérateur
-  // qui connaît ce mot de passe. Ce n'est pas une sécurité forte (visible côté client).
-  const MASTER_PASSWORD = 'LogicielFaitPourVérifierLesAPIBisous';
+  // Master password exigé pour CRÉER une nouvelle configuration au premier lancement.
+  // On ne stocke PAS le mot de passe en clair : seul son hash SHA-256 est embarqué, et on
+  // compare le hash de la saisie. Garde-fou volontaire (pas une sécurité forte côté client).
+  const MASTER_PASSWORD_HASH = 'ce67a3bb27218a26f7de85674875119c60729ac9a32998a91a420b10bf32b166';
 
   const T = (k, fb, v) => (typeof window.tr === 'function' ? window.tr(k, fb, v) : (() => {
     let s = fb; if (v) for (const [kk, vv] of Object.entries(v)) s = s.replace(new RegExp('\\{' + kk + '\\}', 'g'), String(vv)); return s;
@@ -169,8 +169,9 @@
       <p id="loginError" class="hidden text-[11px] text-rose-400"></p>`;
     const input = document.getElementById('masterPwd');
     input.addEventListener('keydown', e => { if (e.key === 'Enter') ok.click(); });
-    ok.onclick = () => {
-      if (input.value !== MASTER_PASSWORD) return err(T('login.masterWrong', 'Master password incorrect.'));
+    ok.onclick = async () => {
+      const hash = await window.Auth.sha256(input.value);
+      if (hash !== MASTER_PASSWORD_HASH) return err(T('login.masterWrong', 'Master password incorrect.'));
       viewInit();
     };
   }
