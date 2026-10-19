@@ -151,9 +151,20 @@
           <h2 class="text-lg font-bold text-indigo-300 flex items-center gap-2">
             <i class="fa-solid fa-code"></i> <span data-i18n="docs.swaggerTitle">Explorateur Swagger</span>
           </h2>
-          <div class="flex items-center gap-2 text-xs">
-            <label for="swaggerSpecSelect" class="text-slate-400" data-i18n="docs.swaggerVersion">Version :</label>
-            <select id="swaggerSpecSelect" class="bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-slate-200 font-mono"></select>
+          <div class="flex flex-wrap items-center gap-3 text-xs">
+            <!-- Bascule d'affichage : vue simplifiée / JSON brut -->
+            <div class="inline-flex rounded-lg border border-slate-700 bg-slate-900/80 p-0.5 font-semibold">
+              <button type="button" data-swagger-view="pretty" class="px-2.5 py-1 rounded-md transition text-slate-400">
+                <i class="fa-solid fa-list-ul mr-1"></i><span data-i18n="docs.swaggerViewPretty">Vue simplifiée</span>
+              </button>
+              <button type="button" data-swagger-view="json" class="px-2.5 py-1 rounded-md transition text-slate-400">
+                <i class="fa-solid fa-code mr-1"></i><span data-i18n="docs.swaggerViewJson">JSON</span>
+              </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <label for="swaggerSpecSelect" class="text-slate-400" data-i18n="docs.swaggerVersion">Version :</label>
+              <select id="swaggerSpecSelect" class="bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-slate-200 font-mono"></select>
+            </div>
           </div>
         </div>
         <p class="text-xs text-slate-400" data-i18n="docs.swaggerIntro">Visualisez la spécification OpenAPI sélectionnée, comme dans l'éditeur Swagger.</p>

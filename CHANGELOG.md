@@ -5,6 +5,19 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (SemVer).
 
+## [1.2.1] - 2026-10-19
+
+### Ajouté
+- **Vue Swagger — bascule « Vue simplifiée / JSON »** : affichage structuré (par défaut) ou
+  JSON brut de la spécification (déréférencée), coloré et copiable.
+
+### Modifié
+- **Vue Swagger — schémas enrichis** : descriptions de champs, énumérations complètes,
+  structures imbriquées détaillées, contraintes (format, longueur, min/max…) et exemples
+  affichés ; meilleure lisibilité des réponses d'erreur (message et structure attendue).
+- Schéma **« Flux API Backoffice »** entièrement traduit en anglais (titre, sous-titre,
+  légende, blocs et annotations).
+
 ## [1.2.0] - 2026-10-19
 
 ### Ajouté
@@ -79,6 +92,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (Sem
 - Journalisation des appels avec masquage des secrets.
 - Internationalisation FR / EN / IT / ES, page Documentation des flux.
 
+[1.2.1]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.1
 [1.2.0]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.0
 [1.1.0]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.1.0
 [1.0.0]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.0.0

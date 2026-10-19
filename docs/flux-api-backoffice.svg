@@ -9,27 +9,27 @@
   </defs>
 
   <rect x="0" y="0" width="1500" height="1020" fill="#fafafa"/>
-  <text x="30" y="40" font-size="26" font-weight="700" fill="#263238">Flux API Backoffice par parcours front — apibosweb → unified-backoffice v1.11.17</text>
-  <text x="30" y="66" font-size="14" fill="#607d8b">Chaque bloc = une route backoffice réelle.  Flèche grise = séquence d'appel.  Flèche orange = donnée réinjectée d'une réponse vers l'appel suivant.</text>
+  <text x="30" y="40" font-size="26" font-weight="700" fill="#263238">Backoffice API flows by front-end journey — apibosweb → unified-backoffice v1.11.17</text>
+  <text x="30" y="66" font-size="14" fill="#607d8b">Each block = a real backoffice route.  Grey arrow = call sequence.  Orange arrow = data reinjected from a response into the next call.</text>
 
   <!-- Legend -->
   <line x1="30" y1="88" x2="70" y2="88" stroke="#455a64" stroke-width="2" marker-end="url(#arr)"/>
-  <text x="78" y="92" font-size="13" fill="#455a64">séquence</text>
+  <text x="78" y="92" font-size="13" fill="#455a64">sequence</text>
   <line x1="170" y1="88" x2="210" y2="88" stroke="#e65100" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrData)"/>
-  <text x="218" y="92" font-size="13" fill="#e65100" font-weight="600">chaînage de donnée</text>
+  <text x="218" y="92" font-size="13" fill="#e65100" font-weight="600">data chaining</text>
 
   <!-- ===== TOKEN (infra) ===== -->
   <g>
     <rect x="30" y="115" width="260" height="60" rx="8" fill="#eceff1" stroke="#607d8b" stroke-width="1.5"/>
-    <text x="45" y="140" font-size="14" font-weight="700" fill="#37474f">0 · TOKEN (préalable global)</text>
+    <text x="45" y="140" font-size="14" font-weight="700" fill="#37474f">0 · TOKEN (global prerequisite)</text>
     <text x="45" y="160" font-size="12.5" fill="#455a64">POST /security/token</text>
   </g>
-  <text x="310" y="150" font-size="12.5" fill="#e65100" font-weight="600">accessToken ⮑ Bearer sur TOUS les appels ci-dessous</text>
+  <text x="310" y="150" font-size="12.5" fill="#e65100" font-weight="600">accessToken ⮑ Bearer on ALL calls below</text>
 
   <!-- ===== 1 AUTH ===== -->
   <g>
     <rect x="30" y="200" width="440" height="130" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
-    <text x="45" y="224" font-size="15" font-weight="700" fill="#0d47a1">1 · Authentification (login)</text>
+    <text x="45" y="224" font-size="15" font-weight="700" fill="#0d47a1">1 · Authentication (login)</text>
     <rect x="48" y="238" width="180" height="40" rx="6" fill="#fff" stroke="#1976d2"/>
     <text x="58" y="255" font-size="12" fill="#0d47a1">POST /auth/signin</text>
     <text x="58" y="271" font-size="11" fill="#607d8b">→ accountCode</text>
@@ -37,13 +37,13 @@
     <text x="278" y="255" font-size="12" fill="#0d47a1">GET /account/readAccount</text>
     <text x="278" y="271" font-size="11" fill="#607d8b">(accountCode)</text>
     <line x1="228" y1="258" x2="268" y2="258" stroke="#e65100" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrData)"/>
-    <text x="48" y="308" font-size="11.5" fill="#1565c0">reset mdp : searchLoginAccount ⮑ accountCode ⮑ resetPassword</text>
+    <text x="48" y="308" font-size="11.5" fill="#1565c0">password reset: searchLoginAccount ⮑ accountCode ⮑ resetPassword</text>
   </g>
 
   <!-- ===== 2 CATALOGUE ===== -->
   <g>
     <rect x="30" y="355" width="700" height="150" rx="10" fill="#f3e5f5" stroke="#8e24aa" stroke-width="1.5"/>
-    <text x="45" y="379" font-size="15" font-weight="700" fill="#6a1b9a">2 · Catalogue (familles → offres → produits)</text>
+    <text x="45" y="379" font-size="15" font-weight="700" fill="#6a1b9a">2 · Catalog (families → offers → products)</text>
     <rect x="48" y="395" width="150" height="42" rx="6" fill="#fff" stroke="#8e24aa"/>
     <text x="58" y="412" font-size="11.5" fill="#6a1b9a">GET /family/</text>
     <text x="58" y="428" font-size="11.5" fill="#6a1b9a">findParentFamilies</text>
@@ -62,14 +62,14 @@
     <text x="345" y="388" font-size="10.5" fill="#e65100">offerCode</text>
     <line x1="568" y1="416" x2="598" y2="416" stroke="#e65100" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrData)"/>
     <text x="520" y="388" font-size="10.5" fill="#e65100">productCodes</text>
-    <text x="48" y="470" font-size="11.5" fill="#8e24aa">offerCode alimente aussi readOffer + le calendrier (flow 3)</text>
-    <text x="48" y="490" font-size="11" fill="#9c7aa8">variantes cachées : Gate*Cached</text>
+    <text x="48" y="470" font-size="11.5" fill="#8e24aa">offerCode also feeds readOffer + the calendar (flow 3)</text>
+    <text x="48" y="490" font-size="11" fill="#9c7aa8">hidden variants: Gate*Cached</text>
   </g>
 
-  <!-- ===== 3 CALENDRIER ===== -->
+  <!-- ===== 3 CALENDAR ===== -->
   <g>
     <rect x="760" y="200" width="710" height="150" rx="10" fill="#fff3e0" stroke="#fb8c00" stroke-width="1.5"/>
-    <text x="775" y="224" font-size="15" font-weight="700" fill="#e65100">3 · Calendrier (jours → créneaux → quotas)</text>
+    <text x="775" y="224" font-size="15" font-weight="700" fill="#e65100">3 · Calendar (days → slots → quotas)</text>
     <rect x="778" y="240" width="150" height="42" rx="6" fill="#fff" stroke="#fb8c00"/>
     <text x="788" y="257" font-size="11.5" fill="#e65100">GET /offer/</text>
     <text x="788" y="273" font-size="11" fill="#607d8b">findFirstAvailableDate</text>
@@ -91,10 +91,10 @@
     <text x="1150" y="300" font-size="10.5" fill="#e65100">performanceCode</text>
   </g>
 
-  <!-- ===== 4 TUNNEL ACHAT ===== -->
+  <!-- ===== 4 PURCHASE FUNNEL ===== -->
   <g>
     <rect x="30" y="540" width="1440" height="190" rx="10" fill="#e8f5e9" stroke="#43a047" stroke-width="2"/>
-    <text x="45" y="566" font-size="16" font-weight="700" fill="#2e7d32">4 · Tunnel d'achat (parcours central)</text>
+    <text x="45" y="566" font-size="16" font-weight="700" fill="#2e7d32">4 · Purchase funnel (core journey)</text>
 
     <rect x="48" y="585" width="120" height="46" rx="6" fill="#fff" stroke="#43a047"/>
     <text x="58" y="604" font-size="11.5" fill="#2e7d32">POST /sell/</text>
@@ -109,8 +109,8 @@
     <text x="438" y="620" font-size="11" fill="#e65100">(cartCode) → orderCode</text>
 
     <rect x="658" y="585" width="150" height="46" rx="6" fill="#fffde7" stroke="#fbc02d" stroke-width="1.5"/>
-    <text x="668" y="604" font-size="11.5" fill="#9e7d00">Paiement PSP</text>
-    <text x="668" y="620" font-size="11" fill="#9e7d00">(hors backoffice)</text>
+    <text x="668" y="604" font-size="11.5" fill="#9e7d00">PSP payment</text>
+    <text x="668" y="620" font-size="11" fill="#9e7d00">(outside backoffice)</text>
 
     <rect x="868" y="585" width="180" height="46" rx="6" fill="#fff" stroke="#43a047" stroke-width="2"/>
     <text x="878" y="604" font-size="11.5" fill="#2e7d32" font-weight="600">POST /order/confirmOrderTrans</text>
@@ -131,16 +131,16 @@
     <path d="M513,585 C513,560 790,560 940,560 L958,585" fill="none" stroke="#e65100" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrData)"/>
     <text x="690" y="553" font-size="11" fill="#e65100" font-weight="600">orderCode (= paymentTrx.saleAk)</text>
 
-    <text x="48" y="662" font-size="11.5" fill="#2e7d32">cartCode = pivot du panier (checkCart + beginOrderTrans + removeCart)</text>
-    <text x="48" y="682" font-size="11" fill="#66926a">option places numérotées : POST /seat/bestSeat (holdSeat) avant le panier</text>
-    <text x="48" y="702" font-size="11" fill="#66926a">annulation : POST /order/cancelOrderTrans · DELETE /cart/removeCart</text>
+    <text x="48" y="662" font-size="11.5" fill="#2e7d32">cartCode = cart pivot (checkCart + beginOrderTrans + removeCart)</text>
+    <text x="48" y="682" font-size="11" fill="#66926a">numbered seats option: POST /seat/bestSeat (holdSeat) before the cart</text>
+    <text x="48" y="702" font-size="11" fill="#66926a">cancellation: POST /order/cancelOrderTrans · DELETE /cart/removeCart</text>
     <text x="1108" y="662" font-size="11" fill="#e65100">saleAk / mediaCode ⮑ documents (flow 7)</text>
   </g>
 
   <!-- ===== 5 UPGRADE/RENEW ===== -->
   <g>
     <rect x="30" y="755" width="440" height="120" rx="10" fill="#fce4ec" stroke="#d81b60" stroke-width="1.5"/>
-    <text x="45" y="779" font-size="15" font-weight="700" fill="#ad1457">5 · Upgrade / Renouvellement</text>
+    <text x="45" y="779" font-size="15" font-weight="700" fill="#ad1457">5 · Upgrade / Renewal</text>
     <rect x="48" y="793" width="180" height="42" rx="6" fill="#fff" stroke="#d81b60"/>
     <text x="58" y="810" font-size="11.5" fill="#ad1457">POST /cart/tryExchange</text>
     <text x="58" y="826" font-size="11" fill="#607d8b">/ tryRenewal (simulation)</text>
@@ -148,13 +148,13 @@
     <text x="278" y="810" font-size="11.5" fill="#ad1457">POST /order/exchangeTrans</text>
     <text x="278" y="826" font-size="11" fill="#607d8b">/ renewalTrans → orderCode</text>
     <line x1="228" y1="814" x2="268" y2="814" stroke="#e65100" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrData)"/>
-    <text x="40" y="868" font-size="11" fill="#ad1457">cypherCartCode ⮑ (déchiffré) cartCode ⮑ puis paiement + confirmOrderTrans (flow 4)</text>
+    <text x="40" y="868" font-size="11" fill="#ad1457">cypherCartCode ⮑ (decrypted) cartCode ⮑ then payment + confirmOrderTrans (flow 4)</text>
   </g>
 
-  <!-- ===== 6 ESPACE CLIENT ===== -->
+  <!-- ===== 6 CUSTOMER AREA ===== -->
   <g>
     <rect x="500" y="755" width="470" height="120" rx="10" fill="#ede7f6" stroke="#5e35b1" stroke-width="1.5"/>
-    <text x="515" y="779" font-size="15" font-weight="700" fill="#4527a0">6 · Espace client (compte / allocations)</text>
+    <text x="515" y="779" font-size="15" font-weight="700" fill="#4527a0">6 · Customer area (account / allocations)</text>
     <rect x="518" y="793" width="200" height="42" rx="6" fill="#fff" stroke="#5e35b1"/>
     <text x="528" y="810" font-size="11.5" fill="#4527a0">POST /account/</text>
     <text x="528" y="826" font-size="11" fill="#607d8b">searchNotAllocatedTickets</text>
@@ -163,30 +163,30 @@
     <text x="768" y="826" font-size="11" fill="#607d8b">(ticketCodes)</text>
     <line x1="718" y1="814" x2="758" y2="814" stroke="#e65100" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrData)"/>
     <text x="700" y="786" font-size="10.5" fill="#e65100">ticketCodes</text>
-    <text x="515" y="868" font-size="11" fill="#4527a0">readAccount.accountCode ⮑ searchOrder (liste commandes)</text>
+    <text x="515" y="868" font-size="11" fill="#4527a0">readAccount.accountCode ⮑ searchOrder (order list)</text>
   </g>
 
   <!-- ===== 7 DOCUMENTS ===== -->
   <g>
     <rect x="1000" y="755" width="470" height="120" rx="10" fill="#e0f2f1" stroke="#00897b" stroke-width="1.5"/>
-    <text x="1015" y="779" font-size="15" font-weight="700" fill="#00695c">7 · Documents / billets</text>
+    <text x="1015" y="779" font-size="15" font-weight="700" fill="#00695c">7 · Documents / tickets</text>
     <rect x="1018" y="793" width="200" height="42" rx="6" fill="#fff" stroke="#00897b"/>
     <text x="1028" y="810" font-size="11.5" fill="#00695c">GET /document/generateDocument</text>
     <text x="1028" y="826" font-size="11" fill="#607d8b">(saleAk)</text>
     <rect x="1248" y="793" width="200" height="42" rx="6" fill="#fff" stroke="#00897b"/>
     <text x="1258" y="810" font-size="11.5" fill="#00695c">GET /ticket/generatePDF</text>
     <text x="1258" y="826" font-size="11" fill="#607d8b">(mediaCode)</text>
-    <text x="1015" y="868" font-size="11" fill="#00695c">pré-requis : commande confirmée (flow 4) fournit saleAk / mediaCode</text>
+    <text x="1015" y="868" font-size="11" fill="#00695c">prerequisite: a confirmed order (flow 4) provides saleAk / mediaCode</text>
   </g>
 
   <!-- ===== GLOBAL FLOW BAND ===== -->
   <g>
     <rect x="30" y="905" width="1440" height="112" rx="10" fill="#ffffff" stroke="#90a4ae" stroke-width="1.5"/>
-    <text x="45" y="930" font-size="14" font-weight="700" fill="#37474f">Séquence nominale d'achat (vue d'ensemble)</text>
+    <text x="45" y="930" font-size="14" font-weight="700" fill="#37474f">Nominal purchase sequence (overview)</text>
     <text x="45" y="962" font-size="13" fill="#455a64">
-      token → signin → readAccount → famille → offre → produit → calendrier(jour→créneau→quota) → upSell → checkCart → beginOrderTrans → <tspan fill="#9e7d00">paiement</tspan> → confirmOrderTrans → readOrderDetails → documents
+      token → signin → readAccount → family → offer → product → calendar(day→slot→quota) → upSell → checkCart → beginOrderTrans → <tspan fill="#9e7d00">payment</tspan> → confirmOrderTrans → readOrderDetails → documents
     </text>
-    <text x="45" y="982" font-size="11" fill="#1565c0">Note : ordre B2B (login en tête). En B2C, le signin a lieu APRÈS checkCart (voir scenario-auth-order.svg).</text>
-    <text x="45" y="1000" font-size="11.5" fill="#e65100">Données qui circulent : accessToken · accountCode · familyCode · offerCode · productCodes · date · performanceCode · cartCode · orderCode · saleAk</text>
+    <text x="45" y="982" font-size="11" fill="#1565c0">Note: B2B order (login first). In B2C, signin happens AFTER checkCart (see scenario-auth-order.svg).</text>
+    <text x="45" y="1000" font-size="11.5" fill="#e65100">Data flowing through: accessToken · accountCode · familyCode · offerCode · productCodes · date · performanceCode · cartCode · orderCode · saleAk</text>
   </g>
 </svg>

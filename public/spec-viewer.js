@@ -29,6 +29,8 @@
 
   let initialised = false;   // versions chargées une seule fois
   let specCache = {};        // filename -> spec JSON
+  let currentSpec = null;    // spec actuellement affichée
+  let viewMode = 'pretty';   // 'pretty' (vue simplifiée) | 'json' (JSON brut)
 
   // ── Bascule d'onglets internes ─────────────────────────────────────────────
   function setupTabs() {
@@ -50,6 +52,12 @@
     }
     fluxBtn.addEventListener('click', () => activate(false));
     swaggerBtn.addEventListener('click', () => activate(true));
+
+    // Boutons de bascule d'affichage (vue simplifiée / JSON).
+    document.querySelectorAll('[data-swagger-view]').forEach(btn => {
+      btn.addEventListener('click', () => setViewMode(btn.dataset.swaggerView));
+    });
+    setViewMode(viewMode);   // état initial des boutons
   }
 
   // ── Chargement des versions + spec ─────────────────────────────────────────
@@ -82,12 +90,68 @@
         spec = await res.json();
         specCache[filename] = spec;
       }
-      renderSpec(spec, view);
+      currentSpec = spec;
+      renderCurrent();
     } catch (e) {
       view.innerHTML = `<div class="bg-rose-950/40 border border-rose-800 rounded-lg p-4 text-rose-300 text-sm">${T('docs.swaggerParseError', 'Impossible de charger cette spécification.')}</div>`;
     } finally {
       loading.classList.add('hidden');
     }
+  }
+
+  // ── Bascule d'affichage : vue simplifiée vs JSON brut ───────────────────────
+  function setViewMode(mode) {
+    viewMode = (mode === 'json') ? 'json' : 'pretty';
+    // Met à jour l'état visuel des boutons de bascule s'ils existent.
+    document.querySelectorAll('[data-swagger-view]').forEach(btn => {
+      const active = btn.dataset.swaggerView === viewMode;
+      btn.classList.toggle('bg-indigo-600', active);
+      btn.classList.toggle('text-white', active);
+      btn.classList.toggle('text-slate-400', !active);
+    });
+    renderCurrent();
+  }
+
+  // (Re)affiche la spec courante selon le mode choisi.
+  function renderCurrent() {
+    const view = document.getElementById('swaggerView');
+    if (!view || !currentSpec) return;
+    if (viewMode === 'json') renderJsonView(currentSpec, view);
+    else renderSpec(currentSpec, view);
+  }
+
+  // Vue JSON brute : la spec (YAML convertie + déréférencée) en JSON formaté et coloré.
+  function renderJsonView(spec, host) {
+    const json = JSON.stringify(spec, null, 2);
+    host.innerHTML = `
+      <div class="flex justify-end mb-2">
+        <button type="button" id="swaggerCopyJson" class="text-[11px] font-semibold px-2.5 py-1 rounded border border-slate-600 bg-slate-800 hover:bg-indigo-600 hover:text-white transition">
+          <i class="fa-regular fa-copy mr-1"></i>${T('docs.swaggerCopy', 'Copier')}
+        </button>
+      </div>
+      <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-[11px] leading-relaxed text-slate-200 overflow-auto max-h-[70vh]"><code>${highlightJson(json)}</code></pre>`;
+    const copyBtn = document.getElementById('swaggerCopyJson');
+    if (copyBtn) copyBtn.addEventListener('click', () => {
+      navigator.clipboard?.writeText(json).then(() => {
+        copyBtn.innerHTML = `<i class="fa-solid fa-check mr-1"></i>${T('docs.swaggerCopied', 'Copié')}`;
+        setTimeout(() => { copyBtn.innerHTML = `<i class="fa-regular fa-copy mr-1"></i>${T('docs.swaggerCopy', 'Copier')}`; }, 1500);
+      }).catch(() => {});
+    });
+  }
+
+  // Coloration syntaxique JSON minimale (sans dépendance).
+  function highlightJson(json) {
+    return esc(json).replace(
+      /(&quot;(\\.|[^&])*?&quot;)(\s*:)?|\b(true|false|null)\b|-?\d+(\.\d+)?([eE][+-]?\d+)?/g,
+      (m, str, _c, colon, kw) => {
+        if (str !== undefined && str !== '') {
+          return colon
+            ? `<span class="text-sky-300">${m}</span>`          // clé
+            : `<span class="text-emerald-300">${m}</span>`;     // chaîne
+        }
+        if (kw) return `<span class="text-violet-300">${m}</span>`; // bool/null
+        return `<span class="text-amber-300">${m}</span>`;          // nombre
+      });
   }
 
   // ── Rendu principal ────────────────────────────────────────────────────────
@@ -245,16 +309,48 @@
       </div>`;
   }
 
-  // Rendu d'un bloc content (map mediaType -> {schema}) : on affiche le(s) type(s) MIME et le schéma.
+  // Rendu d'un bloc content (map mediaType -> {schema, example, examples}) :
+  // type(s) MIME + schéma (structure attendue) + exemple(s) s'ils sont fournis.
   function renderContent(content) {
     return Object.keys(content).map(mt => {
-      const schema = content[mt] && content[mt].schema;
+      const media = content[mt] || {};
+      const schema = media.schema;
+      // Exemple(s) : OpenAPI accepte `example` (unique) ou `examples` (map de { value }).
+      let exampleBlock = '';
+      const examples = [];
+      if (media.example !== undefined) examples.push({ label: '', value: media.example });
+      if (media.examples && typeof media.examples === 'object') {
+        Object.keys(media.examples).forEach(k => {
+          const ex = media.examples[k];
+          examples.push({ label: k, value: ex && ex.value !== undefined ? ex.value : ex });
+        });
+      }
+      if (examples.length) {
+        exampleBlock = examples.map(ex => `
+          <div class="mt-1.5">
+            ${ex.label ? `<div class="text-[10px] text-slate-500 mb-0.5">${T('docs.swaggerExample', 'Exemple')} : ${esc(ex.label)}</div>` : `<div class="text-[10px] text-slate-500 mb-0.5">${T('docs.swaggerExample', 'Exemple')}</div>`}
+            <pre class="bg-slate-950 border border-slate-800 rounded-md p-2 text-[10.5px] text-emerald-200 overflow-x-auto">${esc(jsonStr(ex.value))}</pre>
+          </div>`).join('');
+      }
       return `
         <div class="space-y-1.5">
           <span class="inline-block font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">${esc(mt)}</span>
           ${schema ? renderSchema(schema, 0) : ''}
+          ${exampleBlock}
         </div>`;
     }).join('');
+  }
+
+  // Sérialise une valeur en JSON lisible (pour les exemples).
+  function jsonStr(v) {
+    try { return typeof v === 'string' ? v : JSON.stringify(v, null, 2); }
+    catch { return String(v); }
+  }
+
+  // Liste d'enum lisible (toutes les valeurs, repli si la valeur n'est pas un tableau).
+  function enumText(en) {
+    const arr = Array.isArray(en) ? en : String(en).split(/\s+/).filter(Boolean);
+    return arr.map(x => esc(x)).join(', ');
   }
 
   // Libellé court d'un type (ex: "string", "array[integer]", "object")
@@ -268,49 +364,73 @@
     return t || 'object';
   }
 
+  // Contraintes utiles d'un schéma (min/max, longueur, pattern, format…), en texte court.
+  function constraintsText(s) {
+    const c = [];
+    if (s.format) c.push(`format: ${s.format}`);
+    if (s.pattern) c.push(`pattern: ${s.pattern}`);
+    if (s.minLength != null || s.maxLength != null) c.push(`len: ${s.minLength ?? 0}..${s.maxLength ?? '∞'}`);
+    if (s.minimum != null || s.maximum != null) c.push(`${s.minimum ?? '-∞'}..${s.maximum ?? '∞'}`);
+    if (s.default !== undefined) c.push(`default: ${jsonStr(s.default)}`);
+    if (s.nullable) c.push('nullable');
+    return c.length ? `<span class="text-[10px] text-slate-500"> · ${esc(c.join(' · '))}</span>` : '';
+  }
+
   // Rendu récursif d'un schéma (lecture seule). depth limite la profondeur d'imbrication.
   function renderSchema(schema, depth) {
     if (!schema || typeof schema !== 'object') return '';
     if (schema.$circular) return `<span class="text-[11px] text-slate-500 italic">↻ ${T('docs.swaggerCircular', 'référence circulaire')}</span>`;
-    if (depth > 6) return `<span class="text-[11px] text-slate-500 italic">…</span>`;
+    if (depth > 10) return `<span class="text-[11px] text-slate-500 italic">…</span>`;
 
-    // Combinateurs
+    // Combinateurs (allOf / oneOf / anyOf)
     for (const comb of ['allOf', 'oneOf', 'anyOf']) {
       if (Array.isArray(schema[comb])) {
-        return `<div class="pl-2 border-l border-slate-700/60 space-y-1">
-          <span class="text-[10px] uppercase text-slate-500">${comb}</span>
+        return `<div class="pl-2 border-l-2 border-slate-700/60 space-y-1.5">
+          <span class="text-[10px] uppercase tracking-wide text-slate-500">${comb}</span>
           ${schema[comb].map(s => renderSchema(s, depth + 1)).join('')}</div>`;
       }
     }
 
+    // Tableau : on détaille toujours le schéma des éléments.
     if (schema.type === 'array' && schema.items) {
       return `<div class="space-y-1">
         <span class="text-[11px] text-slate-400">array of ${esc(typeLabel(schema.items))}</span>
-        ${schema.items.properties ? renderSchema(schema.items, depth + 1) : ''}</div>`;
+        ${schema.description ? `<div class="text-[10.5px] text-slate-500">${esc(schema.description)}</div>` : ''}
+        <div class="pl-3 border-l border-slate-800/60">${renderSchema(schema.items, depth + 1)}</div>
+      </div>`;
     }
 
+    // Objet avec propriétés : une ligne par champ, descriptions et enums toujours visibles.
     if (schema.properties) {
       const required = new Set(schema.required || []);
       const rows = Object.keys(schema.properties).map(name => {
         const prop = schema.properties[name] || {};
-        const nested = (prop.properties || (prop.type === 'array' && prop.items && prop.items.properties))
-          ? `<div class="pl-4 mt-1">${renderSchema(prop, depth + 1)}</div>` : '';
-        const enumHint = prop.enum ? ` <span class="text-[10px] text-slate-500">enum: ${esc(prop.enum.slice(0, 8).join(', '))}${prop.enum.length > 8 ? '…' : ''}</span>` : '';
+        const isObj = !!prop.properties;
+        const isArrObj = prop.type === 'array' && prop.items && (prop.items.properties || prop.items.enum || (prop.items.type === 'array'));
+        const nested = (isObj || isArrObj) ? `<div class="pl-4 mt-1">${renderSchema(prop, depth + 1)}</div>` : '';
+        const enumHint = prop.enum
+          ? `<div class="text-[10px] text-slate-500 mt-0.5">enum : ${enumText(prop.enum)}</div>` : '';
         return `
-          <div class="py-0.5">
-            <span class="font-mono text-[11px] text-sky-300">${esc(name)}</span>${required.has(name) ? '<span class="text-rose-400">*</span>' : ''}
-            <span class="text-[11px] text-slate-500">${esc(typeLabel(prop))}</span>${enumHint}
-            ${prop.description ? `<span class="text-[11px] text-slate-500"> — ${esc(prop.description)}</span>` : ''}
+          <div class="py-1 border-b border-slate-800/40 last:border-0">
+            <div class="flex flex-wrap items-baseline gap-x-2">
+              <span class="font-mono text-[11px] text-sky-300">${esc(name)}</span>${required.has(name) ? '<span class="text-rose-400 font-bold">*</span>' : ''}
+              <span class="text-[10px] text-slate-500">${esc(typeLabel(prop))}</span>${constraintsText(prop)}
+            </div>
+            ${prop.description ? `<div class="text-[11px] text-slate-400 mt-0.5">${esc(prop.description)}</div>` : ''}
+            ${enumHint}
             ${nested}
           </div>`;
       }).join('');
-      return `<div class="rounded-lg bg-slate-900/50 border border-slate-800/60 p-2.5">${rows}</div>`;
+      return `<div class="rounded-lg bg-slate-900/50 border border-slate-800/60 p-2.5 space-y-0.5">
+        ${schema.description ? `<div class="text-[11px] text-slate-400 mb-1">${esc(schema.description)}</div>` : ''}
+        ${rows}
+      </div>`;
     }
 
-    // Type simple
+    // Type simple : libellé + contraintes + enum + description.
     const label = typeLabel(schema);
-    const enumHint = schema.enum ? ` <span class="text-[10px] text-slate-500">enum: ${esc(schema.enum.slice(0, 12).join(', '))}</span>` : '';
-    return `<span class="text-[11px] text-slate-400">${esc(label)}</span>${enumHint}`;
+    const enumHint = schema.enum ? `<div class="text-[10px] text-slate-500 mt-0.5">enum : ${enumText(schema.enum)}</div>` : '';
+    return `<div class="text-[11px] text-slate-400">${esc(label)}${constraintsText(schema)}${schema.description ? ` — <span class="text-slate-500">${esc(schema.description)}</span>` : ''}${enumHint}</div>`;
   }
 
   document.addEventListener('DOMContentLoaded', setupTabs);
