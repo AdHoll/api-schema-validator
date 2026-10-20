@@ -1,6 +1,6 @@
 {
   "name": "vivapi-unified-validator",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "VivAPI Unified Validator — Validateur de schéma OpenAPI/YAML avec authentification OAuth2 (scope B2B/B2C)",
   "main": "dist/index.js",
   "bin": "dist/index.js",

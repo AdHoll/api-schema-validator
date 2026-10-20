@@ -2721,8 +2721,15 @@
         }
       };
 
-      // Toutes les familles parentes de premier niveau.
-      const pfBody = await callRouteForPrefill({ method: 'GET', path: '/api/v1/family/findParentFamilies' }, collected);
+      // Toutes les familles parentes de premier niveau. findParentFamilies exige `code`
+      // (code de regroupement, requis) et `locale` : on les garantit explicitement pour éviter
+      // un appel vide (qui renverrait « aucune famille »).
+      const findParams = {
+        ...collected,
+        code: collected.code || 'default',
+        locale: collected.locale || (document.getElementById('globalLocale')?.value.trim()) || 'fr-FR',
+      };
+      const pfBody = await callRouteForPrefill({ method: 'GET', path: '/api/v1/family/findParentFamilies' }, findParams);
       const pfList = pfBody?.parentFamilies ?? pfBody?.data?.parentFamilies ?? pfBody?.data ?? pfBody;
       const parents = (Array.isArray(pfList) ? pfList : [pfList])
         .map(f => (typeof f === 'string') ? f : (f?.parentFamilyCode ?? f?.code))
@@ -2855,6 +2862,12 @@
         steps.push({
           label: 'Familles parentes → parentFamilyCode',
           route: { method: 'GET', path: '/api/v1/family/findParentFamilies' },
+          // findParentFamilies exige le paramètre `code` (code de regroupement, requis).
+          // On garantit sa présence (champ de départ `code`, défaut « default ») + la locale.
+          defaultParams: (collected) => ({
+            code: (collected && collected.code) || 'default',
+            locale: (collected && collected.locale) || (document.getElementById('globalLocale')?.value.trim()) || 'fr-FR',
+          }),
           extract: [{
             targetParam: 'parentFamilyCode',
             list: b => { const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b; return (Array.isArray(l)?l:[l]).map(f => (typeof f==='string')?f:(f?.parentFamilyCode??f?.code)).filter(Boolean); },
@@ -2864,6 +2877,12 @@
         steps.push({
           label: 'Famille parente → familyCode',
           route: { method: 'GET', path: '/api/v1/family/readParentFamily' },
+          // readParentFamily exige `parentFamilyCode` (posé par l'étape précédente) ET `locale`
+          // (requis). On garantit `locale` ; parentFamilyCode est forcé depuis collected.
+          defaultParams: (collected) => ({
+            locale: (collected && collected.locale) || (document.getElementById('globalLocale')?.value.trim()) || 'fr-FR',
+          }),
+          forceParams: ['locale'],
           extract: [{
             targetParam: 'familyCode',
             list: b => { const l=b?.parentFamilies??b?.data?.parentFamilies??b?.data??b; const pf=Array.isArray(l)?l[0]:l; const c=pf?.childFamilyCodes??pf?.families??pf?.children??[]; return (Array.isArray(c)?c:[c]).map(x=>(typeof x==='string')?x:(x?.familyCode??x?.code)).filter(Boolean); },
@@ -3106,6 +3125,11 @@
         steps.push({
           label: 'Familles parentes → parentFamilyCode',
           route: { method: 'GET', path: '/api/v1/family/findParentFamilies' },
+          // `code` (code de regroupement, requis) + `locale` garantis pour éviter un appel vide.
+          defaultParams: (collected) => ({
+            code: (collected && collected.code) || 'default',
+            locale: (collected && collected.locale) || (document.getElementById('globalLocale')?.value.trim()) || 'fr-FR',
+          }),
           extract: [{
             targetParam: 'parentFamilyCode',
             list: b => { const l = b?.parentFamilies ?? b?.data?.parentFamilies ?? b?.data ?? b; return (Array.isArray(l)?l:[l]).filter(Boolean).map(String); },
@@ -3115,6 +3139,11 @@
         steps.push({
           label: 'Famille parente → familyCode',
           route: { method: 'GET', path: '/api/v1/family/readParentFamily' },
+          // readParentFamily exige `parentFamilyCode` (posé ci-dessus) ET `locale` (requis).
+          defaultParams: (collected) => ({
+            locale: (collected && collected.locale) || (document.getElementById('globalLocale')?.value.trim()) || 'fr-FR',
+          }),
+          forceParams: ['locale'],
           extract: [{
             targetParam: 'familyCode',
             list: b => { const l=b?.parentFamilies??b?.data?.parentFamilies??b?.data??b; const pf=Array.isArray(l)?l[0]:l; const c=pf?.childFamilyCodes??pf?.families??pf?.children??[]; return (Array.isArray(c)?c:[c]).map(x=>(typeof x==='string')?x:(x?.familyCode??x?.code)).filter(Boolean); },
@@ -4314,7 +4343,9 @@
       // Pré-remplir les valeurs par défaut de l'étape cible (ex: dateFrom/dateTo, date=demain)
       // sans écraser une valeur déjà renseignée, pour qu'elles apparaissent dans les champs.
       if (targetStep && typeof targetStep.defaultParams === 'function') {
-        const defs = targetStep.defaultParams() || {};
+        // On passe `collected` : certains defaultParams en dépendent (ex. findProductCodes
+        // lit collected.selectedType). L'appeler sans argument plantait (« collected is undefined »).
+        const defs = targetStep.defaultParams(collected) || {};
         Object.entries(defs).forEach(([k, v]) => {
           if (collected[k] === undefined || collected[k] === '') collected[k] = String(v);
         });

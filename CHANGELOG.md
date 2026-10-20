@@ -5,6 +5,18 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (SemVer).
 
+## [1.3.1] - 2026-10-19
+
+### Corrigé
+- **Scénarios (semi-auto / manuel)** : les étapes catalogue `findParentFamilies` et
+  `readParentFamily` garantissent désormais leurs paramètres requis (`code`, `locale`,
+  `parentFamilyCode`) — corrige l'appel `readParentFamily` parti sans code famille sur
+  « Panier seul ».
+- **Scénarios (semi-auto)** : correction d'un plantage « collected is undefined » lors de la
+  préparation d'une étape (le contexte n'était pas transmis à `defaultParams`).
+- **Scénarios (auto)** : `findParentFamilies` reçoit explicitement `code` et `locale` lors de
+  l'énumération des familles (robustesse).
+
 ## [1.3.0] - 2026-10-19
 
 ### Ajouté
@@ -165,6 +177,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (Sem
 - Journalisation des appels avec masquage des secrets.
 - Internationalisation FR / EN / IT / ES, page Documentation des flux.
 
+[1.3.1]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.3.1
 [1.3.0]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.3.0
 [1.2.7]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.7
 [1.2.6]: https://github.com/AdHoll/api-schema-validator/releases/tag/v1.2.6
